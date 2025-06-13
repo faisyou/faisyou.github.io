@@ -1,0 +1,324 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Understanding Calls Per Second, Channels, and Call Duration</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h2 {
+      color: #333;
+    }
+    canvas {
+      display: block;
+      margin: 20px auto;
+      max-width: 100%;
+      height: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Explaining Calls Per Second, Concurrent Channels, and Call Duration</h2>
+  <p>
+    In Genesys Cloud, there is a default <strong>calls per second (CPS)</strong> limit of <strong>15 CPS</strong>.
+    While this number might appear small at first glance, examining its relationship with
+    <em>concurrent channels</em> and <em>average call duration</em> shows that it is quite a generous limit
+    for most use cases.
+  </p>
+
+  <h2>How CPS, Channels, and Duration Interact</h2>
+  <p>The key formula is:</p>
+  <blockquote>
+    <em>Maximum Concurrent Channels = CPS × Average Call Duration (in seconds)</em>
+  </blockquote>
+  <p>For example, at a rate of 15 CPS:</p>
+  <ul>
+    <li>
+      If the average call duration is 60 seconds:
+      <strong>15 CPS × 60s = 900 concurrent channels</strong>.
+    </li>
+    <li>
+      If the average call duration is 120 seconds:
+      <strong>15 CPS × 120s = 1,800 concurrent channels</strong>.
+    </li>
+  </ul>
+
+  <h2>Calls Per Second vs Calls Per Hour</h2>
+  <p>
+    Over an hour (3,600 seconds), the maximum number of calls initiated at 15 CPS is:
+  </p>
+  <blockquote>
+    <em>15 CPS × 3,600 seconds = 54,000 calls per hour</em>
+  </blockquote>
+  <p>This chart illustrates how calls per hour scale with CPS:</p>
+  <canvas id="chart1" width="400" height="200"></canvas>
+
+  <h2>Concurrent Channels vs Average Call Duration</h2>
+  <p>
+    As the average call duration increases, so does the number of concurrent channels needed to sustain 15 CPS:
+  </p>
+  <canvas id="chart2" width="400" height="200"></canvas>
+
+  <h2>Channel Load Scenarios with Connect Rates and Talk Times</h2>
+  <p>
+    Not every call connects. This section explores scenarios with different <strong>connect rates</strong> and
+    differing average durations for connected vs non-connected calls:
+  </p>
+  <ul>
+    <li>Connect rates: 40%, 50%, 60%</li>
+    <li>Connected call durations: 60s, 90s, 120s</li>
+    <li>Non-connected (ringing) duration: 20s (average)</li>
+    <li>Total dials per hour considered: 50,000</li>
+  </ul>
+  <p>
+    Below is a chart showing the resulting concurrent channels needed at various connected durations and connect rates:
+  </p>
+  <canvas id="chart3" width="400" height="200"></canvas>
+
+  <h3>Channel Load Analysis Table</h3>
+  <table>
+    <tr>
+      <th>Connect Rate</th>
+      <th>Connected Duration (s)</th>
+      <th>Total Channel Seconds</th>
+      <th>Concurrent Channels Needed</th>
+    </tr>
+    <tr>
+      <td>40%</td>
+      <td>60</td>
+      <td>1,800,000</td>
+      <td>500.00</td>
+    </tr>
+    <tr>
+      <td>40%</td>
+      <td>90</td>
+      <td>2,400,000</td>
+      <td>666.67</td>
+    </tr>
+    <tr>
+      <td>40%</td>
+      <td>120</td>
+      <td>3,000,000</td>
+      <td>833.33</td>
+    </tr>
+    <tr>
+      <td>50%</td>
+      <td>60</td>
+      <td>2,000,000</td>
+      <td>555.56</td>
+    </tr>
+    <tr>
+      <td>50%</td>
+      <td>90</td>
+      <td>2,750,000</td>
+      <td>763.89</td>
+    </tr>
+    <tr>
+      <td>50%</td>
+      <td>120</td>
+      <td>3,500,000</td>
+      <td>972.22</td>
+    </tr>
+    <tr>
+      <td>60%</td>
+      <td>60</td>
+      <td>2,200,000</td>
+      <td>611.11</td>
+    </tr>
+    <tr>
+      <td>60%</td>
+      <td>90</td>
+      <td>3,100,000</td>
+      <td>861.11</td>
+    </tr>
+    <tr>
+      <td>60%</td>
+      <td>120</td>
+      <td>4,000,000</td>
+      <td>1111.11</td>
+    </tr>
+  </table>
+
+  <h2>Practical Takeaways</h2>
+  <ul>
+    <li>A default limit of 15 CPS translates to up to 54,000 calls placed in an hour.</li>
+    <li>At 15 CPS, average durations of 60–120 seconds require 900–1,800 concurrent channels, respectively.</li>
+    <li>Even with varying connect rates and talk times, the required concurrency often stays within the default 900–1,000 channel range.</li>
+    <li>For organizations needing more volume, CPS limits can be increased with justification, but for most, the default value is already quite generous.</li>
+  </ul>
+
+  <p>
+    By examining these relationships, it becomes clear that <strong>15 CPS</strong> in Genesys Cloud represents
+    substantial capacity for most outbound calling scenarios.
+  </p>
+
+  <script>
+    // Chart 1: Calls Per Hour vs Calls Per Second
+    const ctx1 = document.getElementById('chart1').getContext('2d');
+    new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels: Array.from({ length: 20 }, (_, i) => i + 1),
+        datasets: [{
+          label: 'Calls Per Hour',
+          data: Array.from({ length: 20 }, (_, i) => (i + 1) * 3600),
+          borderColor: 'rgba(54, 162, 235, 0.7)',
+          backgroundColor: 'rgba(54, 162, 235, 0.3)',
+          tension: 0.2,
+          fill: false,
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Calls Per Hour'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Calls Per Second (CPS)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+
+    // Chart 2: Concurrent Channels vs Average Call Duration (at 15 CPS)
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+    const durations = [30, 60, 90, 120, 150, 180];
+    const channelsAt15CPS = durations.map(d => 15 * d);
+    new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: durations,
+        datasets: [{
+          label: 'Concurrent Channels (at 15 CPS)',
+          data: channelsAt15CPS,
+          borderColor: 'rgba(255, 159, 64, 0.8)',
+          backgroundColor: 'rgba(255, 159, 64, 0.3)',
+          tension: 0.2,
+          fill: false,
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Concurrent Channels'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Average Call Duration (seconds)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+
+    // Chart 3: Concurrent Channel Load vs Connect Rate and Talk Time
+    const ctx3 = document.getElementById('chart3').getContext('2d');
+    const connectRates = ['40%', '50%', '60%'];
+    const talkTimes = [60, 90, 120];
+    const data40 = [500.00, 666.67, 833.33];
+    const data50 = [555.56, 763.89, 972.22];
+    const data60 = [611.11, 861.11, 1111.11];
+
+    new Chart(ctx3, {
+      type: 'line',
+      data: {
+        labels: talkTimes,
+        datasets: [
+          {
+            label: '40% Connect Rate',
+            data: data40,
+            borderColor: 'rgba(75, 192, 192, 0.8)',
+            backgroundColor: 'rgba(75, 192, 192, 0.3)',
+            tension: 0.2,
+            fill: false,
+          },
+          {
+            label: '50% Connect Rate',
+            data: data50,
+            borderColor: 'rgba(153, 102, 255, 0.8)',
+            backgroundColor: 'rgba(153, 102, 255, 0.3)',
+            tension: 0.2,
+            fill: false,
+          },
+          {
+            label: '60% Connect Rate',
+            data: data60,
+            borderColor: 'rgba(255, 99, 132, 0.8)',
+            backgroundColor: 'rgba(255, 99, 132, 0.3)',
+            tension: 0.2,
+            fill: false,
+          }
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Concurrent Channels Needed'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Connected Call Duration (seconds)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top'
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+```
