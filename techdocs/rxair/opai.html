@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integration Architecture Comparison</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+      line-height: 1.6;
+    }
+    header {
+      background-color: #00558C;
+      color: white;
+      padding: 20px 40px;
+      text-align: center;
+    }
+    section {
+      padding: 30px 40px;
+      background-color: white;
+      margin: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2, h3 {
+      color: #00558C;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #00558C;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Comparison of Integration Approaches: IBM Watson vs Genesys Cloud</h1>
+  </header>
+  <section>
+    <h2>Overview</h2>
+    <p>To enable IBM Watson and Genesys Cloud to handle the same customer conversation across a channel, an orchestration layer must be implemented. The system that sits <strong>"in front"</strong>—i.e., the one that initially receives the customer interaction—is responsible for orchestrating the conversation between the two platforms.</p>
+  </section>
+  <section>
+    <h2>Approach 1: IBM Watson in Front</h2>
+    <ul>
+      <li>Receives the initial customer interaction.</li>
+      <li>Responsible for handing off to Genesys Cloud for agent interactions.</li>
+      <li>Orchestration layer available only for web with native IBM UI.</li>
+      <li>Not available or feasible for other channels like WhatsApp or Social Media.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Approach 2: Genesys Cloud in Front</h2>
+    <ul>
+      <li>Genesys receives the initial interaction.</li>
+      <li>Uses Bot Connector framework to connect to IBM Watson.</li>
+      <li>Orchestration handled within Genesys.</li>
+      <li>Supports more channels and robust session continuity.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Channel-by-Channel Analysis</h2>
+    <h3>Web Messaging</h3>
+    <p><strong>IBM Watson:</strong> Dual sessions, no conversation continuity, custom UI required.<br>
+       <strong>Genesys:</strong> Single session, async supported, easier handoffs.</p>
+
+    <h3>CoBrowse</h3>
+    <p><strong>IBM Watson:</strong> Custom JS SDK integration required.<br>
+       <strong>Genesys:</strong> OOB with widget; SDK needed if custom UI used.</p>
+
+    <h3>Authenticated Messaging</h3>
+    <p><strong>IBM Watson:</strong> Not supported.<br>
+       <strong>Genesys:</strong> Supported with customization.</p>
+
+    <h3>Social Media</h3>
+    <p><strong>IBM Watson:</strong> Not supported.<br>
+       <strong>Genesys:</strong> Works in private channels only.</p>
+
+    <h3>WhatsApp</h3>
+    <p><strong>IBM Watson:</strong> Not supported.<br>
+       <strong>Genesys:</strong> Fully supported with Bot Connector.</p>
+  </section>
+  <section>
+    <h2>Comparison Table</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>IBM Watson in Front</th>
+          <th>Genesys Cloud in Front</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Orchestration Ownership</td>
+          <td>IBM Watson (Web only)</td>
+          <td>Genesys Cloud via Bot Connector</td>
+        </tr>
+        <tr>
+          <td>Web Messaging</td>
+          <td>Two sessions, no async, context loss</td>
+          <td>Single session, async supported</td>
+        </tr>
+        <tr>
+          <td>UI Requirements</td>
+          <td>Custom UI with dual transports</td>
+          <td>Single SDK, OOB or custom UI</td>
+        </tr>
+        <tr>
+          <td>Conversation Continuity</td>
+          <td>Not possible</td>
+          <td>Supported via Architect</td>
+        </tr>
+        <tr>
+          <td>Bot Initiated Messages</td>
+          <td>Not supported</td>
+          <td>Limited (new connector needed)</td>
+        </tr>
+        <tr>
+          <td>Rich Media</td>
+          <td>N/A</td>
+          <td>Limited; irrelevant with custom UI</td>
+        </tr>
+        <tr>
+          <td>CoBrowse Support</td>
+          <td>Custom integration via JS SDK</td>
+          <td>OOB with widget; SDK for custom UI</td>
+        </tr>
+        <tr>
+          <td>Authenticated Messaging</td>
+          <td>Not supported</td>
+          <td>Supported (Web and Mobile)</td>
+        </tr>
+        <tr>
+          <td>Social Media Integration</td>
+          <td>Not supported</td>
+          <td>Private channels only</td>
+        </tr>
+        <tr>
+          <td>WhatsApp Integration</td>
+          <td>Not supported</td>
+          <td>Supported with Bot Connector</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</body>
+</html>
