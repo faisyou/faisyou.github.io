@@ -1,0 +1,203 @@
+Below is a fully self-contained HTML page that renders your updated “first-principles” SaaS-metrics guide.
+It uses Font Awesome icons, a modern color palette, and two lightweight D3 v7 visualizations:
+
+* **CLTV vs CAC bar chart** – shows value creation efficiency.
+* **Payback-Period timeline** – visualizes months required to recoup CAC.
+
+You can copy-paste the code into any `.html` file and open it in a browser.
+(Internet access is only needed to load Font Awesome and D3 from their CDNs.)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SaaS Metrics from First Principles</title>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root{
+    --primary:#2563eb;    /* Deep blue */
+    --secondary:#14b8a6;  /* Teal */
+    --accent:#f97316;     /* Orange */
+    --bg:#f8fafc;
+    --text:#1e293b;
+  }
+  body{
+    margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.6;
+  }
+  header{
+    background:var(--primary);color:#fff;padding:2rem 1rem;text-align:center;
+  }
+  header h1{margin:0;font-size:2rem;font-weight:700;}
+  section{max-width:900px;margin:2rem auto;padding:0 1rem;}
+  h2{color:var(--primary);margin-top:2.5rem}
+  .icon{color:var(--secondary);margin-right:.5rem}
+  .card{
+    background:#fff;border-radius:.75rem;box-shadow:0 4px 10px rgba(0,0,0,.05);
+    padding:1.25rem 1.5rem;margin-bottom:1.5rem;
+  }
+  .flex{display:flex;gap:1rem;flex-wrap:wrap}
+  .flex-1{flex:1 1 260px}
+  .note{background:var(--secondary);color:#fff;border-radius:.5rem;padding:.75rem;margin-top:1rem}
+  svg{max-width:100%}
+  footer{padding:2rem 1rem;text-align:center;font-size:.875rem;color:#64748b}
+</style>
+</head>
+<body>
+
+<header>
+  <h1><i class="fa-solid fa-rocket"></i> SaaS Metrics from First Principles</h1>
+  <p>A Feynman-style walkthrough for operators, investors, and lenders.</p>
+</header>
+
+<section>
+  <h2><i class="fa-solid fa-compass icon"></i>Why Metrics?</h2>
+  <div class="card">
+    At its core, a SaaS business <strong>earns durable revenue by making customers happy enough to stay</strong>.  
+    Every metric is just an instrument that tells us how well we are doing that simple job.
+  </div>
+
+  <h2><i class="fa-solid fa-people-group icon"></i>Three Viewpoints</h2>
+  <div class="flex">
+    <div class="card flex-1">
+      <h3><i class="fa-solid fa-hand-holding-dollar icon"></i>Lender</h3>
+      <ul>
+        <li>Focus: <strong>solvency &amp; cash flow</strong></li>
+        <li>Wants assurance that debt payments survive a downturn.</li>
+      </ul>
+    </div>
+    <div class="card flex-1">
+      <h3><i class="fa-solid fa-chart-line icon"></i>Investor</h3>
+      <ul>
+        <li>Focus: <strong>growth &amp; efficiency</strong></li>
+        <li>Tracks ARR growth, churn, and margins to size future returns.</li>
+      </ul>
+    </div>
+    <div class="card flex-1">
+      <h3><i class="fa-solid fa-user-gear icon"></i>Operator (You)</h3>
+      <ul>
+        <li>Focus: <strong>customer value delivery</strong></li>
+        <li>Asks: “Are we helping customers enough that they stick—and expand?”</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><i class="fa-solid fa-heart icon"></i>Customer Lifetime Value (CLTV)</h2>
+  <div class="card">
+    Suppose a customer pays an <abbr title="Annual Recurring Revenue"><strong>ARR</strong></abbr> of <code>$10 000 / yr</code> and remains for six years.  
+    <pre>CLTV = ARR × Lifetime = $10 000 × 6 = $60 000</pre>
+    Retention length multiplies value—so reducing churn is often the highest-leverage lever in SaaS.
+  </div>
+
+  <h2><i class="fa-solid fa-bullseye icon"></i>CAC &amp; the Unit-Economics Flywheel</h2>
+  <div class="card">
+    <p><strong>CAC</strong> (Customer Acquisition Cost) is the fully loaded cost to win one customer—marketing, sales salaries, trials, the lot.</p>
+    <p>A golden rule: <code>CLTV : CAC ≥ 3 : 1</code>. Lower means you’re buying growth at too high a price.</p>
+    <div id="ratioChart" style="height:260px"></div>
+    <p class="note"><i class="fa-solid fa-lightbulb"></i> The bar chart compares value created&nbsp;(CLTV) to dollars spent&nbsp;(CAC) for one customer.</p>
+  </div>
+
+  <h2><i class="fa-solid fa-stopwatch icon"></i>Payback Period</h2>
+  <div class="card">
+    <p>If CAC is <code>$15 000</code> and ARR is <code>$10 000 / yr</code>, cash payback takes 18&nbsp;months.</p>
+    <div id="paybackChart" style="height:220px"></div>
+    <p>Faster payback frees cash for reinvestment and lowers financing risk.</p>
+  </div>
+
+  <h2><i class="fa-solid fa-arrows-spin icon"></i>Net Revenue Retention (NRR)</h2>
+  <div class="card">
+    <ul>
+      <li><strong>NRR > 100 %</strong> ⇒ Expansion outweighs churn—your revenue base grows before adding any new logos.</li>
+      <li><strong>NRR < 100 %</strong> ⇒ Churn or downsells are dragging you backward.</li>
+    </ul>
+  </div>
+
+  <h2><i class="fa-solid fa-plane-departure icon"></i>Win • Keep • Grow</h2>
+  <div class="card">
+    <p align="center"><strong>Land → Adopt → Expand → Renew</strong></p>
+    <p>Master those four customer motions and your ARR compounds like clockwork.</p>
+  </div>
+
+  <h2><i class="fa-solid fa-quote-left icon"></i>Take-home Message</h2>
+  <div class="card note">
+    “Every dollar of ARR starts with a customer choosing us—and stays only if we keep delivering value.”  
+    <br>—Your inner Feynman
+  </div>
+</section>
+
+<footer>
+  © 2025 SaaS Metrics Guide • Built with D3 v7 &amp; Font Awesome&nbsp;6
+</footer>
+
+<script>
+/* ---------- Sample data ---------- */
+const data = {CLTV:60000,CAC:15000,paybackMonths:18};
+/* ---------- CLTV vs CAC Bar Chart ---------- */
+const ratioW = document.getElementById("ratioChart").clientWidth,
+      ratioH = document.getElementById("ratioChart").clientHeight;
+const svgRatio = d3.select("#ratioChart").append("svg")
+    .attr("width",ratioW).attr("height",ratioH);
+
+const xScale = d3.scaleBand()
+    .domain(["CAC","CLTV"])
+    .range([40, ratioW-20])
+    .padding(0.4);
+
+const yScale = d3.scaleLinear()
+    .domain([0, data.CLTV*1.1]).range([ratioH-30,20]);
+
+svgRatio.append("g")
+    .attr("transform",`translate(0,${ratioH-30})`)
+    .call(d3.axisBottom(xScale));
+
+svgRatio.append("g")
+    .attr("transform","translate(40,0)")
+    .call(d3.axisLeft(yScale).ticks(5).tickFormat(d=>"$"+d/1000+"k"));
+
+svgRatio.selectAll("rect")
+  .data([ {label:"CAC",value:data.CAC,color:"var(--accent)"},
+          {label:"CLTV",value:data.CLTV,color:"var(--secondary)"} ])
+  .enter().append("rect")
+    .attr("x",d=>xScale(d.label))
+    .attr("y",d=>yScale(d.value))
+    .attr("width",xScale.bandwidth())
+    .attr("height",d=>ratioH-30 - yScale(d.value))
+    .attr("fill",d=>d.color);
+
+/* ---------- Payback Period Timeline ---------- */
+const pbW = document.getElementById("paybackChart").clientWidth,
+      pbH = document.getElementById("paybackChart").clientHeight;
+
+const svgPB = d3.select("#paybackChart").append("svg")
+    .attr("width",pbW).attr("height",pbH);
+
+const pbScale = d3.scaleLinear().domain([0,data.paybackMonths]).range([20,pbW-40]);
+
+// Axis
+svgPB.append("g").attr("transform",`translate(0,${pbH/2})`)
+  .call(d3.axisBottom(pbScale).ticks(6).tickFormat(d=>d+" mo"))
+  .select(".domain").remove();
+
+// Line
+svgPB.append("line")
+  .attr("x1",20).attr("x2",pbScale(data.paybackMonths))
+  .attr("y1",pbH/2).attr("y2",pbH/2)
+  .attr("stroke","var(--primary)").attr("stroke-width",8)
+  .attr("stroke-linecap","round");
+
+// Marker
+svgPB.append("circle")
+  .attr("cx",pbScale(data.paybackMonths)).attr("cy",pbH/2)
+  .attr("r",10).attr("fill","var(--accent)");
+
+svgPB.append("text")
+  .attr("x",pbScale(data.paybackMonths)).attr("y",pbH/2-15)
+  .attr("text-anchor","middle").attr("fill","var(--accent)").attr("font-weight","700")
+  .text(data.paybackMonths+" mo");
+</script>
+</body>
+</html>
+```
