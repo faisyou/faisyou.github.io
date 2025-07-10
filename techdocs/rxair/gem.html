@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBM Watson & Genesys Cloud Integration Approaches</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 960px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h1, h2, h3 {
+            color: #1a2c4e;
+            margin-top: 0;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        h1 {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            margin-top: 30px;
+        }
+        h3 {
+            font-size: 1.4em;
+            color: #007bff;
+            border-bottom: none;
+            margin-top: 25px;
+        }
+        .approach {
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .watson-front {
+            background-color: #fdeaea;
+            border-left: 5px solid #d9534f;
+        }
+        .genesys-front {
+            background-color: #eaf7f0;
+            border-left: 5px solid #5cb85c;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+        }
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #5cb85c;
+            font-weight: bold;
+        }
+        .watson-front li::before {
+            content: '✗';
+            color: #d9534f;
+        }
+        .watson-front .positive::before {
+             content: '✓';
+             color: #5cb85c;
+        }
+        .genesys-front .negative::before {
+            content: '✗';
+            color: #d9534f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        th {
+            background-color: #1a2c4e;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+        .summary-table th:first-child {
+            border-top-left-radius: 5px;
+        }
+        .summary-table th:last-child {
+            border-top-right-radius: 5px;
+        }
+        .summary-table td:first-child {
+            font-weight: bold;
+            color: #343a40;
+        }
+        .unsupported {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        .supported {
+            color: #5cb85c;
+            font-weight: bold;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>IBM Watson & Genesys Cloud Integration Comparison</h1>
+
+        <h2>Overview of Integration Approaches</h2>
+        <p>To enable IBM Watson and Genesys Cloud to handle the same customer conversation across a channel, an orchestration layer must be implemented. The system that sits "in front"—the one that initially receives the customer interaction—is responsible for orchestrating the conversation between the two platforms.</p>
+
+        <div class="approach watson-front">
+            <h3>Approach 1: IBM Watson in Front</h3>
+            <ul>
+                <li class="positive">IBM Watson receives the initial customer interaction.</li>
+                <li class="positive">It is responsible for handing off to Genesys Cloud for agent interactions.</li>
+                <li class="positive">IBM has built this orchestration layer, but <strong>only for Web</strong> and it only works with IBM’s native UI.</li>
+                <li>For other channels, such as WhatsApp or Social Media, this orchestration capability is <strong>not available</strong> and cannot be built.</li>
+            </ul>
+        </div>
+
+        <div class="approach genesys-front">
+            <h3>Approach 2: Genesys Cloud in Front</h3>
+            <ul>
+                <li>Genesys Cloud initially receives the customer interaction.</li>
+                <li>It uses the Bot Connector framework to route conversations to IBM Watson for the bot phase.</li>
+                <li>A working Bot Connector for IBM Watson <strong>already exists</strong>.</li>
+                <li>Orchestration is handled natively within Genesys, enabling smoother integration across various channels.</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h2>Channel-by-Channel Analysis</h2>
+
+        <h3>1. Web Messaging</h3>
+        <div class="approach watson-front">
+            <h4>IBM Watson in Front</h4>
+            <ul>
+                <li>Requires two separate messaging sessions: one for Watson, one for Genesys.</li>
+                <li>RX/IBM must develop handover logic.</li>
+                <li>Context can be passed, but <strong>conversation history is lost</strong> during handoff.</li>
+                <li><strong>No support for asynchronous behavior</strong> (e.g., resuming conversations).</li>
+                <li>Cannot resume a previous agent conversation or transfer back to the bot after an agent interaction.</li>
+                <li>RX/IBM is responsible for building the UI with dual-session handling.</li>
+            </ul>
+        </div>
+        <div class="approach genesys-front">
+            <h4>Genesys in Front</h4>
+            <ul>
+                <li>Operates on a <strong>single messaging session</strong> via Genesys Web Messaging SDK.</li>
+                <li>RX can use Genesys’ out-of-the-box (OOB) web widget or build a custom UI using one SDK.</li>
+                <li><strong>Asynchronous behavior is supported</strong>: Architect Flow can decide to resume past conversations.</li>
+                <li class="negative">Current Bot Connector is synchronous (bot replies only on user input).</li>
+                <li class="negative">Watson-specific async support needs a new connector (New Digital Bot Connector is in Limited Availability).</li>
+            </ul>
+        </div>
+
+        <h3>2. CoBrowse</h3>
+         <div class="approach watson-front">
+            <h4>IBM Watson in Front</h4>
+            <ul>
+                <li>OOB Genesys CoBrowse <strong>does not work.</strong></li>
+                <li>Requires custom integration using the CoBrowse JavaScript SDK.</li>
+            </ul>
+        </div>
+        <div class="approach genesys-front">
+            <h4>Genesys in Front</h4>
+            <ul>
+                <li>With Genesys Widget: CoBrowse works <strong>out-of-the-box</strong>.</li>
+                <li>With Custom UI: The same CoBrowse JS SDK integration is needed.</li>
+                <li class="negative">CoBrowse works only on the Web, not Mobile App.</li>
+            </ul>
+        </div>
+
+
+        <h3>3. Authenticated Web Messaging</h3>
+         <div class="approach watson-front">
+            <h4>IBM Watson in Front</h4>
+            <ul>
+                <li><strong>Not supported.</strong></li>
+            </ul>
+        </div>
+        <div class="approach genesys-front">
+            <h4>Genesys in Front</h4>
+            <ul>
+                <li><strong>Web:</strong> Supported with minor tweaks to SDK functions.</li>
+                <li><strong>Mobile App:</strong> Possible but requires extensive customization, especially for native mobile apps.</li>
+            </ul>
+        </div>
+
+        <h3>4. Social Media / WhatsApp Integration</h3>
+         <div class="approach watson-front">
+            <h4>IBM Watson in Front</h4>
+            <ul>
+                <li><strong>Not supported.</strong></li>
+            </ul>
+        </div>
+        <div class="approach genesys-front">
+            <h4>Genesys in Front</h4>
+            <ul>
+                <li>IBM Watson bot can be used in <strong>private channels</strong> (like WhatsApp) via Bot Connector.</li>
+                <li class="negative">Public social media integration is not available.</li>
+                <li class="negative">WhatsApp rich media support is limited to Quick Replies and Cards.</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h2>Summary Table</h2>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>Aspect</th>
+                    <th>IBM Watson in Front</th>
+                    <th>Genesys Cloud in Front</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Orchestration Ownership</td>
+                    <td>IBM Watson (Web only, native UI)</td>
+                    <td class="supported">Genesys Cloud (via Bot Connector)</td>
+                </tr>
+                <tr>
+                    <td>Web Messaging</td>
+                    <td>Two sessions, no async, manual handover</td>
+                    <td class="supported">Single session, async possible, seamless</td>
+                </tr>
+                <tr>
+                    <td>UI Requirements</td>
+                    <td>Custom UI for two transports</td>
+                    <td class="supported">Single SDK (OOB widget or custom)</td>
+                </tr>
+                <tr>
+                    <td>Conversation Continuity</td>
+                    <td class="unsupported">Not possible after handover</td>
+                    <td class="supported">Possible via Architect logic</td>
+                </tr>
+                 <tr>
+                    <td>Bot Initiated Messages</td>
+                    <td class="unsupported">Not supported</td>
+                    <td>Limited (new async connector needed)</td>
+                </tr>
+                 <tr>
+                    <td>CoBrowse Support</td>
+                    <td>Custom SDK integration needed</td>
+                    <td class="supported">OOB with widget; SDK for custom</td>
+                </tr>
+                 <tr>
+                    <td>Authenticated Messaging</td>
+                    <td class="unsupported">Not possible</td>
+                    <td class="supported">Supported (with tweaks)</td>
+                </tr>
+                 <tr>
+                    <td>Social Media Integration</td>
+                    <td class="unsupported">Not available</td>
+                    <td class="supported">Works for Private Channels only</td>
+                </tr>
+                <tr>
+                    <td>WhatsApp Integration</td>
+                    <td class="unsupported">Not available</td>
+                    <td class="supported">Supported via Bot Connector</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</body>
+</html>
