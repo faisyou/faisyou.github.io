@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genesys Program Milestones & Dependencies</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96,165,250,.15);
+      --ring: rgba(96,165,250,.5);
+    }
+    body { margin: 0; background: #0b1220; color: var(--text); font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; }
+    header { padding: 24px; text-align: center }
+    header h1 { margin: 0 0 6px; font-size: 22px }
+    header p { margin: 6px 0 0; color: var(--muted) }
+
+    .controls { display:flex; justify-content:center; margin-top: 12px; }
+    .switch { position: relative; }
+    .switch input { position:absolute; opacity:0; }
+    .track { position: relative; width: 160px; height: 34px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:999px; cursor:pointer; }
+    .thumb { position:absolute; top:3px; left:3px; width: 78px; height: 28px; background: var(--card); border:1px solid rgba(255,255,255,.18); border-radius:999px; display:flex; align-items:center; justify-content:center; color: var(--text); font-size: 12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition: transform .22s cubic-bezier(.2,.7,.2,1); }
+    .switch input:checked + .track .thumb { transform: translateX(78px); }
+    .switch .label { position:absolute; top:50%; transform:translateY(-50%); width:50%; text-align:center; font-size: 12px; color: var(--muted); pointer-events:none; font-weight:600; }
+    .switch .label.left { left:0; }
+    .switch .label.right { right:0; }
+    .switch[data-mode="depends"] .label.left { color: #fff }
+    .switch[data-mode="enables"] .label.right { color: #fff }
+
+    .board { max-width:1200px; margin:0 auto; padding:24px; }
+    .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+    .milestone { background: var(--card); border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:14px; box-shadow:0 6px 18px rgba(0,0,0,.25); transition: opacity .15s ease; }
+    .milestone.dim { opacity:.25; filter:saturate(.6) blur(.2px); }
+    .milestone .badge { display:inline-block; background: var(--accent-soft); color: var(--accent); border:1px solid rgba(96,165,250,.45); border-radius:999px; padding:4px 8px; font-size:11px; font-weight:600; }
+    .milestone h3 { margin:8px 0 6px; font-size:16px }
+    .milestone p { margin:0 0 6px; color: var(--muted) }
+    .milestone ul { margin:8px 0 0 1em; padding:0; color:#cbd5e1 }
+    .milestone ul li { margin:2px 0 }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Genesys – Milestones & Dependencies</h1>
+    <p>Toggle between <strong>Depends on</strong> and <strong>Enables</strong>. Hover a milestone to highlight related milestones; all others are dimmed.</p>
+    <div class="controls">
+      <label class="switch" id="modeSwitch" data-mode="depends">
+        <input type="checkbox" id="modeToggle" aria-label="Toggle dependency mode" />
+        <span class="track">
+          <span class="thumb" id="thumb">Depends on</span>
+          <span class="label left">Depends on</span>
+          <span class="label right">Enables</span>
+        </span>
+      </label>
+    </div>
+  </header>
+
+  <main class="board">
+    <section class="grid" id="grid">
+      <!-- 1 -->
+      <article class="milestone" id="m1" tabindex="0" data-idx="1" data-deps="">
+        <span class="badge">Milestone 1</span>
+        <h3>Core Cloud Org Services</h3>
+        <p>Platform foundation: Org instance, identity (SSO/IDAM), and BYOCC. Everything else builds on this.</p>
+        <ul>
+          <li>Cloud Org Instance • SSO • IDAM • BYOCC</li>
+        </ul>
+      </article>
+
+      <!-- 2 -->
+      <article class="milestone" id="m2" tabindex="0" data-idx="2" data-deps="1">
+        <span class="badge">Milestone 2</span>
+        <h3>Voice</h3>
+        <p>Complete voice stack for routing, handling, recording, and quality management; feeds analytics.</p>
+        <ul>
+          <li>Voice IVR & Self Service • User & Queues • Unified Agent Desktop</li>
+          <li>Unified Routing • Recording • Quality Management • Speech Text Analytic • Reporting</li>
+        </ul>
+      </article>
+
+      <!-- 3 -->
+      <article class="milestone" id="m3" tabindex="0" data-idx="3" data-deps="1,2">
+        <span class="badge">Milestone 3</span>
+        <h3>Integration</h3>
+        <p>Operational integrations that extend the platform and voice into the enterprise landscape.</p>
+        <ul>
+          <li>SMS • Compliant Management System • Xebo • Outage Management</li>
+        </ul>
+      </article>
+
+      <!-- 4 -->
+      <article class="milestone" id="m4" tabindex="0" data-idx="4" data-deps="1">
+        <span class="badge">Milestone 4</span>
+        <h3>Knowledge Management</h3>
+        <p>Authoring and delivery of knowledge powering agents and automation across channels.</p>
+      </article>
+
+      <!-- 5 -->
+      <article class="milestone" id="m5" tabindex="0" data-idx="5" data-deps="1,4,2">
+        <span class="badge">Milestone 5</span>
+        <h3>Agent Copilot & WEM</h3>
+        <p>Agent assistance and workforce optimization leveraging voice and knowledge.</p>
+        <ul>
+          <li>Agent Copilot • Gamification • WFM • WFM Mobile</li>
+        </ul>
+      </article>
+
+      <!-- 6 -->
+      <article class="milestone" id="m6" tabindex="0" data-idx="6" data-deps="1,2">
+        <span class="badge">Milestone 6</span>
+        <h3>Advanced Reporting</h3>
+        <p>Enterprise analytics and financial alignment across the contact center.</p>
+        <ul>
+          <li>DWH (Data Warehouse) • SAP Commission</li>
+        </ul>
+      </article>
+
+      <!-- 7 -->
+      <article class="milestone" id="m7" tabindex="0" data-idx="7" data-deps="1,3,4">
+        <span class="badge">Milestone 7</span>
+        <h3>Digital Channel</h3>
+        <p>Modern digital engagement across chat, email, social, OTT, and video.</p>
+        <ul>
+          <li>Video • Live Chat • Email Channel • Social Media • WhatsApp</li>
+        </ul>
+      </article>
+
+      <!-- 8 -->
+      <article class="milestone" id="m8" tabindex="0" data-idx="8" data-deps="1,7,4">
+        <span class="badge">Milestone 8</span>
+        <h3>Predictive Engagement & Live Journey</h3>
+        <p>Journey analytics and targeting fueled by digital signals and knowledge.</p>
+      </article>
+
+      <!-- 9 -->
+      <article class="milestone" id="m9" tabindex="0" data-idx="9" data-deps="1,7">
+        <span class="badge">Milestone 9</span>
+        <h3>Mobile Application</h3>
+        <p>Customer and agent mobile experiences built on the digital stack and core platform.</p>
+      </article>
+
+      <!-- 10 -->
+      <article class="milestone" id="m10" tabindex="0" data-idx="10" data-deps="1,7,4">
+        <span class="badge">Milestone 10</span>
+        <h3>Verint Community & Engagement</h3>
+        <p>Community + knowledge surfaces with optional advanced synchronization.</p>
+        <ul>
+          <li>Verint Community • Knowledge Base • Knowledge Portal • Advanced Knowledge Sync (Optional)</li>
+        </ul>
+      </article>
+
+      <!-- 11 -->
+      <article class="milestone" id="m11" tabindex="0" data-idx="11" data-deps="1,2,3">
+        <span class="badge">Milestone 11</span>
+        <h3>Conversational AI</h3>
+        <p>Automation and routing using AI, leveraging voice stack and enterprise integrations.</p>
+        <ul>
+          <li>Conversational AI</li>
+        </ul>
+      </article>
+
+      <!-- 12 -->
+      <article class="milestone" id="m12" tabindex="0" data-idx="12" data-deps="1,2,3">
+        <span class="badge">Milestone 12</span>
+        <h3>Outbound Campaign Management</h3>
+        <p>Proactive outreach orchestration across channels driven by voice and integrations.</p>
+      </article>
+
+    </section>
+  </main>
+
+  <script>
+    const cards = [...document.querySelectorAll('.milestone')];
+
+    // Build dependency graph from data-deps (prereq milestone indices)
+    const indexToId = Object.fromEntries(cards.map(c => [c.dataset.idx, c.id]));
+    const forward = {};   // prereq -> [dependents]
+    const backward = {};  // node -> [prereqs]
+
+    cards.forEach(c => {
+      const node = c.id;
+      const deps = (c.dataset.deps || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(idx => indexToId[idx]);
+      backward[node] = deps;
+      deps.forEach(from => {
+        if (!forward[from]) forward[from] = [];
+        forward[from].push(node);
+      });
+    });
+
+    function reachable(start, graph) {
+      const seen = new Set();
+      const stack = [start];
+      while (stack.length) {
+        const n = stack.pop();
+        const next = graph[n] || [];
+        for (const m of next) if (!seen.has(m)) { seen.add(m); stack.push(m); }
+      }
+      return seen; // excludes start
+    }
+
+    const modeToggle = document.getElementById('modeToggle');
+    const modeSwitch = document.getElementById('modeSwitch');
+    const thumb = document.getElementById('thumb');
+
+    function currentMode() { return modeToggle.checked ? 'enables' : 'depends'; }
+    function updateSwitchUI() {
+      const mode = currentMode();
+      modeSwitch.dataset.mode = mode;
+      thumb.textContent = mode === 'enables' ? 'Enables' : 'Depends on';
+    }
+
+    function clearDim() { cards.forEach(c => c.classList.remove('dim')); }
+    function highlightFor(el) {
+      const mode = currentMode();
+      const id = el.id;
+      const related = new Set([id]);
+      const graph = mode === 'enables' ? forward : backward;
+      const reach = reachable(id, graph);
+      reach.forEach(n => related.add(n));
+      cards.forEach(c => c.classList.toggle('dim', !related.has(c.id)));
+    }
+
+    cards.forEach(el => {
+      el.addEventListener('mouseenter', () => highlightFor(el));
+      el.addEventListener('mouseleave', clearDim);
+      el.addEventListener('focus', () => highlightFor(el));
+      el.addEventListener('blur', clearDim);
+    });
+
+    modeToggle.addEventListener('change', () => { updateSwitchUI(); clearDim(); });
+    updateSwitchUI();
+  </script>
+</body>
+</html>
