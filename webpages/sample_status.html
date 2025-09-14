@@ -1,0 +1,132 @@
+import React, { useEffect, useMemo, useState } from "react"; import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+
+// Endpoint provided by the user const ENDPOINT = "https://status.mypurecloud.com/api/v2/components.json";
+
+// Status colors (Tailwind classes) const STATUS_STYLES: Record<string, { chip: string; bg: string; border: string }> = { operational: { chip: "bg-green-100 text-green-700", bg: "bg-green-50", border: "border-green-200" }, degraded_performance: { chip: "bg-yellow-100 text-yellow-700", bg: "bg-yellow-50", border: "border-yellow-200" }, partial_outage: { chip: "bg-orange-100 text-orange-700", bg: "bg-orange-50", border: "border-orange-200" }, major_outage: { chip: "bg-red-100 text-red-700", bg: "bg-red-50", border: "border-red-200" }, under_maintenance: { chip: "bg-blue-100 text-blue-700", bg: "bg-blue-50", border: "border-blue-200" }, };
+
+const STATUS_LABELS: Record<string, string> = { operational: "Operational", degraded_performance: "Degraded", partial_outage: "Partial Outage", major_outage: "Major Outage", under_maintenance: "Maintenance", };
+
+// Recharts colors (do not set specific colors? we'll use default order by omitting explicit colors) const CHART_SEGMENT_COLORS = ["#22c55e", "#eab308", "#fb923c", "#ef4444", "#3b82f6"]; // readable defaults
+
+export default function App() { const [data, setData] = useState<any | null>(null); const [loading, setLoading] = useState<boolean>(false); const [error, setError] = useState<string | null>(null); const [query, setQuery] = useState(""); const [statusFilter, setStatusFilter] = useState<string[]>([]); const [lastFetch, setLastFetch] = useState<Date | null>(null); const [autoRefresh, setAutoRefresh] = useState<boolean>(true); const [refreshMs, setRefreshMs] = useState<number>(60_000);
+
+async function fetchData(signal?: AbortSignal) { try { setLoading(true); setError(null); const res = await fetch(ENDPOINT, { signal, headers: { "Accept": "application/json" } }); if (!res.ok) throw new Error(Request failed: ${res.status}); const json = await res.json(); setData(json); setLastFetch(new Date()); } catch (e: any) { if (e.name === "AbortError") return; setError(e?.message ?? "Unknown error"); } finally { setLoading(false); } }
+
+useEffect(() => { const controller = new AbortController(); fetchData(controller.signal); return () => controller.abort(); }, []);
+
+useEffect(() => { if (!autoRefresh) return; const id = setInterval(() => fetchData(), refreshMs); return () => clearInterval(id); }, [autoRefresh, refreshMs]);
+
+const components = useMemo(() => { const list = data?.components ?? []; return list .filter((c: any) => !c.group) // show leaf components by default .filter((c: any) => (query ? ${c.name} ${c.description ?? ""}.toLowerCase().includes(query.toLowerCase()) : true)) .filter((c: any) => (statusFilter.length ? statusFilter.includes(c.status) : true)) .sort((a: any, b: any) => (a.status === b.status ? a.name.localeCompare(b.name) : a.status.localeCompare(b.status))); }, [data, query, statusFilter]);
+
+const chartData = useMemo(() => { const counts: Record<string, number> = {}; for (const c of data?.components ?? []) { if (c.group) continue; // avoid double counting groups counts[c.status] = (counts[c.status] ?? 0) + 1; } return Object.entries(counts).map(([status, value]) => ({ name: STATUS_LABELS[status] ?? status, value, status })); }, [data]);
+
+return ( <div className="min-h-screen w-full bg-gray-50 text-gray-900"> <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/90 border-b border-gray-200"> <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"> <div> <h1 className="text-2xl font-bold">Genesys Cloud Status – Components</h1> <p className="text-sm text-gray-600">Source: <a href={ENDPOINT} className="underline" target="_blank" rel="noreferrer">{ENDPOINT}</a></p> </div> <div className="flex flex-wrap items-center gap-2"> <input type="search" placeholder="Search components…" className="px-3 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring focus:ring-blue-200" value={query} onChange={(e) => setQuery(e.target.value)} /> <button onClick={() => fetchData()} className="px-3 py-2 rounded-xl border border-gray-300 shadow-sm hover:bg-gray-100 active:scale-[.98]" disabled={loading} > {loading ? "Refreshing…" : "Refresh"} </button> <label className="flex items-center gap-2 text-sm"> <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} /> Auto-refresh </label> <select className="px-2 py-2 rounded-xl border border-gray-300 text-sm" value={refreshMs} onChange={(e) => setRefreshMs(Number(e.target.value))} title="Auto-refresh interval" > <option value={30000}>30s</option> <option value={60000}>1m</option> <option value={120000}>2m</option> <option value={300000}>5m</option> </select> </div> </div> </header>
+
+<main className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <section className="lg:col-span-2">
+      <div className="flex flex-wrap gap-2 mb-4">
+        {Object.keys(STATUS_LABELS).map((s) => (
+          <button
+            key={s}
+            onClick={() => setStatusFilter((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]))}
+            className={`px-3 py-1 rounded-full text-sm border ${STATUS_STYLES[s]?.chip ?? "bg-gray-100 text-gray-700"} ${
+              statusFilter.includes(s) ? "ring-2 ring-offset-1" : ""
+            }`}
+          >
+            {STATUS_LABELS[s]}
+          </button>
+        ))}
+        {statusFilter.length > 0 && (
+          <button onClick={() => setStatusFilter([])} className="px-3 py-1 rounded-full text-sm border bg-gray-100 text-gray-800">Clear</button>
+        )}
+      </div>
+
+      {!data && loading && (
+        <div className="p-6 border border-gray-200 rounded-2xl bg-white shadow-sm animate-pulse">Loading…</div>
+      )}
+      {error && (
+        <div className="p-6 border border-red-200 rounded-2xl bg-red-50 text-red-700">{error}</div>
+      )}
+
+      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        {components.map((c: any) => {
+          const style = STATUS_STYLES[c.status] ?? { bg: "bg-gray-50", border: "border-gray-200", chip: "bg-gray-100 text-gray-700" };
+          return (
+            <article key={c.id} className={`rounded-2xl border ${style.border} ${style.bg} shadow-sm p-4 flex flex-col gap-2`}>
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="font-semibold leading-6">{c.name}</h3>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${style.chip}`}>
+                  {STATUS_LABELS[c.status] ?? c.status}
+                </span>
+              </div>
+              {c.description && <p className="text-sm text-gray-700 line-clamp-3">{c.description}</p>}
+              <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-600">
+                {c.group_id && <div><span className="font-medium">Group:</span> {c.group_id}</div>}
+                {typeof c.position === "number" && <div><span className="font-medium">Position:</span> {c.position}</div>}
+                {c.page_id && <div className="col-span-2"><span className="font-medium">Page:</span> {c.page_id}</div>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {components.length === 0 && !loading && !error && (
+        <div className="p-6 border border-gray-200 rounded-2xl bg-white text-gray-600">No components match your filters.</div>
+      )}
+    </section>
+
+    <aside className="lg:col-span-1 space-y-6">
+      <section className="rounded-2xl border border-gray-200 bg-white shadow-sm p-4">
+        <h2 className="font-semibold mb-2">Status distribution</h2>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie dataKey="value" data={chartData} outerRadius={90} label={(e) => `${e.name} (${e.value})`}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={CHART_SEGMENT_COLORS[index % CHART_SEGMENT_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value: any, _name: any, p: any) => [value, p.payload.name]} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <ul className="mt-3 text-sm text-gray-700 space-y-1">
+          {chartData.map((d, i) => (
+            <li key={d.status} className="flex items-center gap-2">
+              <span
+                className="inline-block w-3 h-3 rounded"
+                style={{ background: CHART_SEGMENT_COLORS[i % CHART_SEGMENT_COLORS.length] }}
+              />
+              {d.name}: <span className="ml-1 font-medium">{d.value}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="rounded-2xl border border-gray-200 bg-white shadow-sm p-4">
+        <h2 className="font-semibold mb-2">Meta</h2>
+        <dl className="text-sm text-gray-700 grid grid-cols-3 gap-2">
+          <dt className="font-medium">Page</dt>
+          <dd className="col-span-2 break-all">{data?.page?.name ?? "—"}</dd>
+
+          <dt className="font-medium">Last Refreshed</dt>
+          <dd className="col-span-2">{lastFetch ? lastFetch.toLocaleString() : "—"}</dd>
+
+          <dt className="font-medium">Components</dt>
+          <dd className="col-span-2">{components.length}</dd>
+
+          <dt className="font-medium">Raw Count</dt>
+          <dd className="col-span-2">{(data?.components ?? []).length}</dd>
+        </dl>
+      </section>
+    </aside>
+  </main>
+
+  <footer className="max-w-7xl mx-auto px-4 pb-10 text-xs text-gray-500">
+    Built with React + Tailwind + Recharts. This is a sample viewer; adapt as needed.
+  </footer>
+</div>
+
+); }
+
