@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WhatsApp Business Embedded Signup & Security — Illustrated Guide</title>
+  <style>
+    :root{
+      --bg:#0f172a;          /* slate-900 */
+      --card:#0b1226;        /* deep slate */
+      --ink:#e2e8f0;         /* slate-200 */
+      --muted:#94a3b8;       /* slate-400 */
+      --brand:#22d3ee;       /* cyan-400 */
+      --brand-2:#60a5fa;     /* blue-400 */
+      --ok:#34d399;          /* emerald */
+      --warn:#f59e0b;        /* amber */
+      --bad:#ef4444;         /* red */
+      --shadow: 0 10px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.02);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0; height:100%; background:radial-gradient(1200px 800px at 80% -10%, rgba(34,211,238,.12), transparent 55%),
+                                     radial-gradient(1000px 800px at -10% 10%, rgba(96,165,250,.12), transparent 50%),
+                                     var(--bg); color:var(--ink); font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif}
+    a{color:var(--brand)}
+    .container{max-width:1100px; margin:0 auto; padding:32px 20px 80px}
+    .hero{display:grid; grid-template-columns:1.1fr .9fr; gap:24px; align-items:center}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border:1px solid rgba(148,163,184,.15); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .hero .card{padding:28px}
+    .tag{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(34,211,238,.14); color:#cffafe; font-weight:600; letter-spacing:.2px; font-size:12px; border:1px solid rgba(34,211,238,.35)}
+    h1{font-size:34px; margin:12px 0 8px; letter-spacing:.3px}
+    .sub{color:var(--muted); margin:0}
+    .kpis{display:flex; gap:14px; flex-wrap:wrap; margin-top:18px}
+    .kpi{flex:1 1 180px; padding:14px 16px; border-radius:14px; background:rgba(2,6,23,.5); border:1px solid rgba(148,163,184,.1)}
+    .kpi b{display:block; font-size:18px}
+    .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:18px; margin-top:28px}
+    .panel{grid-column:span 12; padding:22px; border-radius:var(--radius);}
+    @media (min-width:900px){
+      .panel.span-7{grid-column:span 7}
+      .panel.span-5{grid-column:span 5}
+    }
+    h2{font-size:22px; margin:0 0 12px}
+    h3{font-size:18px; margin:14px 0 8px}
+    .list{display:grid; gap:10px; margin:10px 0 0; padding:0}
+    .list li{list-style:none; padding:12px 12px; border-radius:12px; background:rgba(2,6,23,.5); border:1px solid rgba(148,163,184,.12)}
+    .badge{display:inline-flex; align-items:center; gap:8px; font-weight:650; font-size:13px; padding:6px 10px; border-radius:999px; border:1px solid rgba(148,163,184,.2)}
+    .badge.ok{background:rgba(16,185,129,.15); color:#d1fae5; border-color:rgba(16,185,129,.35)}
+    .badge.warn{background:rgba(245,158,11,.15); color:#fffbeb; border-color:rgba(245,158,11,.35)}
+    .badge.bad{background:rgba(239,68,68,.16); color:#fee2e2; border-color:rgba(239,68,68,.38)}
+    .callout{padding:16px 16px; border-radius:14px; background:linear-gradient(180deg, rgba(34,197,94,.08), rgba(34,197,94,.03)); border:1px solid rgba(16,185,129,.3)}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:13px; color:#cbd5e1}
+    .legend{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px}
+    .legend span{display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted)}
+    .legend .dot{width:10px; height:10px; border-radius:999px; display:inline-block}
+    .dot.blue{background:var(--brand-2)}
+    .dot.cyan{background:var(--brand)}
+    .dot.green{background:var(--ok)}
+    .dot.red{background:var(--bad)}
+    svg{max-width:100%; height:auto; display:block}
+    .footer{margin-top:30px; color:var(--muted); font-size:13px}
+    .pill{display:inline-block; border-radius:10px; padding:2px 8px; font-size:12px; background:rgba(148,163,184,.12); border:1px solid rgba(148,163,184,.2)}
+    .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+    @media (max-width:800px){.hero{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr}}
+    .codeblock{background:#0a0f22; border:1px solid rgba(148,163,184,.2); border-radius:12px; padding:14px; overflow:auto}
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <div class="card">
+        <span class="tag" aria-label="Guide tag">🔐 WhatsApp Business • Embedded Signup</span>
+        <h1>How Embedded Signup Works — and How It Stays Secure</h1>
+        <p class="sub">End‑to‑end encryption is built into WhatsApp’s protocol. But Business Solution Providers (BSPs) still have critical responsibilities to keep your data safe <em>after</em> it’s decrypted on the business side.</p>
+        <div class="kpis" aria-label="Quick facts">
+          <div class="kpi"><b>Protocol</b><span class="sub">Signal-based E2EE</span></div>
+          <div class="kpi"><b>Auth</b><span class="sub">OAuth 2.0, short‑lived tokens</span></div>
+          <div class="kpi"><b>Transport</b><span class="sub">TLS for API/Webhooks</span></div>
+          <div class="kpi"><b>Risk Zone</b><span class="sub">BSP ops & storage</span></div>
+        </div>
+      </div>
+      <div class="card" aria-label="Overview diagram">
+        <!-- High-level flow diagram (SVG) -->
+        <svg viewBox="0 0 880 430" role="img" aria-labelledby="flowTitle flowDesc">
+          <title id="flowTitle">Embedded Signup and Messaging Security Flow</title>
+          <desc id="flowDesc">Shows OAuth signup between user, Meta, and BSP; and E2EE message flow between customer and business with relay servers.</desc>
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1">
+              <stop offset="0%" stop-color="#22d3ee" stop-opacity=".35"/>
+              <stop offset="100%" stop-color="#60a5fa" stop-opacity=".35"/>
+            </linearGradient>
+            <filter id="glow"><feGaussianBlur stdDeviation="3"/></filter>
+          </defs>
+          <!-- Signup lane -->
+          <g transform="translate(20,10)">
+            <text x="0" y="20" fill="#94a3b8" font-size="14">Embedded Signup (OAuth 2.0)</text>
+            <rect x="0" y="30" width="220" height="80" rx="14" fill="#0a1022" stroke="#334155"/>
+            <text x="14" y="62" fill="#e2e8f0" font-size="14">Business Admin 👤</text>
+            <rect x="260" y="30" width="240" height="80" rx="14" fill="#0a1022" stroke="#334155"/>
+            <text x="274" y="62" fill="#e2e8f0" font-size="14">Meta OAuth/Consent 🔑</text>
+            <rect x="540" y="30" width="300" height="80" rx="14" fill="#0a1022" stroke="#334155"/>
+            <text x="556" y="62" fill="#e2e8f0" font-size="14">BSP Platform 🧩 (receives scoped tokens)</text>
+            <!-- arrows -->
+            <path d="M220,70 L260,70" stroke="url(#g1)" stroke-width="3"/>
+            <polygon points="255,65 260,70 255,75" fill="#22d3ee"/>
+            <path d="M500,70 L540,70" stroke="url(#g1)" stroke-width="3"/>
+            <polygon points="535,65 540,70 535,75" fill="#22d3ee"/>
+          </g>
+          <!-- Messaging lane -->
+          <g transform="translate(20,160)">
+            <text x="0" y="20" fill="#94a3b8" font-size="14">Messaging (End‑to‑End Encrypted)</text>
+            <rect x="0" y="30" width="220" height="80" rx="14" fill="#0a1022" stroke="#334155"/>
+            <text x="14" y="62" fill="#e2e8f0" font-size="14">Customer 📱</text>
+            <rect x="260" y="30" width="240" height="80" rx="14" fill="#0a1022" stroke="#334155"/>
+            <text x="274" y="62" fill="#e2e8f0" font-size="14">WhatsApp Servers (relay) ☁️</text>
+            <rect x="540" y="30" width="300" height="80" rx="14" fill="#0a1022" stroke="#334155"/>
+            <text x="556" y="62" fill="#e2e8f0" font-size="14">Business App 🤝 via BSP</text>
+            <!-- encrypted arrows -->
+            <path d="M220,70 L260,70" stroke="#22d3ee" stroke-width="3"/>
+            <circle cx="240" cy="70" r="5" fill="#22d3ee" filter="url(#glow)"/>
+            <path d="M500,70 L540,70" stroke="#22d3ee" stroke-width="3"/>
+            <circle cx="520" cy="70" r="5" fill="#22d3ee" filter="url(#glow)"/>
+            <text x="175" y="110" fill="#94a3b8" font-size="12">🔒 E2EE on device</text>
+            <text x="455" y="110" fill="#94a3b8" font-size="12">🔒 E2EE on device</text>
+          </g>
+          <!-- Risk zone overlay -->
+          <g transform="translate(520,290)">
+            <rect x="0" y="0" width="320" height="120" rx="16" fill="rgba(239,68,68,.08)" stroke="#ef4444"/>
+            <text x="12" y="26" fill="#fecaca" font-size="14">Risk Zone (BSP/Business Ops)</text>
+            <text x="12" y="52" fill="#fda4af" font-size="12">• Token/credential storage</text>
+            <text x="12" y="72" fill="#fda4af" font-size="12">• Webhook/API exposure</text>
+            <text x="12" y="92" fill="#fda4af" font-size="12">• Logs / data-at-rest handling</text>
+          </g>
+        </svg>
+        <div class="legend" aria-label="Diagram legend">
+          <span><i class="dot cyan"></i> OAuth/token exchange</span>
+          <span><i class="dot blue"></i> Platform boundary</span>
+          <span><i class="dot green"></i> Device-side encryption</span>
+          <span><i class="dot red"></i> Operational risk</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel card span-7" aria-label="Protocol-level security">
+        <h2>1) Protocol‑Level Security (Built‑in)</h2>
+        <ul class="list">
+          <li>🔐 <b>End‑to‑End Encryption</b> — WhatsApp uses a Signal‑style double‑ratchet protocol. Message contents are encrypted on the sender’s device and decrypted only on the recipient’s device.</li>
+          <li>🗝️ <b>Per‑device keys</b> — Keys are generated on devices; servers (including Meta) relay ciphertext and can’t decrypt payloads.</li>
+          <li>🧾 <b>Identity keys & safety numbers</b> — Protect against impersonation and MITM at the protocol layer.</li>
+        </ul>
+      </article>
+
+      <aside class="panel card span-5" aria-label="What the protocol does NOT cover">
+        <h2>Protocol Doesn’t Cover</h2>
+        <ul class="list">
+          <li>📥 <b>Post‑decryption handling</b> inside your business systems (CRMs, bots, warehouses).</li>
+          <li>🔏 <b>Access controls</b> for staff, logs, or dashboards.</li>
+          <li>🌐 <b>Webhook/API hardening</b> and secure infrastructure.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="panel card span-7" aria-label="Embedded signup steps">
+        <h2>2) Embedded Signup — How It Works</h2>
+        <ol class="list" style="counter-reset:step">
+          <li>👤 Admin launches signup inside the BSP platform.</li>
+          <li>🔑 Redirect to <b>Meta OAuth</b> — the admin grants consent. BSP never sees the admin’s Meta password.</li>
+          <li>🎟️ BSP receives <b>scoped, short‑lived tokens</b> to create/configure the WhatsApp Business Account (WABA), phone number, and webhooks.</li>
+          <li>📞 Business verifies <b>phone number ownership</b> and sets a <span class="pill">Webhook URL (HTTPS)</span> & <span class="pill">App Secret</span>.</li>
+          <li>🧩 Messaging starts via the WhatsApp Business API (cloud or on‑prem client managed by BSP/business).</li>
+        </ol>
+      </article>
+
+      <aside class="panel card span-5" aria-label="Security properties during signup">
+        <h2>Security Properties During Signup</h2>
+        <div class="callout">
+          <p>✔️ OAuth 2.0 with TLS protects credentials and token exchange.</p>
+          <p>✔️ Tokens are <b>scoped</b> to specific permissions and should be rotated/short‑lived.</p>
+          <p>✔️ Webhooks must use HTTPS and verify signatures (app secret proof).</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="panel card span-7" aria-label="BSP responsibilities">
+        <h2>3) BSP/Service‑Provider Responsibilities</h2>
+        <ul class="list">
+          <li>🔏 <b>Credential handling</b> — store access tokens, phone certs, app secrets in a secure vault (KMS/HSM), enable rotation, and avoid plaintext configs.</li>
+          <li>🛡️ <b>Transport security</b> — force HTTPS/TLS 1.2+, HSTS, strong ciphers; validate mTLS if supported.</li>
+          <li>🧰 <b>Webhook integrity</b> — verify request signatures (X‑Hub‑Signature‑256 / app secret proof) and implement replay protection.</li>
+          <li>🧑‍🚒 <b>Least privilege & RBAC</b> — separate prod vs. support roles; enforce SSO/MFA; log and alert on sensitive actions.</li>
+          <li>🧯 <b>Data minimization</b> — avoid storing message bodies unless required; if stored, encrypt at rest and set TTLs.</li>
+          <li>🔎 <b>Auditing & monitoring</b> — immutable logs, anomaly detection, and incident response runbooks.</li>
+        </ul>
+      </article>
+
+      <aside class="panel card span-5" aria-label="Where things go wrong">
+        <h2>If the Provider Is Negligent…</h2>
+        <ul class="list">
+          <li class="badge bad">Token leakage → account hijack / spam</li>
+          <li class="badge bad">Unverified webhooks → spoofed events</li>
+          <li class="badge bad">Verbose logs with plaintext PII</li>
+          <li class="badge bad">Weak TLS → MITM on callbacks</li>
+          <li class="badge bad">Over‑privileged staff or API keys</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="panel card span-7" aria-label="Best practices checklist">
+        <h2>4) Security Checklist</h2>
+        <div class="grid-3">
+          <div class="list">
+            <div class="badge ok">Vaulted secrets (KMS/HSM)</div>
+            <div class="badge ok">Short‑lived tokens + rotation</div>
+            <div class="badge ok">Webhook sig verification</div>
+          </div>
+          <div class="list">
+            <div class="badge ok">TLS 1.2+/HSTS</div>
+            <div class="badge ok">RBAC + MFA + SSO</div>
+            <div class="badge ok">PII minimization & TTLs</div>
+          </div>
+          <div class="list">
+            <div class="badge ok">Immutable audit logs</div>
+            <div class="badge ok">Backups encrypted</div>
+            <div class="badge ok">Runbooks & drills</div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel card span-5" aria-label="Developer tips">
+        <h2>Developer Tips: Sample Verifications</h2>
+        <div class="codeblock mono" role="region" aria-label="Pseudo-code for webhook verification">
+<pre>
+# Verify X-Hub-Signature-256 for webhook
+expected = hmac_sha256(app_secret, request_body)
+assert timing_safe_eq('sha256=' + expected_hex, headers['X-Hub-Signature-256'])
+
+# App-Secret Proof for Graph API calls
+proof = hmac_sha256(app_secret, access_token)
+GET /&appsecret_proof={proof_hex}
+</pre>
+        </div>
+        <p class="sub">Use a <b>constant‑time</b> comparison and reject unsigned/expired/replayed requests.</p>
+      </aside>
+    </section>
+
+    <section class="panel card" aria-label="Key takeaways">
+      <h2>Key Takeaways</h2>
+      <ul class="list">
+        <li>✅ <b>E2EE is embedded in the WhatsApp protocol</b> — message content is unreadable to servers and BSPs during transit.</li>
+        <li>🧩 <b>Security still depends on provider diligence</b> — once messages reach your business systems, operational security matters.</li>
+        <li>🧷 <b>Harden signup + webhooks + token storage</b> to prevent account hijack, spoofing, or data leaks.</li>
+      </ul>
+    </section>
+
+    <p class="footer">Share this page as a single HTML file. Print friendly. © Your Team</p>
+  </main>
+</body>
+</html>
