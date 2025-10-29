@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vertex AI Search: Website → Vector Index → Grounded Q&A</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #121829;
+      --ink: #e6ebff;
+      --muted: #a7b0d6;
+      --accent: #7aa2ff;
+      --border: #1c2541;
+      --code: #0c1224;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: linear-gradient(180deg, #0b0f19 0%, #0b0f19 60%, #0e1426 100%); color: var(--ink); }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 48px 20px 96px; }
+    .hero { margin-bottom: 28px; }
+    .eyebrow { color: var(--muted); letter-spacing: .14em; text-transform: uppercase; font-weight: 600; font-size: 12px; }
+    h1 { font-size: 40px; line-height: 1.1; margin: 8px 0 14px; }
+    .lead { color: var(--muted); font-size: 18px; max-width: 64ch; }
+
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+    .card { grid-column: span 12; background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+    @media (min-width: 860px) { .card.half { grid-column: span 6; } }
+
+    h2 { font-size: 22px; margin: 0 0 8px; }
+    h3 { font-size: 18px; margin: 18px 0 8px; }
+    p { margin: 10px 0; }
+    ul { padding-left: 18px; margin: 10px 0; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    pre { background: var(--code); border: 1px solid var(--border); border-radius: 14px; padding: 14px; overflow-x: auto; }
+    .kbd { background: #0b1226; border: 1px solid var(--border); border-radius: 8px; padding: 1px 6px; font-size: 13px; }
+    .note { border-left: 3px solid var(--accent); padding: 12px 14px; background: rgba(122,162,255,.08); border-radius: 10px; }
+    .muted { color: var(--muted); }
+    .pill { display:inline-block; font-weight:600; font-size:12px; padding:5px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
+    .copyBtn { appearance:none; border:1px solid var(--border); background:#0e1630; color:var(--ink); border-radius:10px; padding:6px 10px; font-size:12px; cursor:pointer; float:right; }
+    .copyBtn:active { transform: translateY(1px); }
+    .footer { margin-top: 28px; color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="eyebrow">Mini How‑To</div>
+      <h1>Website → Vector Index → Grounded Q&A with Vertex AI Search</h1>
+      <p class="lead">Point Google Vertex AI Search at a website, let it crawl/sync, and call a REST API to get grounded answers (RAG) from that site’s content. This page is a compact, copy‑pasteable walkthrough.</p>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Overview</h2>
+        <p><span class="pill">What you’ll build</span></p>
+        <ul>
+          <li>A <strong>Site Search data store</strong> that crawls <em>yourdomain.com</em> and keeps itself fresh.</li>
+          <li>A <strong>serving config</strong> that can return <em>grounded answers</em> (answer/summary + citations).</li>
+          <li>Simple <strong>REST calls</strong> you can wire into your app or backend.</li>
+        </ul>
+        <p class="note"><strong>Prereqs</strong>: <span class="kbd">gcloud</span> authenticated to your GCP project, Vertex AI Search API enabled, and a role with Discovery Engine admin rights.</p>
+      </article>
+
+      <article class="card">
+        <h2>Step 1 — Create a Website Data Store</h2>
+        <p class="muted">Create the index that will crawl and hold your site content.</p>
+        <button class="copyBtn" data-copy="curl -X POST -H 'Authorization: Bearer $(gcloud auth print-access-token)' -H 'Content-Type: application/json' 'https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/dataStores?dataStoreId=WEBSITE_DS_ID' -d '{\n  &quot;displayName&quot;: &quot;My Website DS&quot;,\n  &quot;solutionType&quot;: &quot;SOLUTION_TYPE_SEARCH&quot;,\n  &quot;industryVertical&quot;: &quot;GENERIC&quot;,\n  &quot;contentConfig&quot;: &quot;CONTENT_CONFIG_SITE_SEARCH&quot;\n}'">Copy</button>
+<pre><code>curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  "https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/dataStores?dataStoreId=WEBSITE_DS_ID" \
+  -d '{
+    "displayName": "My Website DS",
+    "solutionType": "SOLUTION_TYPE_SEARCH",
+    "industryVertical": "GENERIC",
+    "contentConfig": "CONTENT_CONFIG_SITE_SEARCH"
+  }'
+</code></pre>
+      </article>
+
+      <article class="card">
+        <h2>Step 2 — Allowlist What to Crawl</h2>
+        <p class="muted">Tell Vertex which URLs are in scope.</p>
+        <button class="copyBtn" data-copy="curl -X POST -H 'Authorization: Bearer $(gcloud auth print-access-token)' -H 'Content-Type: application/json' 'https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/dataStores/WEBSITE_DS_ID/siteSearchEngine/targetSites:batchCreate' -d '{\n  &quot;requests&quot;: [{\n    &quot;targetSite&quot;: {\n      &quot;siteUri&quot;: &quot;https://yourdomain.com/*&quot;,\n      &quot;type&quot;: &quot;INCLUDE&quot;\n    }\n  }]\n}'">Copy</button>
+<pre><code>curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  "https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/dataStores/WEBSITE_DS_ID/siteSearchEngine/targetSites:batchCreate" \
+  -d '{
+    "requests": [{
+      "targetSite": {
+        "siteUri": "https://yourdomain.com/*",
+        "type": "INCLUDE"
+      }
+    }]
+  }'
+</code></pre>
+      </article>
+
+      <article class="card half">
+        <h2>Step 3 — (Optional) Submit a Sitemap</h2>
+        <p class="muted">Boost discovery & refresh cadence.</p>
+        <button class="copyBtn" data-copy="curl -X POST -H 'Authorization: Bearer $(gcloud auth print-access-token)' -H 'Content-Type: application/json' 'https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/dataStores/WEBSITE_DS_ID/siteSearchEngine/sitemaps' -d '{ \n  &quot;sitemapUri&quot;: &quot;https://yourdomain.com/sitemap.xml&quot; \n}'">Copy</button>
+<pre><code>curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  "https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/dataStores/WEBSITE_DS_ID/siteSearchEngine/sitemaps" \
+  -d '{ "sitemapUri": "https://yourdomain.com/sitemap.xml" }'
+</code></pre>
+      </article>
+
+      <article class="card half">
+        <h2>Step 4 — (Optional) Force a Recrawl</h2>
+        <p class="muted">After a deploy, trigger re-index of specific URLs.</p>
+        <button class="copyBtn" data-copy="curl -X POST -H 'Authorization: Bearer $(gcloud auth print-access-token)' -H 'Content-Type: application/json' -H 'X-Goog-User-Project: PROJECT_ID' 'https://discoveryengine.googleapis.com/v1alpha/projects/PROJECT_ID/locations/global/collections/default_collection/dataStores/WEBSITE_DS_ID/siteSearchEngine:recrawlUris' -d '{ \n  &quot;uris&quot;: [\n    &quot;https://yourdomain.com/docs/page-a&quot;,\n    &quot;https://yourdomain.com/docs/page-b&quot;\n  ]\n}'">Copy</button>
+<pre><code>curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  -H "X-Goog-User-Project: PROJECT_ID" \
+  "https://discoveryengine.googleapis.com/v1alpha/projects/PROJECT_ID/locations/global/collections/default_collection/dataStores/WEBSITE_DS_ID/siteSearchEngine:recrawlUris" \
+  -d '{
+    "uris": [
+      "https://yourdomain.com/docs/page-a",
+      "https://yourdomain.com/docs/page-b"
+    ]
+  }'
+</code></pre>
+      </article>
+
+      <article class="card">
+        <h2>Step 5 — Call the API for Grounded Answers</h2>
+        <h3>Option A: Search with Grounded Summary</h3>
+        <button class="copyBtn" data-copy="curl -X POST -H 'Authorization: Bearer $(gcloud auth print-access-token)' -H 'Content-Type: application/json' 'https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/engines/ENGINE_ID/servingConfigs/SERVING_CONFIG_ID:search' -d '{\n  &quot;query&quot;: &quot;What are the pricing tiers and SLAs?&quot;,\n  &quot;pageSize&quot;: 10,\n  &quot;contentSearchSpec&quot;: {\n    &quot;summarySpec&quot;: {\n      &quot;summaryResultCount&quot;: 3,\n      &quot;ignoreAdversarialQuery&quot;: true\n    },\n    &quot;extractiveContentSpec&quot;: { &quot;maxExtractiveAnswerCount&quot;: 1 }\n  }\n}'">Copy</button>
+<pre><code>curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  "https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/engines/ENGINE_ID/servingConfigs/SERVING_CONFIG_ID:search" \
+  -d '{
+    "query": "What are the pricing tiers and SLAs?",
+    "pageSize": 10,
+    "contentSearchSpec": {
+      "summarySpec": {
+        "summaryResultCount": 3,
+        "ignoreAdversarialQuery": true
+      },
+      "extractiveContentSpec": { "maxExtractiveAnswerCount": 1 }
+    }
+  }'
+</code></pre>
+        <h3>Option B: Answer Endpoint (Grounded Q&A)</h3>
+        <button class="copyBtn" data-copy="curl -X POST -H 'Authorization: Bearer $(gcloud auth print-access-token)' -H 'Content-Type: application/json' 'https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/engines/ENGINE_ID/servingConfigs/SERVING_CONFIG_ID:answer' -d '{\n  &quot;query&quot;: &quot;Summarize the refund policy and call out exceptions&quot;,\n  &quot;answerGenerationSpec&quot;: { &quot;maxOutputTokens&quot;: 512 }\n}'">Copy</button>
+<pre><code>curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  "https://discoveryengine.googleapis.com/v1/projects/PROJECT_ID/locations/global/collections/default_collection/engines/ENGINE_ID/servingConfigs/SERVING_CONFIG_ID:answer" \
+  -d '{
+    "query": "Summarize the refund policy and call out exceptions",
+    "answerGenerationSpec": { "maxOutputTokens": 512 }
+  }'
+</code></pre>
+        <p class="note">Both responses include citations/snippets with source URLs you can display in your UI for transparency.</p>
+      </article>
+
+      <article class="card">
+        <h2>Step 6 — Production Tips</h2>
+        <ul>
+          <li>Prefer <strong>sitemaps</strong> for coverage; pair with <em>target sites</em> to limit scope.</li>
+          <li>Use <strong>recrawl</strong> after major content pushes; otherwise the crawler refreshes automatically.</li>
+          <li>For secure content behind login, ingest docs to an <em>unstructured</em> data store instead of site search.</li>
+          <li>Store and surface <strong>citations</strong> from the API so answers remain auditable.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Environment Variables & Placeholders</h2>
+        <ul class="muted">
+          <li><code>PROJECT_ID</code>: your GCP project ID</li>
+          <li><code>WEBSITE_DS_ID</code>: a unique ID for the data store (e.g., <code>site_ds</code>)</li>
+          <li><code>ENGINE_ID</code>: the Engine tied to the data store (created in Console or via API)</li>
+          <li><code>SERVING_CONFIG_ID</code>: use the default (often <code>default_config</code>) or list to find yours</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>FAQ</h2>
+        <p><strong>Do I manage embeddings or a vector DB?</strong> No—Vertex handles vectorization, ranking, and summarization for the website data store. You just call the API.</p>
+        <p><strong>How do I restrict scope?</strong> Use <em>target sites</em> (INCLUDE/EXCLUDE) and host a precise <code>sitemap.xml</code>.</p>
+        <p><strong>Can I do multi-turn chat?</strong> Yes—use <em>Sessions</em> with the Answer API if you need conversation state.</p>
+      </article>
+    </section>
+
+    <p class="footer">© Your Team — Replace placeholders and run the cURLs as-is. Happy shipping!</p>
+  </div>
+
+  <script>
+    document.querySelectorAll('.copyBtn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copy);
+          btn.textContent = 'Copied';
+          setTimeout(() => btn.textContent = 'Copy', 1400);
+        } catch (e) {
+          btn.textContent = 'Select & Copy';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
