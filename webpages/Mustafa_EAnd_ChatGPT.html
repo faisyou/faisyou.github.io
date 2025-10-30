@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>e& Egypt Contact Centre Revamp — Genesys Engage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0d12;
+      --panel:#121622;
+      --muted:#98a2b3;
+      --text:#e6e9f0;
+      --brand:#7c5cff; /* accent */
+      --accent:#00d3a7; /* secondary accent */
+      --danger:#ff6b6b;
+      --ok:#26c281;
+      --card:#0f1320;
+      --border:rgba(255,255,255,.08);
+      --shadow:0 10px 30px rgba(0,0,0,.25);
+      --radius:18px;
+      --radius-lg:26px;
+      --maxw:1200px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:linear-gradient(180deg,#0a0c12 0%,#0b1220 60%,#0a0c12 100%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+    a{color:#b9c4ff;text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrapper{max-width:var(--maxw);margin:0 auto;padding:32px}
+    header.nav{position:sticky;top:0;backdrop-filter:blur(8px);background:rgba(10,12,18,.7);border-bottom:1px solid var(--border);z-index:50}
+    header.nav .inner{display:flex;align-items:center;justify-content:space-between;max-width:var(--maxw);margin:0 auto;padding:14px 24px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#3d2dff);box-shadow:0 6px 16px rgba(124,92,255,.45)}
+    .brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.2px}
+    nav a{margin:0 10px;font-weight:500;color:#cfd7ff}
+
+    /* HERO */
+    .hero{padding:54px 24px 18px}
+    .title{font-size:42px;line-height:1.1;margin:0 0 12px;font-weight:800}
+    .subtitle{font-size:18px;color:var(--muted);max-width:840px}
+    .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .chip{border:1px solid var(--border);background:linear-gradient(180deg,#0f1423,#0c0f1a);padding:8px 12px;border-radius:999px;color:#cfe7ff;font-size:13px}
+
+    /* METRICS */
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:16px;margin:28px 0}
+    .metric{background:linear-gradient(180deg,#12182a 0%,#0f1424 100%);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+    .metric h3{margin:0;color:#cfe3ff;font-size:13px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+    .metric .value{font-size:36px;font-weight:800;margin:8px 0}
+    .metric .sub{color:var(--muted);font-size:13px}
+
+    /* SECTION */
+    section{padding:48px 24px}
+    h2{font-size:26px;margin:0 0 18px;font-weight:800}
+    p.lead{color:#c4cbe0;max-width:900px}
+
+    /* BY THE NUMBERS */
+    .bythe{display:grid;grid-template-columns:2.2fr 1fr;gap:18px}
+    .barcard{background:linear-gradient(180deg,#111627,#0d1120);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+    .bars{display:grid;gap:14px;margin-top:6px}
+    .bar{background:#0a0e1c;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .bar .fill{height:18px;background:linear-gradient(90deg,var(--brand),#53ffef)}
+    .legend{display:flex;justify-content:space-between;font-size:13px;color:#c9d5ff;margin-top:6px}
+
+    /* IMPACT */
+    .impact{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .impact .card{background:linear-gradient(180deg,#0f1425,#0d1222);border:1px solid var(--border);border-radius:var(--radius);padding:18px;min-height:160px}
+    .card h3{margin:6px 0 6px;font-size:16px}
+    .kicker{font-weight:700;color:#a2b4ff;letter-spacing:.2px;font-size:12px;text-transform:uppercase}
+    .card p{color:#b8c2da}
+
+    /* SOLUTION */
+    .grid-3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px}
+    .list{background:linear-gradient(180deg,#10162a,#0c1020);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+    ul{padding-left:18px;margin:8px 0;color:#c6d0e6}
+    .arch{background:linear-gradient(180deg,#0f1528,#0e1222);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+
+    /* Architecture SVG */
+    .svg-wrap{background:#0b0f1d;border:1px dashed var(--border);border-radius:12px;padding:12px}
+    svg{width:100%;height:auto}
+
+    /* CALLOUT */
+    .callout{border-left:4px solid var(--accent);background:linear-gradient(180deg,#07211a,#08161a);border:1px solid var(--border);border-radius:12px;padding:16px}
+
+    /* CUSTOMER CONTEXT */
+    .context{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+    .statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .stat{background:linear-gradient(180deg,#10162a,#0b0f1c);border:1px solid var(--border);border-radius:14px;padding:14px}
+    .stat .big{font-size:24px;font-weight:800}
+
+    /* ROADMAP */
+    .roadmap{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .step{background:linear-gradient(180deg,#0e1427,#0c1223);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative}
+    .step::after{content:"→";position:absolute;right:12px;top:12px;color:#7aa7ff;opacity:.6}
+    .step h3{margin:0 0 8px}
+
+    footer{padding:40px 24px;border-top:1px solid var(--border);color:#95a3c7}
+
+    /* RESPONSIVE */
+    @media (max-width:1000px){
+      .metrics{grid-template-columns:repeat(2,1fr)}
+      .impact{grid-template-columns:repeat(2,1fr)}
+      .grid-3{grid-template-columns:1fr}
+      .bythe{grid-template-columns:1fr}
+      .context{grid-template-columns:1fr}
+      .roadmap{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>e&amp; Egypt Revamp — Genesys Engage</h1>
+      </div>
+      <nav>
+        <a href="#scale">Scale</a>
+        <a href="#impact">Business Impact</a>
+        <a href="#solution">Solution</a>
+        <a href="#context">Customer</a>
+        <a href="#journey">Cloud Journey</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <h2 class="title">Transforming e&amp; Egypt’s Contact Centre</h2>
+      <p class="subtitle">On‑premises architecture revamp with <strong>Genesys Engage</strong> to support massive daily interaction volumes, meet regulatory requirements today, and pave a trusted path to a future <strong>cloud migration</strong>.</p>
+      <div class="chips" aria-label="key highlights">
+        <div class="chip">Two‑site Resilience</div>
+        <div class="chip">Digital + Voice + Outbound</div>
+        <div class="chip">Azure STT/TTS Voice‑bot</div>
+        <div class="chip">Cloud‑ready Foundations</div>
+      </div>
+
+      <!-- KEY METRICS (Volumetrics First) -->
+      <div class="metrics" role="list" aria-label="By the numbers">
+        <div class="metric" role="listitem">
+          <h3>Concurrent Agents</h3>
+          <div class="value" data-count="1400">1,400</div>
+          <div class="sub">across channels</div>
+        </div>
+        <div class="metric" role="listitem">
+          <h3>Inbound Calls / day</h3>
+          <div class="value" data-count="280000">280K</div>
+          <div class="sub">≈ <span class="persec" data-per-day="280000"></span> calls/sec</div>
+        </div>
+        <div class="metric" role="listitem">
+          <h3>Outbound Calls / day</h3>
+          <div class="value" data-count="120000">120K</div>
+          <div class="sub">campaigns at scale</div>
+        </div>
+        <div class="metric" role="listitem">
+          <h3>Digital Chats / day</h3>
+          <div class="value" data-count="260000">260K</div>
+          <div class="sub">WhatsApp + chat (incl. bot)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCALE & VOLUMETRICS DETAIL -->
+    <section id="scale">
+      <h2>Scale &amp; Volumetrics</h2>
+      <p class="lead">Designed for always‑on operations at telecom scale. The platform processes hundreds of thousands of daily interactions with headroom for growth and business continuity.</p>
+      <div class="bythe">
+        <div class="barcard">
+          <div class="kicker">Daily Interaction Mix</div>
+          <div class="bars" aria-hidden="true">
+            <div class="bar"><div class="fill" style="width:55%"></div></div>
+            <div class="legend"><span>Inbound Voice</span><span>280K</span></div>
+            <div class="bar"><div class="fill" style="width:24%"></div></div>
+            <div class="legend"><span>Outbound Campaigns</span><span>120K</span></div>
+            <div class="bar"><div class="fill" style="width:51%"></div></div>
+            <div class="legend"><span>Digital (WhatsApp + Chat)</span><span>260K</span></div>
+          </div>
+        </div>
+        <div class="barcard">
+          <div class="kicker">Capacity Snapshot</div>
+          <ul>
+            <li>Concurrent Agents: <strong>1,400</strong>+</li>
+            <li>Two‑site deployment with <strong>Active‑Active</strong> and <strong>Active‑Passive</strong> patterns</li>
+            <li>ISCC + Agent Reservation for continuity</li>
+            <li>Built‑in headroom to absorb peaks</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUSINESS IMPACT -->
+    <section id="impact">
+      <h2>Business Impact</h2>
+      <div class="impact">
+        <div class="card">
+          <div class="kicker">Customer Experience</div>
+          <h3>Lower Waits, Omnichannel Reach</h3>
+          <p>High agent concurrency and digital channels reduce queues and meet customers on WhatsApp, chat, email and voice.</p>
+        </div>
+        <div class="card">
+          <div class="kicker">Efficiency</div>
+          <h3>Campaign Scale</h3>
+          <p>~120K outbound calls/day empowers proactive outreach, collections, and marketing at national scale.</p>
+        </div>
+        <div class="card">
+          <div class="kicker">Resilience</div>
+          <h3>Always‑on Operations</h3>
+          <p>Two‑site architecture with Active‑Active media, routing, recording and Pulse minimizes downtime.</p>
+        </div>
+        <div class="card">
+          <div class="kicker">Future‑Ready</div>
+          <h3>Cloud‑Ready Foundation</h3>
+          <p>On‑premises today for regulation; modular design, APIs and digital assets set up a smooth cloud migration later.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOLUTION & ARCHITECTURE -->
+    <section id="solution">
+      <h2>Solution &amp; Architecture</h2>
+      <div class="grid-3">
+        <div class="list">
+          <div class="kicker">Genesys Engage Scope</div>
+          <ul>
+            <li>Management Framework</li>
+            <li>Media Layer</li>
+            <li>Genesys Voice Platform (GVP)</li>
+            <li>Outbound</li>
+            <li>Digital: WhatsApp, Chat, Email (+ integration with e&amp; chatbot)</li>
+            <li>Routing: Orchestration &amp; Universal Routing</li>
+            <li>Interaction Recording</li>
+            <li>Workforce Management</li>
+            <li>UI: GAX, GA, Genesys Rules Engine</li>
+            <li>Genesys Pulse (replacing CCPulse)</li>
+            <li>WDE with ClickOnce</li>
+          </ul>
+        </div>
+        <div class="arch">
+          <div class="kicker">Two‑Site Resilience</div>
+          <div class="svg-wrap" aria-label="Simplified two-site architecture diagram">
+            <!-- Simple illustrative diagram (no external dependencies) -->
+            <svg viewBox="0 0 820 380" role="img" aria-labelledby="archTitle">
+              <title id="archTitle">Active‑Active / Active‑Passive two‑site layout</title>
+              <defs>
+                <linearGradient id="g1" x1="0" x2="1">
+                  <stop offset="0%" stop-color="#7c5cff"/><stop offset="100%" stop-color="#53ffef"/>
+                </linearGradient>
+              </defs>
+              <rect x="10" y="10" width="800" height="360" rx="16" fill="#0a0e1a" stroke="rgba(255,255,255,.1)"/>
+              <!-- Site A -->
+              <text x="110" y="42" fill="#bcd2ff" font-size="16" font-weight="700">Site A</text>
+              <rect x="40" y="60" width="260" height="280" rx="12" fill="#0e1527" stroke="rgba(255,255,255,.12)"/>
+              <g>
+                <rect x="60" y="90" width="220" height="44" rx="8" fill="#121a33" stroke="rgba(255,255,255,.12)"/>
+                <text x="74" y="118" fill="#cfe3ff" font-size="13">Management Framework (Active)</text>
+              </g>
+              <g>
+                <rect x="60" y="150" width="220" height="44" rx="8" fill="#121a33" stroke="rgba(255,255,255,.12)"/>
+                <text x="74" y="178" fill="#cfe3ff" font-size="13">Media Layer (Active)</text>
+              </g>
+              <g>
+                <rect x="60" y="210" width="220" height="44" rx="8" fill="#121a33" stroke="rgba(255,255,255,.12)"/>
+                <text x="74" y="238" fill="#cfe3ff" font-size="13">Routing &amp; GVP (Active)</text>
+              </g>
+              <g>
+                <rect x="60" y="270" width="220" height="44" rx="8" fill="#121a33" stroke="rgba(255,255,255,.12)"/>
+                <text x="74" y="298" fill="#cfe3ff" font-size="13">Recording / UI / Pulse (Active)</text>
+              </g>
+
+              <!-- Site B -->
+              <text x="610" y="42" fill="#bcd2ff" font-size="16" font-weight="700">Site B</text>
+              <rect x="520" y="60" width="260" height="280" rx="12" fill="#0e1527" stroke="rgba(255,255,255,.12)"/>
+              <g>
+                <rect x="540" y="90" width="220" height="44" rx="8" fill="#121a33" stroke="rgba(255,255,255,.12)"/>
+                <text x="554" y="118" fill="#cfe3ff" font-size="13">Management Framework (Passive)</text>
+              </g>
+              <g>
+                <rect x="540" y="150" width="220" height="44" rx="8" fill="#121a33" stroke="rgba(255,255,255,.12)"/>
+                <text x="554" y="178" fill="#cfe3ff" font-size="13">Media Layer (Active)</text>
+              </g>
+              <g>
+                <rect x="540" y="210" width="220" height="44" rx="8" fill="#121a33" stroke="rgba(255,255,255,.12)"/>
+                <text x="554" y="238" fill="#cfe3ff" font-size="13">Routing &amp; GVP (Active)</text>
+              </g>
+              <g>
+                <rect x="540" y="270" width="220" height="44" rx="8" fill="#121a33" stroke="rgba(255,255,255,.12)"/>
+                <text x="554" y="298" fill="#cfe3ff" font-size="13">Recording / UI / Pulse (Active)</text>
+              </g>
+
+              <!-- Links & labels -->
+              <path d="M300 170 C410 140, 450 140, 520 170" stroke="url(#g1)" stroke-width="3" fill="none"/>
+              <path d="M300 230 C410 200, 450 200, 520 230" stroke="url(#g1)" stroke-width="3" fill="none"/>
+              <text x="346" y="156" fill="#9ad7ff" font-size="12">ISCC + Business Continuity</text>
+              <text x="350" y="250" fill="#9ad7ff" font-size="12">Agent Reservation</text>
+            </svg>
+          </div>
+          <ul>
+            <li>Active‑Passive: Management Framework, Outbound, Digital, WFM</li>
+            <li>Active‑Active: Media, GVP, Routing, Recording, UI, Pulse</li>
+          </ul>
+        </div>
+        <div class="list">
+          <div class="kicker">Voice‑bot Enablement</div>
+          <div class="callout">
+            <strong>Azure STT &amp; TTS</strong> integrated with Genesys IVR via <em>UniSpeech UniMRCP</em> and GVP to power natural‑language voice bots.
+          </div>
+          <ul>
+            <li>Deploy UniSpeech UniMRCP</li>
+            <li>Integrate GVP with UniMRCP</li>
+            <li>Enable bot flows &amp; handoff to agents</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUSTOMER CONTEXT -->
+    <section id="context">
+      <h2>Customer Context: e&amp; Egypt (Etisalat Misr)</h2>
+      <div class="context">
+        <div class="list">
+          <p class="lead">e&amp; Egypt is a major Egyptian telecom operator (part of the e&amp; Group). Public sources indicate a large national footprint and sustained investment.</p>
+          <div class="statgrid" role="list">
+            <div class="stat" role="listitem">
+              <div class="kicker">Customer Base (Egypt)</div>
+              <div class="big">≈ 36 million</div>
+              <small>Reported in 2024.</small>
+            </div>
+            <div class="stat" role="listitem">
+              <div class="kicker">2024 Investment (Egypt)</div>
+              <div class="big">EGP 8–10bn</div>
+              <small>Network &amp; growth initiatives.</small>
+            </div>
+            <div class="stat" role="listitem">
+              <div class="kicker">H1‑2024 Revenue</div>
+              <div class="big">+36% YoY</div>
+              <small>Company statement (local press).</small>
+            </div>
+            <div class="stat" role="listitem">
+              <div class="kicker">e&amp; Group FY‑2024</div>
+              <div class="big">AED 59.2bn</div>
+              <small>Consolidated revenue.</small>
+            </div>
+          </div>
+          <p style="margin-top:8px;color:#9fb2da">Sources: <a href="https://www.egyptindependent.com/etisalat-misr-invests-le10-billion-to-develop-its-telecommunications-networks-in-2024/" target="_blank" rel="noreferrer">Egypt Independent</a>, <a href="https://www.samenacouncil.org/samena_daily_news?news=102217" target="_blank" rel="noreferrer">SAMENA Council</a>, <a href="https://www.zawya.com/en/business/technology-and-telecom/e-and-egypt-to-boost-investments-in-egypt-by-40-in-2024-no6dhu2f" target="_blank" rel="noreferrer">Zawya (Investments)</a>, <a href="https://www.eand.com/en/news/25-feb-2025-eand-delivers-record-revenue-and-net-profit-in-FY-2024.html" target="_blank" rel="noreferrer">e&amp; Group FY‑2024</a>.</p>
+          <p style="color:#8fa2c9"><em>Note:</em> Exact revenue for the Egypt operating company isn’t separately disclosed in public filings; figures above reflect public statements and group disclosures.</p>
+        </div>
+        <div class="list">
+          <div class="kicker">Why this matters for the page</div>
+          <ul>
+            <li>Validates the <strong>scale</strong> of the interaction volumes and agent concurrency.</li>
+            <li>Reinforces the <strong>on‑premises</strong> regulatory choice today and the <strong>cloud‑ready</strong> path tomorrow.</li>
+            <li>Positions Genesys + our team as a <strong>trusted partner</strong> for the next phase.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLOUD JOURNEY / ROADMAP -->
+    <section id="journey">
+      <h2>Roadmap: From On‑Prem to Cloud</h2>
+      <div class="roadmap">
+        <div class="step">
+          <div class="kicker">Phase 1 — Now</div>
+          <h3>On‑Prem Revamp</h3>
+          <ul>
+            <li>Regulation‑compliant on‑premises deployment</li>
+            <li>Hardened two‑site resilience</li>
+            <li>Omnichannel &amp; analytics foundation</li>
+          </ul>
+        </div>
+        <div class="step">
+          <div class="kicker">Phase 2 — Near‑Term</div>
+          <h3>Hybrid Adoption</h3>
+          <ul>
+            <li>Adjacencies in cloud (e.g., DR, analytics)</li>
+            <li>Pilot digital services in cloud</li>
+            <li>Automations &amp; AI accelerators</li>
+          </ul>
+        </div>
+        <div class="step">
+          <div class="kicker">Phase 3 — Future</div>
+          <h3>Cloud Migration</h3>
+          <ul>
+            <li>Elastic scale; consumption‑based cost</li>
+            <li>Rapid feature velocity</li>
+            <li>Global resiliency posture</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="wrapper" style="padding:0">
+        <p><strong>e&amp; Egypt Revamp — Genesys Engage</strong> • This page highlights scale first, then business impact, then solution — and frames the on‑premises decision as the beginning of a trusted cloud journey.</p>
+        <p style="margin-top:8px">© 2025. Replace placeholder brand marks with your approved logos. Update numbers as your telemetry evolves.</p>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Lightweight count‑up and per‑second calculators
+    const inView = (el)=>{
+      const r = el.getBoundingClientRect();
+      return r.top < window.innerHeight && r.bottom > 0;
+    };
+
+    const animateCount = (el)=>{
+      const target = +el.getAttribute('data-count');
+      const start = 0;
+      const duration = 1400; // ms
+      const startTime = performance.now();
+      const format = (n)=>{
+        if(n >= 1_000_000) return (n/1_000_000).toFixed(1)+'M';
+        if(n >= 1_000) return Math.round(n/1000)+'K';
+        return Math.round(n).toString();
+      };
+      const step = (now)=>{
+        const p = Math.min(1,(now-startTime)/duration);
+        const eased = 1 - Math.pow(1-p,3);
+        el.textContent = format(start + (target-start)*eased);
+        if(p<1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+
+    const once = new WeakSet();
+    const metrics = document.querySelectorAll('.metric .value');
+    const onScroll = ()=>{
+      metrics.forEach(m=>{ if(!once.has(m) && inView(m)){ once.add(m); animateCount(m);} });
+    };
+    document.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('load', onScroll);
+
+    // per‑second helpers
+    document.querySelectorAll('.persec').forEach(el=>{
+      const perDay = +el.getAttribute('data-per-day');
+      const perSec = perDay / 86400; // 24*60*60
+      el.textContent = perSec.toFixed(2);
+    });
+  </script>
+</body>
+</html>
