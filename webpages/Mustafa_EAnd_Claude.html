@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E& Egypt - Enterprise Contact Center Transformation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #0a0a0a;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 1200px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            color: rgba(255,255,255,0.95);
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .metric-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.9);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section {
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .section-dark {
+            background: #0a0a0a;
+        }
+
+        .section-light {
+            background: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            margin-bottom: 4rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .customer-banner {
+            background: linear-gradient(135deg, #2d3561 0%, #c05c7e 100%);
+            border-radius: 30px;
+            padding: 3rem;
+            margin: 4rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .customer-info h3 {
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .customer-stat {
+            display: flex;
+            align-items: baseline;
+            margin: 1rem 0;
+        }
+
+        .customer-stat-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #ffd700;
+            margin-right: 1rem;
+        }
+
+        .customer-stat-label {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .impact-card {
+            background: linear-gradient(145deg, #1e1e1e, #2d2d2d);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .impact-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .impact-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .impact-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .impact-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .impact-description {
+            color: rgba(255,255,255,0.7);
+            line-height: 1.8;
+        }
+
+        .architecture-visual {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 30px;
+            padding: 3rem;
+            margin: 3rem 0;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .solution-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .solution-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(10px);
+        }
+
+        .solution-item h4 {
+            color: #ffd700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .solution-item p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.95rem;
+        }
+
+        .future-vision {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            border-radius: 30px;
+            padding: 4rem 3rem;
+            margin: 4rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .future-vision::before {
+            content: '☁️';
+            position: absolute;
+            font-size: 15rem;
+            opacity: 0.1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .future-vision h3 {
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .future-vision p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-badge {
+            display: inline-block;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-top: 2rem;
+            font-size: 1.1rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .resilience-diagram {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .site-box {
+            background: linear-gradient(145deg, #1e3a5f, #2d4a6f);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 2px solid #667eea;
+            position: relative;
+        }
+
+        .site-title {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .component {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            margin: 0.8rem 0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: white;
+            border-left: 3px solid #4ade80;
+        }
+
+        .component.passive {
+            border-left-color: #fbbf24;
+        }
+
+        @media (max-width: 768px) {
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .resilience-diagram {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-20px); }
+            60% { transform: translateX(-50%) translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="hero-content">
+            <h1>E& Egypt Contact Center Transformation</h1>
+            <p class="hero-subtitle">Enterprise-Scale Genesys Engage Deployment</p>
+            
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-number" data-target="1400">0</div>
+                    <div class="metric-label">Concurrent Agents</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" data-target="660">0</div>
+                    <div class="metric-label">K Daily Interactions</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" data-target="280">0</div>
+                    <div class="metric-label">K Inbound Calls/Day</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" data-target="120">0</div>
+                    <div class="metric-label">K Outbound Calls/Day</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" data-target="260">0</div>
+                    <div class="metric-label">K Chat Interactions/Day</div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">▼</div>
+    </div>
+
+    <div class="section section-light">
+        <div class="container">
+            <h2 class="section-title">The Customer: E& Egypt</h2>
+            <p class="section-subtitle">A telecommunications powerhouse serving millions across Egypt</p>
+            
+            <div class="customer-banner">
+                <div class="customer-info">
+                    <h3>Market Leader</h3>
+                    <div class="customer-stat">
+                        <span class="customer-stat-value">37M</span>
+                        <span class="customer-stat-label">Subscribers</span>
+                    </div>
+                    <div class="customer-stat">
+                        <span class="customer-stat-value">36%</span>
+                        <span class="customer-stat-label">Revenue Growth (H1 2024)</span>
+                    </div>
+                    <div class="customer-stat">
+                        <span class="customer-stat-value">EGP 50B+</span>
+                        <span class="customer-stat-label">Infrastructure Investment</span>
+                    </div>
+                </div>
+                <div class="customer-info">
+                    <h3>About E& Egypt</h3>
+                    <p style="color: rgba(255,255,255,0.9); line-height: 1.8;">
+                        Part of Emirates Telecommunications Group, E& Egypt is the third-largest mobile operator in Egypt with 99% population coverage. Operating since 2007, they serve 37 million customers and have invested over EGP 50 billion in network infrastructure, making them a cornerstone of Egypt's digital transformation.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section section-dark">
+        <div class="container">
+            <h2 class="section-title">Scale & Volumetrics</h2>
+            <p class="section-subtitle">Built to handle millions of interactions with enterprise-grade reliability</p>
+            
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <div class="impact-icon">📞</div>
+                    <div class="impact-title">400K Daily Calls</div>
+                    <div class="impact-description">
+                        280K inbound and 120K outbound campaign calls processed daily through a highly resilient voice platform
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">💬</div>
+                    <div class="impact-title">260K Chat Interactions</div>
+                    <div class="impact-description">
+                        WhatsApp, web chat, and chatbot interactions managed seamlessly across multiple digital channels
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">👥</div>
+                    <div class="impact-title">1,400 Agent Seats</div>
+                    <div class="impact-description">
+                        Concurrent agent capacity with intelligent routing and workforce optimization capabilities
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">🌐</div>
+                    <div class="impact-title">Multi-Site Architecture</div>
+                    <div class="impact-description">
+                        Active-Active and Active-Passive configurations across two sites ensuring business continuity
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">🤖</div>
+                    <div class="impact-title">AI Voice Integration</div>
+                    <div class="impact-description">
+                        Microsoft Azure STT & TTS services integrated with Genesys IVR for intelligent voice bot functionality
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">📊</div>
+                    <div class="impact-title">Complete Visibility</div>
+                    <div class="impact-description">
+                        Real-time interaction recording, workforce management, and analytics with Genesys Pulse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section section-light">
+        <div class="container">
+            <h2 class="section-title">Business Impact</h2>
+            <p class="section-subtitle">Transforming customer experience at national scale</p>
+            
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <div class="impact-icon">🎯</div>
+                    <div class="impact-title">Operational Excellence</div>
+                    <div class="impact-description">
+                        Streamlined operations supporting 37 million subscribers with reduced wait times and improved first-call resolution through intelligent routing and AI-powered self-service
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">💪</div>
+                    <div class="impact-title">99.9% Uptime Resilience</div>
+                    <div class="impact-description">
+                        Multi-site redundancy with automatic failover ensures continuous service delivery, protecting revenue and customer satisfaction for Egypt's digital infrastructure
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">⚡</div>
+                    <div class="impact-title">Scalable Growth Platform</div>
+                    <div class="impact-description">
+                        Architecture designed to scale with E& Egypt's ambitious expansion plans, supporting increasing subscriber base and digital service adoption
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">📈</div>
+                    <div class="impact-title">Competitive Advantage</div>
+                    <div class="impact-description">
+                        Omnichannel capabilities across voice, chat, WhatsApp, and email position E& Egypt as a digital-first operator in Egypt's competitive telecom market
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section section-dark">
+        <div class="container">
+            <h2 class="section-title">Solution Architecture</h2>
+            <p class="section-subtitle">Enterprise-grade resilience meets operational efficiency</p>
+            
+            <div class="architecture-visual">
+                <h3 style="color: white; text-align: center; margin-bottom: 2rem; font-size: 1.8rem;">
+                    Dual-Site Resilient Architecture
+                </h3>
+                
+                <div class="resilience-diagram">
+                    <div class="site-box">
+                        <div class="site-title">🏢 Site A - Primary</div>
+                        <div class="component">✅ Management Framework (Active)</div>
+                        <div class="component">✅ Media Layer (Active)</div>
+                        <div class="component">✅ GVP Voice Platform (Active)</div>
+                        <div class="component">✅ Routing & Orchestration (Active)</div>
+                        <div class="component">✅ Recording (Active)</div>
+                        <div class="component">✅ Pulse Analytics (Active)</div>
+                        <div class="component passive">⚠️ Outbound (Active Primary)</div>
+                        <div class="component passive">⚠️ Digital Channels (Active Primary)</div>
+                    </div>
+                    
+                    <div class="site-box">
+                        <div class="site-title">🏢 Site B - Secondary</div>
+                        <div class="component passive">⚠️ Management Framework (Standby)</div>
+                        <div class="component">✅ Media Layer (Active)</div>
+                        <div class="component">✅ GVP Voice Platform (Active)</div>
+                        <div class="component">✅ Routing & Orchestration (Active)</div>
+                        <div class="component">✅ Recording (Active)</div>
+                        <div class="component">✅ Pulse Analytics (Active)</div>
+                        <div class="component passive">⚠️ Outbound (Standby)</div>
+                        <div class="component passive">⚠️ Digital Channels (Standby)</div>
+                    </div>
+                </div>
+                
+                <p style="color: rgba(255,255,255,0.7); text-align: center; margin-top: 2rem; font-size: 0.95rem;">
+                    ✅ Active-Active Configuration | ⚠️ Active-Passive Configuration with Auto-Failover
+                </p>
+            </div>
+
+            <h3 style="color: white; font-size: 2rem; margin-top: 4rem; margin-bottom: 2rem;">Complete Solution Stack</h3>
+            
+            <div class="solution-grid">
+                <div class="solution-item">
+                    <h4>📊 Management Framework</h4>
+                    <p>Centralized configuration and administration with distributed functionality</p>
+                </div>
+                <div class="solution-item">
+                    <h4>☎️ Media Layer + ISCC</h4>
+                    <p>Business continuity enabled with agent reservation across sites</p>
+                </div>
+                <div class="solution-item">
+                    <h4>🎙️ Genesys Voice Platform</h4>
+                    <p>IVR and voice bot with Azure STT/TTS integration via UniMRCP</p>
+                </div>
+                <div class="solution-item">
+                    <h4>📣 Outbound Campaigns</h4>
+                    <p>120K daily outbound calls with predictive dialing capabilities</p>
+                </div>
+                <div class="solution-item">
+                    <h4>💬 Digital Channels</h4>
+                    <p>WhatsApp, web chat, email, and chatbot integration</p>
+                </div>
+                <div class="solution-item">
+                    <h4>🎯 Universal Routing</h4>
+                    <p>Orchestration engine with skills-based and priority routing</p>
+                </div>
+                <div class="solution-item">
+                    <h4>🎬 Interaction Recording</h4>
+                    <p>Full recording capabilities for compliance and quality assurance</p>
+                </div>
+                <div class="solution-item">
+                    <h4>📅 Workforce Management</h4>
+                    <p>Optimized agent scheduling and real-time adherence</p>
+                </div>
+                <div class="solution-item">
+                    <h4>🖥️ Agent Desktop (WDE)</h4>
+                    <p>Click-once deployment with GAX and GA interfaces</p>
+                </div>
+                <div class="solution-item">
+                    <h4>📈 Genesys Pulse</h4>
+                    <p>Real-time dashboards replacing legacy CCPulse with modern analytics</p>
+                </div>
+                <div class="solution-item">
+                    <h4>⚙️ Rules Engine</h4>
+                    <p>Business logic automation and dynamic routing decisions</p>
+                </div>
+                <div class="solution-item">
+                    <h4>🤖 Unispeech UniMRCP</h4>
+                    <p>Integration layer connecting GVP with Azure AI services</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section section-light">
+        <div class="container">
+            <div class="future-vision">
+                <h3>☁️ The Cloud Migration Journey Ahead</h3>
+                <p>
+                    While this deployment was executed on-premise to comply with Egyptian regulatory requirements, 
+                    the partnership and trust established through this massive implementation positions us perfectly 
+                    for the future. As E& Egypt continues its digital transformation journey and regulations evolve, 
+                    we're ready to guide them through cloud migration—leveraging Genesys Cloud to unlock even greater 
+                    scalability, innovation, and operational efficiency. This on-premise success is not the end, but 
+                    the foundation of a long-term strategic partnership.
+                </p>
+                <div class="cta-badge">Foundation Built. Cloud Journey Next. 🚀</div>
+            </div>
+
+            <div style="text-align: center; margin-top: 4rem; padding: 3rem; background: linear-gradient(145deg, #1e1e1e, #2d2d2d); border-radius: 20px;">
+                <h3 style="color: white; font-size: 2.5rem; margin-bottom: 1rem;">Project Success</h3>
+                <p style="color: rgba(255,255,255,0.8); font-size: 1.2rem; max-width: 800px; margin: 0 auto; line-height: 1.8;">
+                    A complete Genesys Engage ecosystem deployed at unprecedented scale, serving one of the Middle East's 
+                    largest telecommunications operators. Built for resilience, designed for growth, and positioned for 
+                    cloud transformation.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animated counter for metrics
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'));
+            const duration = 2000;
+            const step = target / (duration / 16);
+            let current = 0;
+
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    element.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 16);
+        }
+
+        // Trigger animation when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelectorAll('.metric-number').forEach(el => {
+                    animateCounter(el);
+                });
+            }, 500);
+        });
+
+        // Smooth scroll for indicator
+        document.querySelector('.scroll-indicator').addEventListener('click', () => {
+            document.querySelector('.section').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Add fade-in animation for sections
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(50px)';
+            section.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            sectionObserver.observe(section);
+        });
+    </script>
+</body>
+</html>
