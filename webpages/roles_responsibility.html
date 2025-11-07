@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Roles • Skills • Roadmaps</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1220;           /* infor-vibe dark backdrop */
+    --ink:#f8fafc;
+    --muted:#9aa4b2;
+    --card:#171a2b;
+    --edge:#21243a;
+    --accent:#ffbd2e;       /* amber */
+    --c1:#56CCF2; --c2:#6FCF97; --c3:#BB6BD9; --c4:#F2994A; --c5:#EB5757;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+  a{color:var(--accent);text-decoration:none}
+  header{
+    padding:64px 24px 24px;
+    background: radial-gradient(1000px 500px at 20% -10%, #2a2f55 0%, transparent 60%),
+                radial-gradient(700px 350px at 90% -10%, #3a1f4d 0%, transparent 55%);
+    border-bottom:1px solid var(--edge);
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+  h1{font-size: clamp(40px,6vw,64px); line-height:1.05; margin:0 0 8px}
+  .tagline{color:var(--muted);font-weight:500}
+  nav.top{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap}
+  .chip{padding:8px 12px;border:1px solid var(--edge);background:transparent;border-radius:999px;color:var(--ink)}
+  .chip:hover{background:#1a1e34}
+
+  section{padding:56px 24px;border-top:1px solid var(--edge)}
+  h2{font-size: clamp(28px,4vw,44px); margin:0 0 6px}
+  p.lead{color:#d2d6e6;max-width:75ch}
+
+  /* SKILL GRID */
+  .skill-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:28px}
+  .skill{grid-column: span 6;background:var(--card);border:1px solid var(--edge);border-radius:18px;padding:18px 18px 14px; position:relative; overflow:hidden}
+  .skill h3{margin:4px 0 10px;font-size:22px}
+  .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .pill{font-size:12.5px;border:1px solid var(--edge);border-radius:999px;padding:4px 10px;color:#e5e9f5}
+  .meta{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+  .meta div{background:#111425;border:1px solid var(--edge);border-radius:12px;padding:10px}
+  .meta h4{margin:0 0 6px;font-size:12px;color:#98a2b6;letter-spacing:.08em;text-transform:uppercase}
+  .kpi{display:flex;gap:10px;flex-wrap:wrap}
+  .kpi span{background:#10162b;border:1px dashed #2b3255;border-radius:9px;padding:6px 8px;font-size:12.5px;color:#cdd3ee}
+
+  @media (max-width:920px){
+    .skill{grid-column: span 12}
+    .meta{grid-template-columns:1fr}
+  }
+
+  /* ROLE PAGES */
+  .role-card{background:linear-gradient(180deg, #171a2b 0, #121427 100%);border:1px solid var(--edge);border-radius:22px;padding:20px;margin-top:16px}
+  .role-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .role-dot{width:18px;height:18px;border-radius:50%;}
+  .role-dot.alch{background:var(--accent)}
+  .role-dot.build{background:var(--c1)}
+  .role-dot.dev{background:var(--c2)}
+  .role-dot.opt{background:var(--c3)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .list{background:#0f1325;border:1px solid var(--edge);border-radius:14px;padding:12px}
+  .list h4{margin:4px 0 10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#9fb2ff}
+  ul{margin:0;padding-left:18px}
+  li{margin:6px 0}
+  .skill-links{display:flex;gap:8px;flex-wrap:wrap}
+  .skill-links a{border:1px solid #2a2f55;background:#101737;color:#e6ebff;border-radius:999px;padding:5px 10px;font-size:12.5px}
+
+  /* ROADMAPS */
+  .lane{background:#111425;border:1px solid var(--edge);border-radius:16px;padding:16px;margin-top:16px}
+  .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+  .node{background:#0f152a;border:1px solid var(--edge);border-radius:14px;padding:12px;position:relative}
+  .node h5{margin:0 0 6px;font-size:14px}
+  .tiny{color:#b9c2d6;font-size:13px}
+  .band{margin-top:14px;border-top:1px dashed #2b3255;padding-top:12px;color:#9aa8d8}
+  .timeline5{grid-template-columns:repeat(5,1fr)}
+  footer{padding:36px 24px;color:#a6aec9;text-align:center;border-top:1px solid var(--edge)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>AI Solution Delivery — Roles, Skills & Roadmaps</h1>
+    <div class="tagline">Inspired by data-storytelling aesthetics. Explore skills, role pages, and how everything fits into delivery and career evolution.</div>
+    <nav class="top">
+      <a class="chip" href="#skills">Skills Library</a>
+      <a class="chip" href="#roles">Role Pages</a>
+      <a class="chip" href="#project-roadmap">Project Roadmap</a>
+      <a class="chip" href="#consultant-evolution">Consultant Evolution</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ======================= SKILLS ======================= -->
+<section id="skills">
+  <div class="wrap">
+    <h2>Skills Library</h2>
+    <p class="lead">Each skill follows a consistent mini-profile: <b>What it is</b>, <b>Core outputs</b>, <b>Evidence/KPIs</b>, <b>Typical tools</b>, and <b>Collaborators</b>. Click a skill pill from a role page to jump here.</p>
+
+    <div class="skill-grid">
+
+      <!-- Skill Template (repeat) -->
+      <article class="skill" id="skill-journey">
+        <h3>Journey Designer</h3>
+        <div class="pill-row">
+          <span class="pill">CX • EX</span><span class="pill">Service Blueprints</span><span class="pill">Personas</span>
+        </div>
+        <div class="meta">
+          <div>
+            <h4>What it is</h4>
+            Maps, analyzes and optimizes end-to-end journeys; translates goals into experiences and requirements.
+          </div>
+          <div>
+            <h4>Core outputs</h4>
+            Flow diagrams, service blueprints, prioritized opportunity backlog, acceptance criteria.
+          </div>
+          <div>
+            <h4>Evidence / KPIs</h4>
+            <div class="kpi"><span>CSAT ↑</span><span>Time-to-resolution ↓</span><span>Adoption ↑</span></div>
+          </div>
+          <div>
+            <h4>Tools & Collaborators</h4>
+            Miro, FigJam, whiteboards • Works with CX Strategist, Builder, Optimizer.
+          </div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-ux">
+        <h3>UX Specialist</h3>
+        <div class="pill-row"><span class="pill">UI</span><span class="pill">Wireframes</span><span class="pill">Usability</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Designs intuitive UI and interaction patterns; validates via testing.</div>
+          <div><h4>Core outputs</h4> Wireframes, prototypes, design systems, test findings.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Task success ↑</span><span>Time-on-task ↓</span><span>NPS ↑</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Figma, Sketch • Works with Builder & Developer.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-cx">
+        <h3>CX Strategist</h3>
+        <div class="pill-row"><span class="pill">Vision</span><span class="pill">KPIs</span><span class="pill">Value Cases</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Defines CX vision, measures business value, and prioritizes initiatives.</div>
+          <div><h4>Core outputs</h4> CX strategy, KPI tree, roadmap hypotheses.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>ROI</span><span>Churn ↓</span><span>Revenue ↑</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Slides, analytics • Works with Alchemist, Execs, Optimizer.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-ai-architect">
+        <h3>AI Architect</h3>
+        <div class="pill-row"><span class="pill">ML Patterns</span><span class="pill">Security</span><span class="pill">Scalability</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Technical blueprinting for AI/ML solutions and platform choices.</div>
+          <div><h4>Core outputs</h4> Reference architectures, guardrails, decision logs.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Latency ↓</span><span>Reliability ↑</span><span>Cost/req ↓</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Diagrams, ADRs • Works with Builder, Developer, Security.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-dev">
+        <h3>Developer (FE/BE/SDK)</h3>
+        <div class="pill-row"><span class="pill">APIs</span><span class="pill">Services</span><span class="pill">SDKs</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Builds UI, services and SDKs; turns designs into running software.</div>
+          <div><h4>Core outputs</h4> Web/mobile components, APIs, CI/CD pipelines.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Deploy freq ↑</span><span>Incidents ↓</span><span>Coverage ↑</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Git, IDEs, test stacks • Works with Builder & Optimizer.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-digital-channel">
+        <h3>Digital Channel Specialist</h3>
+        <div class="pill-row"><span class="pill">Web</span><span class="pill">Mobile</span><span class="pill">Chat/Voice</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Ensures consistent, optimized experiences across touchpoints.</div>
+          <div><h4>Core outputs</h4> Channel playbooks, configs, message styles.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Reach ↑</span><span>Drop-off ↓</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Channel consoles • Works with Builder & Developer.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-qa">
+        <h3>QA / Testing Specialist</h3>
+        <div class="pill-row"><span class="pill">Functional</span><span class="pill">Regression</span><span class="pill">Performance</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Protects quality with test plans, suites, data, and automation.</div>
+          <div><h4>Core outputs</h4> Test strategy, defects triage, quality gates.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Defect escape ↓</span><span>MTTR ↓</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Cypress, JMeter • Works with Developer & Optimizer.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-security">
+        <h3>Security & Privacy Advisor</h3>
+        <div class="pill-row"><span class="pill">GDPR</span><span class="pill">HIPAA</span><span class="pill">Threat Models</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Ensures compliance and data protection across solutions.</div>
+          <div><h4>Core outputs</h4> DPIAs, security reviews, policy guardrails.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Findings closed ↑</span><span>Incidents ↓</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Risk registers • Works with Alchemist, Dev, Legal.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-system-arch">
+        <h3>System Architect</h3>
+        <div class="pill-row"><span class="pill">Integration</span><span class="pill">Scalability</span><span class="pill">Reliability</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Owns technical integration and the end-to-end solution design.</div>
+          <div><h4>Core outputs</h4> Integration specs, sequence diagrams, SLOs.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Uptime ↑</span><span>Cost/txn ↓</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Draw.io, ADRs • Works with Builder & Developer.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-ex">
+        <h3>EX Optimizer</h3>
+        <div class="pill-row"><span class="pill">Internal Tools</span><span class="pill">Productivity</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Elevates employee experience via internal copilots and tools.</div>
+          <div><h4>Core outputs</h4> EX use cases, rollout playbooks, adoption measures.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Time saved ↑</span><span>Adoption ↑</span></div></div>
+          <div><h4>Tools & Collaborators</h4> M365, Slack, HRIS • Works with Optimizer & Alchemist.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-evals">
+        <h3>AI Evals Analyst</h3>
+        <div class="pill-row"><span class="pill">Drift</span><span class="pill">Bias</span><span class="pill">Quality</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Monitors deployed AI for accuracy, bias, and degradation.</div>
+          <div><h4>Core outputs</h4> Eval sets, dashboards, retrain recommendations.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Accuracy ↑</span><span>Toxicity ↓</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Eval pipelines • Works with Optimizer & Developer.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-knowledge">
+        <h3>Knowledge & AI Engineer</h3>
+        <div class="pill-row"><span class="pill">Taxonomy</span><span class="pill">RAG</span><span class="pill">Ontologies</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Designs knowledge bases and retrieval structures for AI.</div>
+          <div><h4>Core outputs</h4> Schemas, embeddings, curation pipelines.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Recall ↑</span><span>Precision ↑</span></div></div>
+          <div><h4>Tools & Collaborators</h4> KB tools, vector DBs • Works with Builder & Dev.</div>
+        </div>
+      </article>
+
+      <article class="skill" id="skill-evangelist">
+        <h3>AI Evangelist</h3>
+        <div class="pill-row"><span class="pill">Enablement</span><span class="pill">Storytelling</span></div>
+        <div class="meta">
+          <div><h4>What it is</h4> Drives adoption through education and strategic narrative.</div>
+          <div><h4>Core outputs</h4> Demos, talks, playbooks, case libraries.</div>
+          <div><h4>Evidence / KPIs</h4><div class="kpi"><span>Enablement reach ↑</span><span>Use cases shipped ↑</span></div></div>
+          <div><h4>Tools & Collaborators</h4> Slides, demos • Works with all roles.</div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ROLES ======================= -->
+<section id="roles">
+  <div class="wrap">
+    <h2>Role Pages</h2>
+    <p class="lead">Each role links directly to the skills above and summarizes the activities it performs.</p>
+
+    <!-- AI Solution Alchemist -->
+    <article class="role-card">
+      <div class="role-head"><span class="role-dot alch"></span><h3>AI Solution Alchemist</h3></div>
+      <div class="grid-2">
+        <div class="list">
+          <h4>Core Skills</h4>
+          <div class="skill-links">
+            <a href="#skill-journey">Journey Designer</a>
+            <a href="#skill-cx">CX Strategist</a>
+            <a href="#skill-knowledge">Knowledge &amp; AI Engineer</a>
+            <a href="#skill-digital-channel">Digital Channel Specialist</a>
+            <a href="#skill-security">Security &amp; Privacy Advisor</a>
+          </div>
+        </div>
+        <div class="list">
+          <h4>Key Activities</h4>
+          <ul>
+            <li>Lead pre-sales & discovery workshops</li>
+            <li>Define AI transformation blueprints & guardrails</li>
+            <li>Ensure privacy, security & ethical design</li>
+            <li>Community enablement & vision storytelling</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- VA & Copilot Builder -->
+    <article class="role-card">
+      <div class="role-head"><span class="role-dot build"></span><h3>VA &amp; Copilot Builder</h3></div>
+      <div class="grid-2">
+        <div class="list">
+          <h4>Core Skills</h4>
+          <div class="skill-links">
+            <a href="#skill-cx">CX Strategist</a>
+            <a href="#skill-journey">Journey Designer</a>
+            <a href="#skill-knowledge">Knowledge &amp; AI Engineer</a>
+            <a href="#skill-digital-channel">Digital Channel Specialist</a>
+            <a href="#skill-system-arch">System Architect</a>
+          </div>
+        </div>
+        <div class="list">
+          <h4>Key Activities</h4>
+          <ul>
+            <li>Gather requirements & define conversational flows</li>
+            <li>Design integration blueprints (Salesforce, ServiceNow, AI platforms)</li>
+            <li>Map data exchange & auth patterns; identify 3rd-party connectors</li>
+            <li>Produce prototypes & pilot experiences</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- Custom Developer -->
+    <article class="role-card">
+      <div class="role-head"><span class="role-dot dev"></span><h3>Custom Developer</h3></div>
+      <div class="grid-2">
+        <div class="list">
+          <h4>Core Skills</h4>
+          <div class="skill-links">
+            <a href="#skill-dev">Developer (FE/BE/SDK)</a>
+            <a href="#skill-system-arch">System Architect</a>
+            <a href="#skill-digital-channel">Digital Channel Specialist</a>
+            <a href="#skill-evals">AI Evals Analyst</a>
+            <a href="#skill-qa">QA / Testing Specialist</a>
+          </div>
+        </div>
+        <div class="list">
+          <h4>Key Activities</h4>
+          <ul>
+            <li>Customize web/messaging & mobile integrations</li>
+            <li>Implement APIs & SDKs; integrate CRMs and AI platforms</li>
+            <li>Build connectors and CI/CD; maintain reliability (GPR pipeline)</li>
+            <li>Partner with QA on test automation & performance</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- Optimizer & Designer -->
+    <article class="role-card">
+      <div class="role-head"><span class="role-dot opt"></span><h3>Optimizer &amp; Designer</h3></div>
+      <div class="grid-2">
+        <div class="list">
+          <h4>Core Skills</h4>
+          <div class="skill-links">
+            <a href="#skill-ex">EX Optimizer</a>
+            <a href="#skill-journey">Journey Designer</a>
+            <a href="#skill-ux">UX Specialist</a>
+            <a href="#skill-evals">AI Evals Analyst</a>
+            <a href="#skill-qa">QA / Testing Specialist</a>
+          </div>
+        </div>
+        <div class="list">
+          <h4>Key Activities</h4>
+          <ul>
+            <li>Measure performance & analyze feedback</li>
+            <li>Tune prompts, flows, UX; run experiments</li>
+            <li>Validate cross-system performance & data accuracy</li>
+            <li>Advisory & continuous improvement cadences</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ======================= PROJECT ROADMAP ======================= -->
+<section id="project-roadmap">
+  <div class="wrap">
+    <h2>How Roles Fit in the Project Roadmap</h2>
+    <p class="lead">Ownership across the delivery lifecycle with hand-offs and collaboration touchpoints.</p>
+
+    <div class="lane">
+      <div class="timeline">
+        <div class="node">
+          <h5>Vision &amp; Alignment</h5>
+          <div class="tiny">Owner: <b>AI Solution Alchemist</b></div>
+          <div class="band">Discovery, value cases, ethics & guardrails</div>
+        </div>
+        <div class="node">
+          <h5>Experience Design</h5>
+          <div class="tiny">Owner: <b>VA &amp; Copilot Builder</b></div>
+          <div class="band">Flows, intents, integration blueprints</div>
+        </div>
+        <div class="node">
+          <h5>Build &amp; Integrate</h5>
+          <div class="tiny">Owner: <b>Custom Developer</b></div>
+          <div class="band">APIs, SDKs, CRM/AI connections, QA</div>
+        </div>
+        <div class="node">
+          <h5>Optimize &amp; Evolve</h5>
+          <div class="tiny">Owner: <b>Optimizer &amp; Designer</b></div>
+          <div class="band">Evals, analytics, A/Bs, adoption</div>
+        </div>
+      </div>
+      <div class="band">Horizontal: <b>Integration &amp; Platform Governance</b> • Security &amp; Privacy across all phases</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CONSULTANT EVOLUTION ======================= -->
+<section id="consultant-evolution">
+  <div class="wrap">
+    <h2>How Roles Map to Consultant Evolution</h2>
+    <p class="lead">Career maturity from Practitioner → Trusted Partner, aligned to role families.</p>
+
+    <div class="lane">
+      <div class="timeline timeline5">
+        <div class="node">
+          <h5>Practitioner</h5>
+          <div class="tiny">Entry across any role</div>
+          <div class="band">Support delivery • Learn frameworks</div>
+        </div>
+        <div class="node">
+          <h5>Specialist</h5>
+          <div class="tiny">Primary roles: <b>Builder</b> or <b>Developer</b></div>
+          <div class="band">Own scoped design or development</div>
+        </div>
+        <div class="node">
+          <h5>Advisor</h5>
+          <div class="tiny">Primary role: <b>Optimizer &amp; Designer</b></div>
+          <div class="band">Lead engagements • Translate data to action</div>
+        </div>
+        <div class="node">
+          <h5>Strategist</h5>
+          <div class="tiny">Primary role: <b>AI Solution Alchemist</b></div>
+          <div class="band">Shape programs • Governance &amp; ethics</div>
+        </div>
+        <div class="node">
+          <h5>Trusted Partner</h5>
+          <div class="tiny">Principal Alchemist / Practice Lead</div>
+          <div class="band">Executive advisory • Enterprise outcomes</div>
+        </div>
+      </div>
+      <div class="band">Continuous themes: Learning • Innovation • Collaboration • Value Delivery</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Built for internal presentations. Adjust copy, colors, or add logos as needed.
+</footer>
+
+</body>
+</html>
