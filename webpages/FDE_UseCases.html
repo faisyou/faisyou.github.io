@@ -1,357 +1,395 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDE Theme Slides - Executive Presentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-slate-800">
+    <div id="app" class="w-full h-screen flex flex-col"></div>
 
-const FDESlides = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
+    <script>
+        const slides = [
+            {
+                theme: "Theme 1: Expanding Automation Beyond Conversational AI",
+                subtitle: "From Simple Bots to Agentic Reasoning",
+                problem: {
+                    title: "THE PROBLEM",
+                    challenge: "Traditional chatbots limited to simple transactions",
+                    bullets: [
+                        "NLU bots handle only basic tasks (balance checks, order status)",
+                        "Complex reasoning-driven interactions still require human agents",
+                        "Agentic AI promises autonomy but risks hallucination and misalignment"
+                    ],
+                    impact: "Automation value plateaus at low-complexity tasks"
+                },
+                opportunity: {
+                    title: "THE OPPORTUNITY",
+                    paradigm: "Context Engineering",
+                    description: "Systematic design of contextual ecosystems for AI reasoning",
+                    useCases: [
+                        {
+                            name: "Transaction Inquiry",
+                            example: '"There was a ~$100 transaction last week" → AI interprets vague query, searches timeframe, provides meaningful summary'
+                        },
+                        {
+                            name: "High Bill Inquiry",
+                            example: 'AI reasons across billing/usage data: "6GB overage + expired promo on Oct 12 explains $50 increase"'
+                        }
+                    ],
+                    customers: [
+                        "UniCredit & Santander exploring semantic data conversations",
+                        "BT B2B implementing bill explanation with ServiceNow",
+                        "Etisalat UAE live on WhatsApp (via Accenture CAIP + DBC)"
+                    ]
+                },
+                solution: {
+                    title: "THE FDE SOLUTION",
+                    how: [
+                        "Design customer-specific context orchestration patterns",
+                        "Prototype complex reasoning use cases beyond productization",
+                        "Bridge last-mile gap between AI models and business outcomes"
+                    ],
+                    value: "Transform Genesys from platform provider to AI transformation partner"
+                }
+            },
+            {
+                theme: "Theme 2: Knowledge Engineering",
+                subtitle: "From Static Content to Intelligent Asset",
+                problem: {
+                    title: "THE PROBLEM",
+                    challenge: "Knowledge repositories exist but aren't AI-optimized",
+                    bullets: [
+                        "Current implementations import knowledge 'as-is' without optimization",
+                        "Disorganized content with inconsistent metadata",
+                        "No visibility into knowledge performance or gaps"
+                    ],
+                    impact: "AI solutions underperform despite massive knowledge investments"
+                },
+                opportunity: {
+                    title: "THE OPPORTUNITY",
+                    paradigm: "Knowledge Engineering",
+                    description: "Transform knowledge into living, intelligent asset through systematic design",
+                    useCases: [
+                        {
+                            name: "Context-Aware Retrieval",
+                            example: '"What\'s my card limit?" → AI interprets customer holds Gold Master, returns personalized answer vs. generic response'
+                        },
+                        {
+                            name: "Intent-Aligned Organization",
+                            example: "Knowledge structured by customer intent, not internal hierarchies, with enriched metadata for precise reasoning"
+                        }
+                    ],
+                    customers: [
+                        "UniCredit designing Task Execution + RAG hybrid",
+                        "Requires context-aware retrieval with personalization and traceability",
+                        "Multiple enterprises seeking knowledge intelligence vs. management"
+                    ]
+                },
+                solution: {
+                    title: "THE FDE SOLUTION",
+                    how: [
+                        "Design optimal knowledge schemas and ontologies aligned with intent",
+                        "Integrate and normalize disparate data sources (CRM, ITSM, repositories)",
+                        "Implement evaluation and observability frameworks for continuous improvement"
+                    ],
+                    value: "Every AI interaction grounded, relevant, and accountable with measurable performance"
+                }
+            },
+            {
+                theme: "Theme 3: A2A and Ecosystem Integrations",
+                subtitle: "Orchestrating Complex Multi-System Workflows",
+                problem: {
+                    title: "THE PROBLEM",
+                    challenge: "Enterprise automation requires coordinated action across systems",
+                    bullets: [
+                        "Agent-to-Agent (A2A) workflows span CRM, ITSM, billing, and legacy systems",
+                        "Standard connectors lack sophistication for complex orchestration",
+                        "Integration logic is customer-specific and cannot be productized"
+                    ],
+                    impact: "High-value automation blocked by integration complexity"
+                },
+                opportunity: {
+                    title: "THE OPPORTUNITY",
+                    paradigm: "Ecosystem Orchestration",
+                    description: "Agentic AI coordinating multi-step workflows across enterprise systems",
+                    useCases: [
+                        {
+                            name: "ServiceNow Integration",
+                            example: "AI creates tickets, updates cases, retrieves CMDB data while maintaining conversation context"
+                        },
+                        {
+                            name: "End-to-End Resolution",
+                            example: "Customer inquiry → AI queries CRM, checks inventory, updates ERP, confirms via SMS — all automated"
+                        }
+                    ],
+                    customers: [
+                        "BT B2B and B2C implementing ServiceNow integration",
+                        "Genesys providing strategic architecture alignment",
+                        "Multiple enterprises seeking unified orchestration layer"
+                    ]
+                },
+                solution: {
+                    title: "THE FDE SOLUTION",
+                    how: [
+                        "Architect customer-specific integration patterns for A2A workflows",
+                        "Build orchestration logic that balances automation and control",
+                        "Establish reusable integration frameworks from field deployments"
+                    ],
+                    value: "Enable true end-to-end automation that delivers measurable operational efficiency"
+                }
+            },
+            {
+                theme: "Theme 4: Expanding Genesys AI Beyond Contact Center",
+                subtitle: "Agentic Task Automation for Back-Office Operations",
+                problem: {
+                    title: "THE PROBLEM",
+                    challenge: "Back-office task automation capabilities lag behind customer demand",
+                    bullets: [
+                        "Cloud task automation not yet matching Engage sophistication",
+                        "Customers hesitant to migrate workloads without feature parity",
+                        "AI-powered task routing and resolution remains manual-heavy"
+                    ],
+                    impact: "Revenue locked in legacy platforms; cloud migration stalled"
+                },
+                opportunity: {
+                    title: "THE OPPORTUNITY",
+                    paradigm: "Agentic Task Automation",
+                    description: "AI ingesting, prioritizing, and autonomously resolving back-office tasks",
+                    useCases: [
+                        {
+                            name: "Intelligent Task Routing",
+                            example: "AI analyzes task context, urgency, and agent expertise to optimize assignment and SLA compliance"
+                        },
+                        {
+                            name: "Autonomous Task Resolution",
+                            example: "AI handles routine back-office tasks (document processing, data entry, approvals) without human intervention"
+                        }
+                    ],
+                    customers: [
+                        "ENBD using Engage iWD, interested in cloud migration",
+                        "Requires task automation sophistication beyond current cloud capabilities",
+                        "Multiple enterprises seeking AI-powered back-office transformation"
+                    ]
+                },
+                solution: {
+                    title: "THE FDE SOLUTION",
+                    how: [
+                        "Prototype advanced task automation workflows in customer environments",
+                        "Demonstrate AI-powered capabilities that exceed legacy platform features",
+                        "Accelerate cloud migration by proving business case through rapid POCs"
+                    ],
+                    value: "Unlock cloud revenue by making back-office AI automation a competitive differentiator"
+                }
+            },
+            {
+                theme: "Theme 5: Multi-Modal AI Extension",
+                subtitle: "Orchestrating Image, Voice, and Text Cognition",
+                problem: {
+                    title: "THE PROBLEM",
+                    challenge: "Complex use cases require reasoning across multiple input modalities",
+                    bullets: [
+                        "Insurance claims, damage assessment, identity verification need image + text + voice",
+                        "Current solutions handle modalities in isolation, not orchestrated reasoning",
+                        "No framework for multi-modal context integration"
+                    ],
+                    impact: "High-value use cases (claims processing, fraud detection) remain manual"
+                },
+                opportunity: {
+                    title: "THE OPPORTUNITY",
+                    paradigm: "Multi-Modal Orchestration",
+                    description: "AI reasoning across image, voice, and text inputs within unified conversational flow",
+                    useCases: [
+                        {
+                            name: "Insurance Claims Processing",
+                            example: "Customer uploads damage photos → AI analyzes images, cross-references policy via voice/text, estimates claim value, initiates approval workflow"
+                        },
+                        {
+                            name: "Identity Verification",
+                            example: "AI combines document image analysis + voice biometrics + conversational knowledge verification for secure onboarding"
+                        }
+                    ],
+                    customers: [
+                        "Insurance companies seeking claims automation",
+                        "Financial services requiring enhanced identity verification",
+                        "Healthcare providers needing multi-modal patient intake"
+                    ]
+                },
+                solution: {
+                    title: "THE FDE SOLUTION",
+                    how: [
+                        "Design multi-modal reasoning pipelines tailored to industry use cases",
+                        "Integrate vision, speech, and language models into unified orchestration layer",
+                        "Prototype cutting-edge experiences that differentiate Genesys in market"
+                    ],
+                    value: "Position Genesys as leader in next-generation AI experiences beyond voice/text limitations"
+                }
+            }
+        ];
 
-  const slides = [
-    {
-      theme: "Theme 1: Expanding Automation Beyond Conversational AI",
-      subtitle: "From Simple Bots to Agentic Reasoning",
-      problem: {
-        title: "THE PROBLEM",
-        challenge: "Traditional chatbots limited to simple transactions",
-        bullets: [
-          "NLU bots handle only basic tasks (balance checks, order status)",
-          "Complex reasoning-driven interactions still require human agents",
-          "Agentic AI promises autonomy but risks hallucination and misalignment"
-        ],
-        impact: "Automation value plateaus at low-complexity tasks"
-      },
-      opportunity: {
-        title: "THE OPPORTUNITY",
-        paradigm: "Context Engineering",
-        description: "Systematic design of contextual ecosystems for AI reasoning",
-        useCases: [
-          {
-            name: "Transaction Inquiry",
-            example: "\"There was a ~$100 transaction last week\" → AI interprets vague query, searches timeframe, provides meaningful summary"
-          },
-          {
-            name: "High Bill Inquiry",
-            example: "AI reasons across billing/usage data: \"6GB overage + expired promo on Oct 12 explains $50 increase\""
-          }
-        ],
-        customers: [
-          "UniCredit & Santander exploring semantic data conversations",
-          "BT B2B implementing bill explanation with ServiceNow",
-          "Etisalat UAE live on WhatsApp (via Accenture CAIP + DBC)"
-        ]
-      },
-      solution: {
-        title: "THE FDE SOLUTION",
-        how: [
-          "Design customer-specific context orchestration patterns",
-          "Prototype complex reasoning use cases beyond productization",
-          "Bridge last-mile gap between AI models and business outcomes"
-        ],
-        value: "Transform Genesys from platform provider to AI transformation partner"
-      }
-    },
-    {
-      theme: "Theme 2: Knowledge Engineering",
-      subtitle: "From Static Content to Intelligent Asset",
-      problem: {
-        title: "THE PROBLEM",
-        challenge: "Knowledge repositories exist but aren't AI-optimized",
-        bullets: [
-          "Current implementations import knowledge 'as-is' without optimization",
-          "Disorganized content with inconsistent metadata",
-          "No visibility into knowledge performance or gaps"
-        ],
-        impact: "AI solutions underperform despite massive knowledge investments"
-      },
-      opportunity: {
-        title: "THE OPPORTUNITY",
-        paradigm: "Knowledge Engineering",
-        description: "Transform knowledge into living, intelligent asset through systematic design",
-        useCases: [
-          {
-            name: "Context-Aware Retrieval",
-            example: "\"What's my card limit?\" → AI interprets customer holds Gold Master, returns personalized answer vs. generic response"
-          },
-          {
-            name: "Intent-Aligned Organization",
-            example: "Knowledge structured by customer intent, not internal hierarchies, with enriched metadata for precise reasoning"
-          }
-        ],
-        customers: [
-          "UniCredit designing Task Execution + RAG hybrid",
-          "Requires context-aware retrieval with personalization and traceability",
-          "Multiple enterprises seeking knowledge intelligence vs. management"
-        ]
-      },
-      solution: {
-        title: "THE FDE SOLUTION",
-        how: [
-          "Design optimal knowledge schemas and ontologies aligned with intent",
-          "Integrate and normalize disparate data sources (CRM, ITSM, repositories)",
-          "Implement evaluation and observability frameworks for continuous improvement"
-        ],
-        value: "Every AI interaction grounded, relevant, and accountable with measurable performance"
-      }
-    },
-    {
-      theme: "Theme 3: A2A and Ecosystem Integrations",
-      subtitle: "Orchestrating Complex Multi-System Workflows",
-      problem: {
-        title: "THE PROBLEM",
-        challenge: "Enterprise automation requires coordinated action across systems",
-        bullets: [
-          "Agent-to-Agent (A2A) workflows span CRM, ITSM, billing, and legacy systems",
-          "Standard connectors lack sophistication for complex orchestration",
-          "Integration logic is customer-specific and cannot be productized"
-        ],
-        impact: "High-value automation blocked by integration complexity"
-      },
-      opportunity: {
-        title: "THE OPPORTUNITY",
-        paradigm: "Ecosystem Orchestration",
-        description: "Agentic AI coordinating multi-step workflows across enterprise systems",
-        useCases: [
-          {
-            name: "ServiceNow Integration",
-            example: "AI creates tickets, updates cases, retrieves CMDB data while maintaining conversation context"
-          },
-          {
-            name: "End-to-End Resolution",
-            example: "Customer inquiry → AI queries CRM, checks inventory, updates ERP, confirms via SMS — all automated"
-          }
-        ],
-        customers: [
-          "BT B2B and B2C implementing ServiceNow integration",
-          "Genesys providing strategic architecture alignment",
-          "Multiple enterprises seeking unified orchestration layer"
-        ]
-      },
-      solution: {
-        title: "THE FDE SOLUTION",
-        how: [
-          "Architect customer-specific integration patterns for A2A workflows",
-          "Build orchestration logic that balances automation and control",
-          "Establish reusable integration frameworks from field deployments"
-        ],
-        value: "Enable true end-to-end automation that delivers measurable operational efficiency"
-      }
-    },
-    {
-      theme: "Theme 4: Expanding Genesys AI Beyond Contact Center",
-      subtitle: "Agentic Task Automation for Back-Office Operations",
-      problem: {
-        title: "THE PROBLEM",
-        challenge: "Back-office task automation capabilities lag behind customer demand",
-        bullets: [
-          "Cloud task automation not yet matching Engage sophistication",
-          "Customers hesitant to migrate workloads without feature parity",
-          "AI-powered task routing and resolution remains manual-heavy"
-        ],
-        impact: "Revenue locked in legacy platforms; cloud migration stalled"
-      },
-      opportunity: {
-        title: "THE OPPORTUNITY",
-        paradigm: "Agentic Task Automation",
-        description: "AI ingesting, prioritizing, and autonomously resolving back-office tasks",
-        useCases: [
-          {
-            name: "Intelligent Task Routing",
-            example: "AI analyzes task context, urgency, and agent expertise to optimize assignment and SLA compliance"
-          },
-          {
-            name: "Autonomous Task Resolution",
-            example: "AI handles routine back-office tasks (document processing, data entry, approvals) without human intervention"
-          }
-        ],
-        customers: [
-          "ENBD using Engage iWD, interested in cloud migration",
-          "Requires task automation sophistication beyond current cloud capabilities",
-          "Multiple enterprises seeking AI-powered back-office transformation"
-        ]
-      },
-      solution: {
-        title: "THE FDE SOLUTION",
-        how: [
-          "Prototype advanced task automation workflows in customer environments",
-          "Demonstrate AI-powered capabilities that exceed legacy platform features",
-          "Accelerate cloud migration by proving business case through rapid POCs"
-        ],
-        value: "Unlock cloud revenue by making back-office AI automation a competitive differentiator"
-      }
-    },
-    {
-      theme: "Theme 5: Multi-Modal AI Extension",
-      subtitle: "Orchestrating Image, Voice, and Text Cognition",
-      problem: {
-        title: "THE PROBLEM",
-        challenge: "Complex use cases require reasoning across multiple input modalities",
-        bullets: [
-          "Insurance claims, damage assessment, identity verification need image + text + voice",
-          "Current solutions handle modalities in isolation, not orchestrated reasoning",
-          "No framework for multi-modal context integration"
-        ],
-        impact: "High-value use cases (claims processing, fraud detection) remain manual"
-      },
-      opportunity: {
-        title: "THE OPPORTUNITY",
-        paradigm: "Multi-Modal Orchestration",
-        description: "AI reasoning across image, voice, and text inputs within unified conversational flow",
-        useCases: [
-          {
-            name: "Insurance Claims Processing",
-            example: "Customer uploads damage photos → AI analyzes images, cross-references policy via voice/text, estimates claim value, initiates approval workflow"
-          },
-          {
-            name: "Identity Verification",
-            example: "AI combines document image analysis + voice biometrics + conversational knowledge verification for secure onboarding"
-          }
-        ],
-        customers: [
-          "Insurance companies seeking claims automation",
-          "Financial services requiring enhanced identity verification",
-          "Healthcare providers needing multi-modal patient intake"
-        ]
-      },
-      solution: {
-        title: "THE FDE SOLUTION",
-        how: [
-          "Design multi-modal reasoning pipelines tailored to industry use cases",
-          "Integrate vision, speech, and language models into unified orchestration layer",
-          "Prototype cutting-edge experiences that differentiate Genesys in market"
-        ],
-        value: "Position Genesys as leader in next-generation AI experiences beyond voice/text limitations"
-      }
-    }
-  ];
+        let currentSlide = 0;
 
-  const currentSlideData = slides[currentSlide];
-
-  return (
-    <div className="w-full h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col">
-      {/* Header */}
-      <div className="bg-slate-950 text-white p-6 border-b border-slate-700">
-        <h1 className="text-2xl font-bold mb-2">{currentSlideData.theme}</h1>
-        <p className="text-slate-400 text-lg">{currentSlideData.subtitle}</p>
-      </div>
-
-      {/* Main Content - 3 Columns */}
-      <div className="flex-1 grid grid-cols-3 gap-6 p-8 overflow-auto">
-        {/* Column 1: Problem */}
-        <div className="bg-red-950/30 border-2 border-red-800 rounded-lg p-6 flex flex-col">
-          <div className="bg-red-800 text-white px-4 py-2 rounded-t-lg -mx-6 -mt-6 mb-4">
-            <h2 className="text-xl font-bold">{currentSlideData.problem.title}</h2>
-          </div>
-          
-          <div className="mb-4">
-            <h3 className="text-red-300 font-semibold text-lg mb-2">Challenge</h3>
-            <p className="text-red-100 text-base font-medium">{currentSlideData.problem.challenge}</p>
-          </div>
-
-          <div className="mb-4">
-            <h3 className="text-red-300 font-semibold text-base mb-2">Key Issues</h3>
-            <ul className="space-y-2">
-              {currentSlideData.problem.bullets.map((bullet, idx) => (
-                <li key={idx} className="text-red-100 text-sm flex items-start">
-                  <span className="text-red-400 mr-2 mt-1">▸</span>
-                  <span>{bullet}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="mt-auto pt-4 border-t border-red-800">
-            <h3 className="text-red-300 font-semibold text-base mb-1">Business Impact</h3>
-            <p className="text-red-100 text-sm font-medium italic">{currentSlideData.problem.impact}</p>
-          </div>
-        </div>
-
-        {/* Column 2: Opportunity */}
-        <div className="bg-blue-950/30 border-2 border-blue-800 rounded-lg p-6 flex flex-col">
-          <div className="bg-blue-800 text-white px-4 py-2 rounded-t-lg -mx-6 -mt-6 mb-4">
-            <h2 className="text-xl font-bold">{currentSlideData.opportunity.title}</h2>
-          </div>
-          
-          <div className="mb-4">
-            <h3 className="text-blue-300 font-semibold text-lg mb-1">{currentSlideData.opportunity.paradigm}</h3>
-            <p className="text-blue-100 text-sm">{currentSlideData.opportunity.description}</p>
-          </div>
-
-          <div className="mb-4">
-            <h3 className="text-blue-300 font-semibold text-base mb-2">Use Cases</h3>
-            <div className="space-y-3">
-              {currentSlideData.opportunity.useCases.map((useCase, idx) => (
-                <div key={idx} className="bg-blue-900/30 p-3 rounded">
-                  <p className="text-blue-200 font-semibold text-sm mb-1">{useCase.name}</p>
-                  <p className="text-blue-100 text-xs italic">{useCase.example}</p>
+        function renderSlide() {
+            const slide = slides[currentSlide];
+            const app = document.getElementById('app');
+            
+            app.innerHTML = `
+                <!-- Header -->
+                <div class="bg-slate-950 text-white p-6 border-b border-slate-700">
+                    <h1 class="text-2xl font-bold mb-2">${slide.theme}</h1>
+                    <p class="text-slate-400 text-lg">${slide.subtitle}</p>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="mt-auto pt-4 border-t border-blue-800">
-            <h3 className="text-blue-300 font-semibold text-base mb-2">Customer Demand</h3>
-            <ul className="space-y-1">
-              {currentSlideData.opportunity.customers.map((customer, idx) => (
-                <li key={idx} className="text-blue-100 text-xs flex items-start">
-                  <span className="text-blue-400 mr-2">•</span>
-                  <span>{customer}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+                <!-- Main Content - 3 Columns -->
+                <div class="flex-1 grid grid-cols-3 gap-6 p-8 overflow-auto">
+                    <!-- Column 1: Problem -->
+                    <div class="bg-red-950/30 border-2 border-red-800 rounded-lg p-6 flex flex-col">
+                        <div class="bg-red-800 text-white px-4 py-2 rounded-t-lg -mx-6 -mt-6 mb-4">
+                            <h2 class="text-xl font-bold">${slide.problem.title}</h2>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="text-red-300 font-semibold text-lg mb-2">Challenge</h3>
+                            <p class="text-red-100 text-base font-medium">${slide.problem.challenge}</p>
+                        </div>
 
-        {/* Column 3: Solution */}
-        <div className="bg-green-950/30 border-2 border-green-800 rounded-lg p-6 flex flex-col">
-          <div className="bg-green-800 text-white px-4 py-2 rounded-t-lg -mx-6 -mt-6 mb-4">
-            <h2 className="text-xl font-bold">{currentSlideData.solution.title}</h2>
-          </div>
-          
-          <div className="mb-6">
-            <h3 className="text-green-300 font-semibold text-base mb-2">How FDE Delivers</h3>
-            <ul className="space-y-2">
-              {currentSlideData.solution.how.map((item, idx) => (
-                <li key={idx} className="text-green-100 text-sm flex items-start">
-                  <span className="text-green-400 mr-2 font-bold">{idx + 1}.</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+                        <div class="mb-4">
+                            <h3 class="text-red-300 font-semibold text-base mb-2">Key Issues</h3>
+                            <ul class="space-y-2">
+                                ${slide.problem.bullets.map(bullet => `
+                                    <li class="text-red-100 text-sm flex items-start">
+                                        <span class="text-red-400 mr-2 mt-1">▸</span>
+                                        <span>${bullet}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
 
-          <div className="mt-auto pt-6 border-t border-green-800">
-            <h3 className="text-green-300 font-semibold text-base mb-2">Strategic Value</h3>
-            <div className="bg-green-900/40 p-4 rounded-lg">
-              <p className="text-green-100 text-sm font-semibold">{currentSlideData.solution.value}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+                        <div class="mt-auto pt-4 border-t border-red-800">
+                            <h3 class="text-red-300 font-semibold text-base mb-1">Business Impact</h3>
+                            <p class="text-red-100 text-sm font-medium italic">${slide.problem.impact}</p>
+                        </div>
+                    </div>
 
-      {/* Navigation */}
-      <div className="bg-slate-950 border-t border-slate-700 p-4 flex items-center justify-between">
-        <button
-          onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))}
-          disabled={currentSlide === 0}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors"
-        >
-          <ChevronLeft size={20} />
-          Previous
-        </button>
-        
-        <div className="text-white text-sm">
-          Slide {currentSlide + 1} of {slides.length}
-        </div>
-        
-        <button
-          onClick={() => setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1))}
-          disabled={currentSlide === slides.length - 1}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors"
-        >
-          Next
-          <ChevronRight size={20} />
-        </button>
-      </div>
-    </div>
-  );
-};
+                    <!-- Column 2: Opportunity -->
+                    <div class="bg-blue-950/30 border-2 border-blue-800 rounded-lg p-6 flex flex-col">
+                        <div class="bg-blue-800 text-white px-4 py-2 rounded-t-lg -mx-6 -mt-6 mb-4">
+                            <h2 class="text-xl font-bold">${slide.opportunity.title}</h2>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="text-blue-300 font-semibold text-lg mb-1">${slide.opportunity.paradigm}</h3>
+                            <p class="text-blue-100 text-sm">${slide.opportunity.description}</p>
+                        </div>
 
-export default FDESlides;
+                        <div class="mb-4">
+                            <h3 class="text-blue-300 font-semibold text-base mb-2">Use Cases</h3>
+                            <div class="space-y-3">
+                                ${slide.opportunity.useCases.map(useCase => `
+                                    <div class="bg-blue-900/30 p-3 rounded">
+                                        <p class="text-blue-200 font-semibold text-sm mb-1">${useCase.name}</p>
+                                        <p class="text-blue-100 text-xs italic">${useCase.example}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-4 border-t border-blue-800">
+                            <h3 class="text-blue-300 font-semibold text-base mb-2">Customer Demand</h3>
+                            <ul class="space-y-1">
+                                ${slide.opportunity.customers.map(customer => `
+                                    <li class="text-blue-100 text-xs flex items-start">
+                                        <span class="text-blue-400 mr-2">•</span>
+                                        <span>${customer}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Solution -->
+                    <div class="bg-green-950/30 border-2 border-green-800 rounded-lg p-6 flex flex-col">
+                        <div class="bg-green-800 text-white px-4 py-2 rounded-t-lg -mx-6 -mt-6 mb-4">
+                            <h2 class="text-xl font-bold">${slide.solution.title}</h2>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h3 class="text-green-300 font-semibold text-base mb-2">How FDE Delivers</h3>
+                            <ul class="space-y-2">
+                                ${slide.solution.how.map((item, idx) => `
+                                    <li class="text-green-100 text-sm flex items-start">
+                                        <span class="text-green-400 mr-2 font-bold">${idx + 1}.</span>
+                                        <span>${item}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="mt-auto pt-6 border-t border-green-800">
+                            <h3 class="text-green-300 font-semibold text-base mb-2">Strategic Value</h3>
+                            <div class="bg-green-900/40 p-4 rounded-lg">
+                                <p class="text-green-100 text-sm font-semibold">${slide.solution.value}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="bg-slate-950 border-t border-slate-700 p-4 flex items-center justify-between">
+                    <button
+                        onclick="previousSlide()"
+                        ${currentSlide === 0 ? 'disabled' : ''}
+                        class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors"
+                    >
+                        ← Previous
+                    </button>
+                    
+                    <div class="text-white text-sm">
+                        Slide ${currentSlide + 1} of ${slides.length}
+                    </div>
+                    
+                    <button
+                        onclick="nextSlide()"
+                        ${currentSlide === slides.length - 1 ? 'disabled' : ''}
+                        class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors"
+                    >
+                        Next →
+                    </button>
+                </div>
+            `;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                renderSlide();
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                renderSlide();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // Initial render
+        renderSlide();
+    </script>
+</body>
+</html>
