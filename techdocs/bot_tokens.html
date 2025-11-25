@@ -14,7 +14,7 @@
     <!-- Load Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Custom styles to ensure the range input accent color works consistently */
+        /* Custom styles to ensure the range input thumb is styled correctly */
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -45,6 +45,7 @@
     <script type="text/babel">
         // Helper function to convert Lucide icon names (PascalCase) to component format
         const Icon = ({ name, size, className }) => {
+            // Access the icon component directly from the global 'lucide' object
             const IconComponent = lucide[name];
             return IconComponent ? <IconComponent size={size} className={className} /> : null;
         };
@@ -56,6 +57,7 @@
         );
 
         const SliderControl = ({ label, value, onChange, min, max, step, unit, note }) => {
+            // Display value formatting: convert occupancy (0.8) to percentage (80)
             const displayValue = unit === '%' ? (value * 100).toFixed(0) : value;
 
             return (
@@ -93,7 +95,7 @@
             </div>
         );
 
-        // Simple SVG Bar Chart Component to avoid external dependencies
+        // Simple SVG Bar Chart Component for visualization
         const SimpleBarChart = ({ data, maxValue }) => {
             return (
                 <div className="h-64 flex items-end justify-around gap-4 pt-8 pb-2 px-2">
@@ -127,36 +129,27 @@
             const { useState, useMemo } = React;
             
             // --- STATE ---
-            // Global Settings
             const [occupancy, setOccupancy] = useState(0.80);
-            
-            // Digital Settings
             const [digitalAHT, setDigitalAHT] = useState(8);
             const [digitalConcurrency, setDigitalConcurrency] = useState(4);
             const [digitalSSR, setDigitalSSR] = useState(0.85);
-
-            // Voice Settings
             const [voiceAHT, setVoiceAHT] = useState(5);
-            // Voice Concurrency is always 1
             const [voiceSSR, setVoiceSSR] = useState(0.60); 
 
             // --- CALCULATIONS ---
-
             const metrics = useMemo(() => {
                 // 1. Digital Calculations
-                // How many sessions can a human handle in 1 hour?
-                // Formula: (60 mins * concurrency * occupancy) / AHT
+                // Human sessions per hour: (60 mins * concurrency * occupancy) / AHT
                 const digitalHumanCapacity = (60 * digitalConcurrency * occupancy) / digitalAHT;
                 
-                // How many AI sessions needed to replace that 1 hour of human labor?
-                // Formula: Human Capacity / Self Service Rate
+                // AI sessions required to handle that volume: Human Capacity / Self Service Rate
                 const digitalSessionsRequired = digitalHumanCapacity / digitalSSR;
                 
-                // Token Costs
+                // Token Costs based on pricing models
                 const digitalTokensStandard = digitalSessionsRequired / 2; // 1 token per 2 sessions
-                const digitalTokensGuide = digitalSessionsRequired;        // 1 token per 1 session (implied by 28 tokens/hr in prompt)
+                const digitalTokensGuide = digitalSessionsRequired;        // 1 token per 1 session (AI Guide)
 
-                // 2. Voice Calculations
+                // 2. Voice Calculations (Concurrency is fixed at 1 for voice)
                 const voiceHumanCapacity = (60 * 1 * occupancy) / voiceAHT;
                 const voiceSessionsRequired = voiceHumanCapacity / voiceSSR;
                 
@@ -261,7 +254,7 @@
                                 {/* Digital Settings */}
                                 <Card className="p-6 border-l-4 border-l-blue-500">
                                     <h3 className="flex items-center gap-2 font-semibold text-blue-900 mb-4 pb-2 border-b border-slate-100">
-                                        <Icon name="Users" size={18} className="text-blue-400"/> Digital (Chat)
+                                        <Icon name="MessageSquare" size={18} className="text-blue-400"/> Digital (Chat)
                                     </h3>
                                     <SliderControl 
                                         label="Avg Handle Time (AHT)" 
@@ -290,7 +283,7 @@
                                 {/* Voice Settings */}
                                 <Card className="p-6 border-l-4 border-l-emerald-500">
                                     <h3 className="flex items-center gap-2 font-semibold text-emerald-900 mb-4 pb-2 border-b border-slate-100">
-                                        <Icon name="Users" size={18} className="text-emerald-400"/> Voice
+                                        <Icon name="Phone" size={18} className="text-emerald-400"/> Voice
                                     </h3>
                                     <SliderControl 
                                         label="Avg Handle Time (AHT)" 
@@ -324,7 +317,7 @@
                                     <KPITile 
                                         title="Dig. AI Needed" 
                                         value={Math.ceil(metrics.digital.aiSessions)} 
-                                        subtext="To save 1 Hr Labor"
+                                        subtext="Sessions to save 1 Hr Labor"
                                         icon="Activity"
                                         highlight
                                     />
@@ -337,7 +330,7 @@
                                     <KPITile 
                                         title="Voice AI Needed" 
                                         value={Math.ceil(metrics.voice.aiSessions)} 
-                                        subtext="To save 1 Hr Labor"
+                                        subtext="Sessions to save 1 Hr Labor"
                                         icon="Activity"
                                         highlight
                                     />
@@ -366,36 +359,36 @@
                                         <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
                                             <h4 className="font-bold text-blue-900 text-sm mb-2">Digital Impact</h4>
                                             <div className="flex justify-between text-sm mb-1">
-                                                <span className="text-slate-600">Standard Cost:</span>
+                                                <span className="text-slate-600">Standard Cost (1:2):</span>
                                                 <span className="font-mono font-bold">{metrics.digital.stdTokens.toFixed(1)} Tokens</span>
                                             </div>
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-slate-600">AI Guide Cost:</span>
+                                                <span className="text-slate-600">AI Guide Cost (1:1):</span>
                                                 <span className="font-mono font-bold text-red-600">{metrics.digital.guideTokens.toFixed(1)} Tokens</span>
                                             </div>
                                             <div className="mt-2 text-xs text-blue-600 italic">
-                                                Cost doubles with AI Guides.
+                                                AI Guide model significantly increases the required token consumption.
                                             </div>
                                         </div>
 
                                         <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
                                             <h4 className="font-bold text-emerald-900 text-sm mb-2">Voice Impact</h4>
                                             <div className="flex justify-between text-sm mb-1">
-                                                <span className="text-slate-600">Standard Cost:</span>
+                                                <span className="text-slate-600">Standard Cost (1:2):</span>
                                                 <span className="font-mono font-bold">{metrics.voice.stdTokens.toFixed(1)} Tokens</span>
                                             </div>
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-slate-600">AI Guide Cost:</span>
+                                                <span className="text-slate-600">AI Guide Cost (1:1):</span>
                                                 <span className="font-mono font-bold text-red-600">{metrics.voice.guideTokens.toFixed(1)} Tokens</span>
                                             </div>
                                             <div className="mt-2 text-xs text-emerald-600 italic">
-                                                Significantly lower volume, but high cost per unit.
+                                                Due to high AHT and low concurrency, the token requirement is lower than Digital.
                                             </div>
                                         </div>
                                     </div>
                                 </Card>
 
-                                {/* Business Logic Insight - Using direct DIV to ensure dark background works */}
+                                {/* Business Logic Insight (Dark Card) */}
                                 <div className="rounded-xl shadow-sm border border-slate-700 bg-slate-800 p-6 text-white">
                                     <div className="flex items-start gap-4">
                                         <div className="p-3 bg-red-500/20 rounded-lg">
@@ -404,22 +397,22 @@
                                         <div>
                                             <h3 className="font-bold text-lg mb-2">Commercial Viability Assessment</h3>
                                             <p className="text-slate-100 text-sm leading-relaxed mb-4">
-                                                The current "AI Guides" pricing model (1 token/session) makes the solution economically uncompelling. 
-                                                To save <strong>1 hour</strong> of Digital Agent labor, the customer must spend <strong>{Math.ceil(metrics.digital.guideTokens)} Tokens</strong>.
+                                                The current "AI Guides" pricing model (1 token/session) suggests a disproportionate cost for digital channels. 
+                                                Based on the current inputs, saving <strong>1 hour</strong> of Digital Agent labor requires the customer to spend <strong>{Math.ceil(metrics.digital.guideTokens)} Tokens</strong> under the AI Guide model.
                                             </p>
                                             
                                             <div className="space-y-3">
                                                 <div className="p-3 bg-white/5 rounded border border-white/10 text-sm">
                                                     <span className="text-red-300 font-bold block mb-1">Issue 1: Efficiency Penalty</span>
-                                                    <span className="text-slate-100">As efficiency increases (higher concurrency), the human labor cost per session drops, but the Token cost remains fixed, penalizing customers for having efficient workforces.</span>
+                                                    <span className="text-slate-100">As efficiency increases (higher concurrency), the human labor cost per session drops, but the Token cost remains fixed. This penalizes customers for having efficient operations.</span>
                                                 </div>
 
                                                 <div className="p-3 bg-white/5 rounded border border-white/10 text-sm">
                                                     <span className="text-red-300 font-bold block mb-1">Issue 2: Digital vs Voice Pricing</span>
-                                                    <span className="text-slate-100">Keeping the same pricing for Voice and Digital is not competitive.</span> 
+                                                    <span className="text-slate-100">Using the same pricing ratio (1:1 for Guides) across Digital and Voice is fundamentally flawed.</span> 
                                                     <ul className="list-disc list-inside mt-1 text-slate-100 pl-1 space-y-1">
-                                                        <li><strong>Concurrency:</strong> Asynchronous channels (e.g., WhatsApp) allow agents to handle far more simultaneous sessions than Voice.</li>
-                                                        <li><strong>Session Inflation:</strong> A single customer intent often spans multiple digital sessions due to time-outs (e.g., customer replies late), whereas Voice resolves it in one session. This artificially inflates digital costs.</li>
+                                                        <li><strong>Concurrency:</strong> Digital agents handle many simultaneous chats, making their time cheaper per interaction.</li>
+                                                        <li><strong>Session Inflation:</strong> Digital conversations often span multiple discrete "sessions" (due to time-outs), artificially inflating the token cost compared to a single, continuous voice call.</li>
                                                     </ul>
                                                 </div>
                                             </div>
@@ -435,6 +428,7 @@
             );
         }
 
+        // Render the main application component
         ReactDOM.createRoot(document.getElementById('root')).render(<PricingValidatorApp />);
     </script>
 
