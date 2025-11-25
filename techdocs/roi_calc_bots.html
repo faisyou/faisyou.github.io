@@ -43,27 +43,15 @@
     .sep{height:1px;background:rgba(148,163,184,.15);margin:12px 0}
     .footer{margin-top:16px;color:var(--muted);font-size:12px}
     @media (max-width:980px){.grid{grid-template-columns:1fr}}
-    .mapgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:10px}
-    .region{border:1px solid rgba(148,163,184,.15);border-radius:12px;padding:10px;background:linear-gradient(180deg,#0b1220,#0c1a33)}
-    .region h4{margin:0 0 6px;font-size:12px;color:#e5e7eb}
-    .roi{font-weight:700}
-    .legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted);margin-top:8px}
-    .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
-    .barrow{display:flex;align-items:center;gap:8px;margin:6px 0}
-    .bar{height:10px;border-radius:6px;background:rgba(56,189,248,.18);position:relative;overflow:hidden;flex:1}
-    .bar > i{position:absolute;inset:0;background:linear-gradient(90deg,rgba(56,189,248,.6),rgba(56,189,248,.15));display:block}
-    .lbl{width:140px;font-size:12px;color:var(--muted)}
-    .val{font-variant-numeric:tabular-nums;font-size:12px}
-    .controls-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-    @media(max-width:980px){.controls-row{grid-template-columns:1fr 1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Pricing Sensitivity Playground — Voice vs Digital</h1>
-    <div class="sub">Validate assumptions, communicate the costing model, and map where bots have positive ROI by industry & region.</div>
+    <div class="sub">Validate assumptions, communicate the costing model, and illustrate why parity pricing is weak for Digital vs Voice.</div>
 
     <div class="grid">
+      <!-- Controls -->
       <div class="card">
         <h2>Inputs</h2>
         <div class="two-col">
@@ -121,82 +109,34 @@
           </div>
         </div>
         <div class="sep"></div>
-        <div class="controls-row">
-          <div>
-            <label class="lbl">Token model</label>
-            <select id="tokenModel" style="width:100%">
-              <option value="VA">Virtual Agent (1 token / 2 sessions)</option>
-              <option value="GUIDE">AI Guides (1 token / session)</option>
-            </select>
-          </div>
-          <div>
-            <label class="lbl">Channel</label>
-            <select id="channel" style="width:100%">
-              <option value="digital">Digital</option>
-              <option value="voice">Voice</option>
-            </select>
-          </div>
-          <div>
-            <label class="lbl">Token price (USD)</label>
-            <input id="tokenPrice" type="number" step="0.01" value="1" style="width:100%"/>
-          </div>
-          <div>
-            <label class="lbl">Industry</label>
-            <select id="industry" style="width:100%"></select>
-          </div>
-        </div>
       </div>
 
+      <!-- Outputs -->
       <div class="card">
         <h2>Tokens to Replace <strong>1 Hour</strong> of Agent Labor</h2>
         <div class="kpi">
           <div class="box">
-            <div class="label">Digital: Sessions per Hour @ inputs</div>
+            <div class="label">Digital Sessions per Hour an Agent can Handle</div>
             <div class="num" id="dSph">—</div>
           </div>
           <div class="box">
-            <div class="label">Voice: Sessions per Hour @ inputs</div>
+            <div class="label">Voice Calls per Hour an Agent can Handle</div>
             <div class="num" id="vSph">—</div>
           </div>
           <div class="box">
-            <div class="label">Sessions needed to offset 1 hr (Digital)</div>
+            <div class="label">Digital Bot Sessions to Save an Hour of Labour Time</div>
             <div class="num" id="dNeed">—</div>
           </div>
           <div class="box">
-            <div class="label">Sessions needed to offset 1 hr (Voice)</div>
+            <div class="label">Voice Bot Sessions To Save an Hour of Labour Time</div>
             <div class="num" id="vNeed">—</div>
           </div>
         </div>
-        <div class="note">Formulae: Sessions/hour = (60 × concurrency × occupancy) ÷ AHT. Sessions to offset 1 hr = (agent sessions/hour) ÷ SSCR.
-          Token cost/hour = tokens/hour × token price. ROI = (labor/hour − token cost)/labor/hour.
+        <div class="note">Formulae: Sessions/hour = (60 × concurrency × occupancy) ÷ AHT. 
+          Sessions to offset 1 hr = (agent sessions/hour) ÷ SSCR. 
+          VA tokens = sessions ÷ 2. Guides tokens = sessions × 1.
         </div>
         <div class="callout" id="conclusion"></div>
-      </div>
-
-      <div class="card">
-        <h2>Labour Hourly Rate — by Industry & Region</h2>
-        <div id="rateChart"></div>
-        <div class="note">Illustrative benchmark rates in USD/hour. Adjust source data in code as needed.</div>
-      </div>
-
-      <div class="card">
-        <h2>ROI Heatmap by Region (<span id="selInd"></span>)</h2>
-        <div class="legend">
-          <span class="sw" style="background:#14532d"></span> High ROI (≥20%)
-          <span class="sw" style="background:#1f2937"></span> Breakeven (~0–20%)
-          <span class="sw" style="background:#4c1d1d"></span> Negative ROI
-        </div>
-        <div class="mapgrid" id="map">
-          <div class="region" data-region="North America"><h4>North America</h4><div class="roi" data-roi></div></div>
-          <div class="region" data-region="Europe"><h4>Europe</h4><div class="roi" data-roi></div></div>
-          <div class="region" data-region="Middle East"><h4>Middle East</h4><div class="roi" data-roi></div></div>
-          <div class="region" data-region="Africa"><h4>Africa</h4><div class="roi" data-roi></div></div>
-          <div class="region" data-region="Latin America"><h4>Latin America</h4><div class="roi" data-roi></div></div>
-          <div class="region" data-region="South Asia"><h4>South Asia</h4><div class="roi" data-roi></div></div>
-          <div class="region" data-region="Southeast Asia"><h4>Southeast Asia</h4><div class="roi" data-roi></div></div>
-          <div class="region" data-region="East Asia"><h4>East Asia</h4><div class="roi" data-roi></div></div>
-          <div class="region" data-region="Oceania"><h4>Oceania</h4><div class="roi" data-roi></div></div>
-        </div>
       </div>
     </div>
 
@@ -212,7 +152,7 @@
       <p class="bad"><strong>Implication:</strong> Keeping the same price for Voice and Digital is not competitive.</p>
     </div>
 
-    <div class="footer">Rates are illustrative; plug in your real benchmarks/token price to see ROI change by region.</div>
+    <div class="footer">Preset replicates your assumptions: Digital AHT 8m, concurrency 4, occupancy 80%, SSCR 85%. Voice AHT 5m, concurrency 1, occupancy 80%, SSCR 60% (so ~16 sessions offset an hour).</div>
   </div>
 
   <script>
@@ -228,133 +168,62 @@
       dSph: document.getElementById('dSph'), vSph: document.getElementById('vSph'),
       dNeed: document.getElementById('dNeed'), vNeed: document.getElementById('vNeed'),
       conclusion: document.getElementById('conclusion'),
-      tokenModel: document.getElementById('tokenModel'),
-      channel: document.getElementById('channel'),
-      tokenPrice: document.getElementById('tokenPrice'),
-      industry: document.getElementById('industry'),
-      rateChart: document.getElementById('rateChart'),
-      selInd: document.getElementById('selInd'),
-      map: document.getElementById('map'),
     };
 
     const fmt = (n, d=1)=> (Math.round(n*10**d)/10**d).toLocaleString();
 
-    // --- Benchmark data (illustrative; edit as needed) ---
-    const INDUSTRIES = ["Retail","Banking","Telecom","Travel","Healthcare","Utilities","Tech Support"];
-    const REGIONS = [
-      "North America","Europe","Middle East","Africa","Latin America",
-      "South Asia","Southeast Asia","East Asia","Oceania"
-    ];
-    const laborUSD = {
-      "Retail": {"North America":32, "Europe":28, "Middle East":18, "Africa":8, "Latin America":12, "South Asia":6, "Southeast Asia":7, "East Asia":20, "Oceania":27},
-      "Banking": {"North America":40, "Europe":34, "Middle East":22, "Africa":10, "Latin America":15, "South Asia":8, "Southeast Asia":10, "East Asia":25, "Oceania":33},
-      "Telecom": {"North America":30, "Europe":26, "Middle East":16, "Africa":7, "Latin America":11, "South Asia":6, "Southeast Asia":8, "East Asia":18, "Oceania":26},
-      "Travel": {"North America":28, "Europe":24, "Middle East":15, "Africa":7, "Latin America":10, "South Asia":6, "Southeast Asia":7, "East Asia":17, "Oceania":24},
-      "Healthcare": {"North America":35, "Europe":30, "Middle East":20, "Africa":9, "Latin America":13, "South Asia":7, "Southeast Asia":9, "East Asia":23, "Oceania":31},
-      "Utilities": {"North America":33, "Europe":29, "Middle East":19, "Africa":8, "Latin America":12, "South Asia":7, "Southeast Asia":8, "East Asia":21, "Oceania":29},
-      "Tech Support": {"North America":29, "Europe":25, "Middle East":16, "Africa":7, "Latin America":10, "South Asia":5, "Southeast Asia":7, "East Asia":17, "Oceania":25}
-    };
-
-    function sessionsPerHour(channel){
-      if(channel==='digital'){
-        const aht = parseFloat(els.dAht.value);
-        const conc = parseFloat(els.dConc.value);
-        const occ = parseFloat(els.dOcc.value)/100;
-        return (60*conc*occ)/aht;
-      }else{
-        const aht = parseFloat(els.vAht.value);
-        const conc = parseFloat(els.vConc.value);
-        const occ = parseFloat(els.vOcc.value)/100;
-        return (60*conc*occ)/aht;
-      }
-    }
-
-    function sessionsNeededPerHour(channel){
-      const sph = sessionsPerHour(channel);
-      const ss = channel==='digital' ? parseFloat(els.dSSCR.value)/100 : parseFloat(els.vSSCR.value)/100;
-      return sph / Math.max(ss,0.0001);
-    }
-
-    function tokensPerHour(channel){
-      const need = sessionsNeededPerHour(channel);
-      const model = els.tokenModel.value;
-      if(model==='VA') return need * 0.5; // 1 token / 2 sessions
-      return need * 1.0; // Guides
-    }
-
-    function tokenCostPerHour(channel){
-      return tokensPerHour(channel) * parseFloat(els.tokenPrice.value);
-    }
-
-    function buildRateChart(){
-      const ind = els.industry.value;
-      els.selInd.textContent = ind;
-      const rates = laborUSD[ind];
-      const max = Math.max(...REGIONS.map(r=>rates[r]||0));
-      els.rateChart.innerHTML = REGIONS.map(r=>{
-        const v = rates[r]||0; const pct = max? (v/max*100) : 0;
-        return `<div class="barrow"><span class="lbl">${r}</span><div class="bar"><i style="width:${pct}%"></i></div><span class="val">$${fmt(v,0)}/h</span></div>`;
-      }).join('');
-    }
-
-    function paintMap(){
-      const ind = els.industry.value;
-      const rates = laborUSD[ind];
-      const ch = els.channel.value;
-      const cost = tokenCostPerHour(ch);
-      els.map.querySelectorAll('.region').forEach(box=>{
-        const r = box.getAttribute('data-region');
-        const wage = rates[r]||0;
-        const roi = wage? (wage - cost)/wage : -1;
-        const pct = Math.round(roi*100);
-        const sw = roi>=0.2 ? '#14532d' : (roi>=0 ? '#1f2937' : '#4c1d1d');
-        box.style.background = `linear-gradient(180deg, ${sw}, #0c1a33)`;
-        box.querySelector('[data-roi]').textContent = wage ? `${pct}% ROI` : 'n/a';
-        box.title = `Labor $${fmt(wage,0)}/h vs bot cost $${fmt(cost,2)}/h`;
-      });
-    }
-
-    function updateKPIs(){
-      const dS = (60 * parseFloat(els.dConc.value) * (parseFloat(els.dOcc.value)/100)) / parseFloat(els.dAht.value);
-      const vS = (60 * parseFloat(els.vConc.value) * (parseFloat(els.vOcc.value)/100)) / parseFloat(els.vAht.value);
-      const dNeed = dS / Math.max(parseFloat(els.dSSCR.value)/100,0.0001);
-      const vNeed = vS / Math.max(parseFloat(els.vSSCR.value)/100,0.0001);
-      els.dSph.textContent = fmt(dS,1);
-      els.vSph.textContent = fmt(vS,1);
-      els.dNeed.textContent = fmt(dNeed,0);
-      els.vNeed.textContent = fmt(vNeed,0);
-    }
-
-    function conclusion(){
-      const ch = els.channel.value;
-      const cost = tokenCostPerHour(ch);
-      const modelTxt = els.tokenModel.value==='VA'? 'VA tokens' : 'AI Guides tokens';
-      const channelTxt = ch==='digital'? 'Digital' : 'Voice';
-      els.conclusion.innerHTML = `At $${fmt(parseFloat(els.tokenPrice.value),2)} per token using <strong>${modelTxt}</strong> on <strong>${channelTxt}</strong>, bot cost is <strong>$${fmt(cost,2)}</strong> per hour saved. Regions where labor/hour exceeds this show positive ROI.`;
-    }
-
     function calc(){
-      els.dAhtVal.textContent = parseFloat(els.dAht.value);
-      els.dConcVal.textContent = parseFloat(els.dConc.value);
-      els.dOccVal.textContent = Math.round(parseFloat(els.dOcc.value)) + '%';
-      els.dSSCRVal.textContent = Math.round(parseFloat(els.dSSCR.value)) + '%';
-      els.vAhtVal.textContent = parseFloat(els.vAht.value);
-      els.vConcVal.textContent = parseFloat(els.vConc.value);
-      els.vOccVal.textContent = Math.round(parseFloat(els.vOcc.value)) + '%';
-      els.vSSCRVal.textContent = Math.round(parseFloat(els.vSSCR.value)) + '%';
+      const dAht = parseFloat(els.dAht.value);
+      const dConc = parseFloat(els.dConc.value);
+      const dOcc = parseFloat(els.dOcc.value)/100;
+      const dSS = parseFloat(els.dSSCR.value)/100;
 
-      updateKPIs();
-      buildRateChart();
-      paintMap();
-      conclusion();
+      const vAht = parseFloat(els.vAht.value);
+      const vConc = parseFloat(els.vConc.value);
+      const vOcc = parseFloat(els.vOcc.value)/100;
+      const vSS = parseFloat(els.vSSCR.value)/100;
+
+      const dSessionsPerHour = (60 * dConc * dOcc) / dAht;
+      const vSessionsPerHour = (60 * vConc * vOcc) / vAht;
+
+      const dSessionsNeeded = dSessionsPerHour / Math.max(dSS, 0.0001);
+      const vSessionsNeeded = vSessionsPerHour / Math.max(vSS, 0.0001);
+
+      const VA_PER_SESSION = 0.5;
+      const GUIDE_PER_SESSION = 1.0;
+
+      const dTokensVA = dSessionsNeeded * VA_PER_SESSION;
+      const vTokensVA = vSessionsNeeded * VA_PER_SESSION;
+      const dTokensGuide = dSessionsNeeded * GUIDE_PER_SESSION;
+      const vTokensGuide = vSessionsNeeded * GUIDE_PER_SESSION;
+
+      els.dSph.textContent = fmt(dSessionsPerHour,1);
+      els.vSph.textContent = fmt(vSessionsPerHour,1);
+      els.dNeed.textContent = fmt(dSessionsNeeded,0);
+      els.vNeed.textContent = fmt(vSessionsNeeded,0);
+
+      els.dAhtVal.textContent = dAht;
+      els.dConcVal.textContent = dConc;
+      els.dOccVal.textContent = Math.round(dOcc*100)+"%";
+      els.dSSCRVal.textContent = Math.round(dSS*100)+"%";
+
+      els.vAhtVal.textContent = vAht;
+      els.vConcVal.textContent = vConc;
+      els.vOccVal.textContent = Math.round(vOcc*100)+"%";
+      els.vSSCRVal.textContent = Math.round(vSS*100)+"%";
+
+      const vaGap = (dTokensVA / vTokensVA) - 1;
+      const guideGap = (dTokensGuide / vTokensGuide) - 1;
+      const msg = `With these inputs, replacing 1 hour of labor costs <br>` +
+        `• <strong>${fmt(dTokensVA,0)}</strong> VA tokens on <strong>Digital</strong> vs <strong>${fmt(vTokensVA,0)}</strong> on <strong>Voice</strong> `+
+        `(Digital needs <strong>${fmt(vaGap*100,0)}%</strong> more).<br>`+
+        `• <strong>${fmt(dTokensGuide,0)}</strong> AI Guides tokens on <strong>Digital</strong> vs <strong>${fmt(vTokensGuide,0)}</strong> on <strong>Voice</strong> `+
+        `(Digital needs <strong>${fmt(guideGap*100,0)}%</strong> more).<br><br>`+
+        `<span class="bad"><strong>Takeaway:</strong> Parity pricing penalizes Digital because agents can run higher concurrency and digital intents fragment into multiple short sessions. Digital should be priced lower than Voice to remain competitive.</span>`;
+      els.conclusion.innerHTML = msg;
     }
 
-    INDUSTRIES.forEach(i=>{
-      const o = document.createElement('option'); o.value=i; o.textContent=i; els.industry.appendChild(o);
-    });
-    els.industry.value = 'Retail';
-
-    [els.dAht, els.dConc, els.dOcc, els.dSSCR, els.vAht, els.vConc, els.vOcc, els.vSSCR, els.tokenModel, els.channel, els.tokenPrice, els.industry]
+    [els.dAht, els.dConc, els.dOcc, els.dSSCR, els.vAht, els.vConc, els.vOcc, els.vSSCR]
       .forEach(el => el.addEventListener('input', calc));
 
     calc();
