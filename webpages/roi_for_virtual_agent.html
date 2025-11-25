@@ -1,258 +1,363 @@
-import React, { useState, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
-import { AlertCircle } from 'lucide-react';
-
-export default function PricingModelValidator() {
-  const [occupancyRate, setOccupancyRate] = useState(80);
-  const [digitalAHT, setDigitalAHT] = useState(8);
-  const [voiceAHT, setVoiceAHT] = useState(5);
-  const [concurrentCalls, setConcurrentCalls] = useState(4);
-  const [completionRate, setCompletionRate] = useState(85);
-
-  const calculations = useMemo(() => {
-    // Digital calculations
-    const digitalSessionsPerHour = (60 * concurrentCalls * (occupancyRate / 100)) / digitalAHT;
-    const digitalSessionsNeeded = digitalSessionsPerHour / (completionRate / 100);
-    const digitalCurrentTokens = digitalSessionsNeeded / 2;
-    const digitalAIGuidesTokens = digitalSessionsNeeded;
-    
-    // Voice calculations
-    const voiceSessionsPerHour = (60 * (occupancyRate / 100)) / voiceAHT;
-    const voiceSessionsNeeded = voiceSessionsPerHour / (completionRate / 100);
-    const voiceCurrentTokens = voiceSessionsNeeded / 2;
-    const voiceAIGuidesTokens = voiceSessionsNeeded;
-    
-    // Cost increase percentages
-    const digitalIncrease = ((digitalAIGuidesTokens - digitalCurrentTokens) / digitalCurrentTokens) * 100;
-    const voiceIncrease = ((voiceAIGuidesTokens - voiceCurrentTokens) / voiceCurrentTokens) * 100;
-    
-    return {
-      digital: {
-        sessionsPerHour: digitalSessionsPerHour.toFixed(1),
-        sessionsNeeded: digitalSessionsNeeded.toFixed(1),
-        currentTokens: digitalCurrentTokens.toFixed(1),
-        aiGuidesTokens: digitalAIGuidesTokens.toFixed(1),
-        increase: digitalIncrease.toFixed(0)
-      },
-      voice: {
-        sessionsPerHour: voiceSessionsPerHour.toFixed(1),
-        sessionsNeeded: voiceSessionsNeeded.toFixed(1),
-        currentTokens: voiceCurrentTokens.toFixed(1),
-        aiGuidesTokens: voiceAIGuidesTokens.toFixed(1),
-        increase: voiceIncrease.toFixed(0)
-      }
-    };
-  }, [occupancyRate, digitalAHT, voiceAHT, concurrentCalls, completionRate]);
-
-  const chartData = [
-    {
-      name: 'Digital',
-      'Virtual Agent': parseFloat(calculations.digital.currentTokens),
-      'With AI Guides': parseFloat(calculations.digital.aiGuidesTokens)
-    },
-    {
-      name: 'Voice',
-      'Virtual Agent': parseFloat(calculations.voice.currentTokens),
-      'With AI Guides': parseFloat(calculations.voice.aiGuidesTokens)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Voice vs Digital – Pricing Sensitivity Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#111827;
+      --muted:#9ca3af;
+      --text:#e5e7eb;
+      --accent:#38bdf8;
+      --bad:#fca5a5;
+      --good:#86efac;
+      --card:#0b1220;
     }
-  ];
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0b1020,#0f172a);font-family:Inter,system-ui,Arial,sans-serif;color:var(--text)}
+    .wrap{max-width:1200px;margin:32px auto;padding:0 16px}
+    h1{font-size:28px;margin:0 0 8px}
+    .sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+    .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+    .card{background:linear-gradient(180deg,#0e1628,#0f1b33);border:1px solid rgba(148,163,184,.15);border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(2,6,23,.3)}
+    .card h2{font-size:16px;margin:0 0 12px}
+    .row{display:grid;grid-template-columns:1fr 140px;gap:12px;align-items:center;margin:10px 0}
+    .row label{font-size:12px;color:var(--muted)}
+    .row .val{font-variant-numeric:tabular-nums;text-align:right;color:#fff}
+    input[type=range]{width:100%}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.2);color:#e2e8f0;background:rgba(148,163,184,.06);font-size:12px}
+    .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}
+    .kpi .box{background:linear-gradient(180deg,#0b1220,#0c1a33);border:1px solid rgba(148,163,184,.15);border-radius:12px;padding:10px}
+    .kpi .label{font-size:11px;color:var(--muted)}
+    .kpi .num{font-size:18px;font-weight:700}
+    .note{font-size:12px;color:var(--muted)}
+    .bad{color:var(--bad)}
+    .good{color:var(--good)}
+    .callout{border-left:4px solid var(--accent);padding:12px 12px;margin-top:12px;background:rgba(56,189,248,.06);border-radius:8px}
+    .sep{height:1px;background:rgba(148,163,184,.15);margin:12px 0}
+    .footer{margin-top:16px;color:var(--muted);font-size:12px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    .mapgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:10px}
+    .region{border:1px solid rgba(148,163,184,.15);border-radius:12px;padding:10px;background:linear-gradient(180deg,#0b1220,#0c1a33)}
+    .region h4{margin:0 0 6px;font-size:12px;color:#e5e7eb}
+    .roi{font-weight:700}
+    .legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted);margin-top:8px}
+    .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+    .barrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+    .bar{height:10px;border-radius:6px;background:rgba(56,189,248,.18);position:relative;overflow:hidden;flex:1}
+    .bar > i{position:absolute;inset:0;background:linear-gradient(90deg,rgba(56,189,248,.6),rgba(56,189,248,.15));display:block}
+    .lbl{width:140px;font-size:12px;color:var(--muted)}
+    .val{font-variant-numeric:tabular-nums;font-size:12px}
+    .controls-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    @media(max-width:980px){.controls-row{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Pricing Sensitivity Playground — Voice vs Digital</h1>
+    <div class="sub">Validate assumptions, communicate the costing model, and map where bots have positive ROI by industry & region.</div>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">AI Conversation Pricing Model</h1>
-          <p className="text-slate-300">Validate assumptions & evaluate pricing competitiveness</p>
-        </div>
-
-        {/* Alert Banner */}
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-8 flex items-start gap-3">
-          <AlertCircle className="text-amber-500 mt-0.5 flex-shrink-0" size={20} />
+    <div class="grid">
+      <div class="card">
+        <h2>Inputs</h2>
+        <div class="two-col">
           <div>
-            <h3 className="text-amber-400 font-semibold mb-1">Pricing Model Concern</h3>
-            <p className="text-amber-200/90 text-sm">
-              Analysis shows a 100% cost increase with AI Guides pricing model. Current token economics may not be compelling for customer adoption.
-            </p>
+            <span class="pill">Digital</span>
+            <div class="row">
+              <label>Average Handle Time (AHT) — minutes</label>
+              <div class="val" id="dAhtVal">8</div>
+            </div>
+            <input id="dAht" type="range" min="2" max="20" value="8" step="0.5" />
+
+            <div class="row">
+              <label>Concurrent Sessions per Agent</label>
+              <div class="val" id="dConcVal">4</div>
+            </div>
+            <input id="dConc" type="range" min="1" max="10" value="4" step="1" />
+
+            <div class="row">
+              <label>Occupancy</label>
+              <div class="val" id="dOccVal">80%</div>
+            </div>
+            <input id="dOcc" type="range" min="40" max="100" value="80" step="1" />
+
+            <div class="row">
+              <label>Self‑Service Completion (VA)</label>
+              <div class="val" id="dSSCRVal">85%</div>
+            </div>
+            <input id="dSSCR" type="range" min="40" max="100" value="85" step="1" />
+          </div>
+          <div>
+            <span class="pill">Voice</span>
+            <div class="row">
+              <label>Average Handle Time (AHT) — minutes</label>
+              <div class="val" id="vAhtVal">5</div>
+            </div>
+            <input id="vAht" type="range" min="3" max="20" value="5" step="0.5" />
+
+            <div class="row">
+              <label>Concurrent Calls per Agent</label>
+              <div class="val" id="vConcVal">1</div>
+            </div>
+            <input id="vConc" type="range" min="1" max="2" value="1" step="1" />
+
+            <div class="row">
+              <label>Occupancy</label>
+              <div class="val" id="vOccVal">80%</div>
+            </div>
+            <input id="vOcc" type="range" min="40" max="100" value="80" step="1" />
+
+            <div class="row">
+              <label>Self‑Service Completion (VA)</label>
+              <div class="val" id="vSSCRVal">60%</div>
+            </div>
+            <input id="vSSCR" type="range" min="30" max="100" value="60" step="1" />
           </div>
         </div>
-
-        {/* Controls */}
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8 border border-slate-700">
-          <h2 className="text-xl font-semibold text-white mb-6">Model Parameters</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Occupancy Rate: <span className="text-blue-400 font-semibold">{occupancyRate}%</span>
-              </label>
-              <input
-                type="range"
-                min="50"
-                max="100"
-                value={occupancyRate}
-                onChange={(e) => setOccupancyRate(Number(e.target.value))}
-                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Digital AHT (mins): <span className="text-blue-400 font-semibold">{digitalAHT}</span>
-              </label>
-              <input
-                type="range"
-                min="3"
-                max="15"
-                value={digitalAHT}
-                onChange={(e) => setDigitalAHT(Number(e.target.value))}
-                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Voice AHT (mins): <span className="text-blue-400 font-semibold">{voiceAHT}</span>
-              </label>
-              <input
-                type="range"
-                min="2"
-                max="10"
-                value={voiceAHT}
-                onChange={(e) => setVoiceAHT(Number(e.target.value))}
-                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Concurrent Digital Calls: <span className="text-blue-400 font-semibold">{concurrentCalls}</span>
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="8"
-                value={concurrentCalls}
-                onChange={(e) => setConcurrentCalls(Number(e.target.value))}
-                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Self-Service Completion: <span className="text-blue-400 font-semibold">{completionRate}%</span>
-              </label>
-              <input
-                type="range"
-                min="60"
-                max="95"
-                value={completionRate}
-                onChange={(e) => setCompletionRate(Number(e.target.value))}
-                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-              />
-            </div>
+        <div class="sep"></div>
+        <div class="controls-row">
+          <div>
+            <label class="lbl">Token model</label>
+            <select id="tokenModel" style="width:100%">
+              <option value="VA">Virtual Agent (1 token / 2 sessions)</option>
+              <option value="GUIDE">AI Guides (1 token / session)</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">Channel</label>
+            <select id="channel" style="width:100%">
+              <option value="digital">Digital</option>
+              <option value="voice">Voice</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">Token price (USD)</label>
+            <input id="tokenPrice" type="number" step="0.01" value="0.25" style="width:100%"/>
+          </div>
+          <div>
+            <label class="lbl">Industry</label>
+            <select id="industry" style="width:100%"></select>
           </div>
         </div>
+      </div>
 
-        {/* Results Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Digital Channel */}
-          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
-            <h3 className="text-xl font-semibold text-white mb-4">Digital Channel</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
-                <span className="text-slate-300">Sessions/Hour @ {occupancyRate}%</span>
-                <span className="text-white font-semibold">{calculations.digital.sessionsPerHour}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
-                <span className="text-slate-300">Sessions to Save 1hr Labor</span>
-                <span className="text-white font-semibold">{calculations.digital.sessionsNeeded}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                <span className="text-emerald-300">Virtual Agent: Tokens/Labor Hour</span>
-                <span className="text-emerald-400 font-bold">{calculations.digital.currentTokens}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <span className="text-red-300">AI Guides: Tokens/Labor Hour</span>
-                <span className="text-red-400 font-bold">{calculations.digital.aiGuidesTokens}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                <span className="text-amber-300 font-semibold">Cost Increase</span>
-                <span className="text-amber-400 font-bold text-lg">+{calculations.digital.increase}%</span>
-              </div>
-            </div>
+      <div class="card">
+        <h2>Tokens to Replace <strong>1 Hour</strong> of Agent Labor</h2>
+        <div class="kpi">
+          <div class="box">
+            <div class="label">Digital: Sessions per Hour Per Agent</div>
+            <div class="num" id="dSph">—</div>
           </div>
-
-          {/* Voice Channel */}
-          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
-            <h3 className="text-xl font-semibold text-white mb-4">Voice Channel</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
-                <span className="text-slate-300">Sessions/Hour @ {occupancyRate}%</span>
-                <span className="text-white font-semibold">{calculations.voice.sessionsPerHour}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
-                <span className="text-slate-300">Sessions to Save 1hr Labor</span>
-                <span className="text-white font-semibold">{calculations.voice.sessionsNeeded}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                <span className="text-emerald-300">Virtual Agent: Tokens/Labor Hour</span>
-                <span className="text-emerald-400 font-bold">{calculations.voice.currentTokens}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <span className="text-red-300">AI Guides: Tokens/Labor Hour</span>
-                <span className="text-red-400 font-bold">{calculations.voice.aiGuidesTokens}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                <span className="text-amber-300 font-semibold">Cost Increase</span>
-                <span className="text-amber-400 font-bold text-lg">+{calculations.voice.increase}%</span>
-              </div>
-            </div>
+          <div class="box">
+            <div class="label">Voice: Sessions per Hour Per Agent</div>
+            <div class="num" id="vSph">—</div>
+          </div>
+          <div class="box">
+            <div class="label">Digital Bot Sessions needed to offset 1 hr of Labour </div>
+            <div class="num" id="dNeed">—</div>
+          </div>
+          <div class="box">
+            <div class="label">Voice Bot Sessions needed to offset 1 hr of Labour</div>
+            <div class="num" id="vNeed">—</div>
           </div>
         </div>
-
-        {/* Chart */}
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
-          <h3 className="text-xl font-semibold text-white mb-6">Token Usage Comparison (Per Labor Hour Saved)</h3>
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="name" stroke="#94a3b8" />
-              <YAxis stroke="#94a3b8" label={{ value: 'Tokens', angle: -90, position: 'insideLeft', fill: '#94a3b8' }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1e293b', 
-                  border: '1px solid #475569',
-                  borderRadius: '8px',
-                  color: '#fff'
-                }}
-              />
-              <Legend />
-              <Bar dataKey="Virtual Agent" fill="#10b981" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="With AI Guides" fill="#ef4444" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div class="note">Formulae: Sessions/hour = (60 × concurrency × occupancy) ÷ AHT. Sessions to offset 1 hr = (agent sessions/hour) ÷ SSCR.
+          Token cost/hour = tokens/hour × token price. ROI = (labor/hour − token cost)/labor/hour.
         </div>
+        <div class="callout" id="conclusion"></div>
+      </div>
 
-        {/* Summary */}
-        <div className="mt-8 bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
-          <h3 className="text-xl font-semibold text-white mb-4">Key Findings</h3>
-          <ul className="space-y-2 text-slate-300">
-            <li className="flex items-start gap-2">
-              <span className="text-red-400 mt-1">•</span>
-              <span>The AI Guides pricing model doubles the token cost for the same labor savings (100% increase)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-red-400 mt-1">•</span>
-              <span>Virtual Agent model: 1 token per 2 sessions provides better value proposition</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-red-400 mt-1">•</span>
-              <span>Pricing needs revision to maintain competitive positioning and customer adoption</span>
-            </li>
-          </ul>
+      <div class="card">
+        <h2>Labour Hourly Rate — by Industry & Region</h2>
+        <div id="rateChart"></div>
+        <div class="note">Illustrative benchmark rates in USD/hour. Adjust source data in code as needed.</div>
+      </div>
+
+      <div class="card">
+        <h2>ROI Heatmap by Region (<span id="selInd"></span>)</h2>
+        <div class="legend">
+          <span class="sw" style="background:#14532d"></span> High ROI (≥20%)
+          <span class="sw" style="background:#1f2937"></span> Breakeven (~0–20%)
+          <span class="sw" style="background:#4c1d1d"></span> Negative ROI
+        </div>
+        <div class="mapgrid" id="map">
+          <div class="region" data-region="North America"><h4>North America</h4><div class="roi" data-roi></div></div>
+          <div class="region" data-region="Europe"><h4>Europe</h4><div class="roi" data-roi></div></div>
+          <div class="region" data-region="Middle East"><h4>Middle East</h4><div class="roi" data-roi></div></div>
+          <div class="region" data-region="Africa"><h4>Africa</h4><div class="roi" data-roi></div></div>
+          <div class="region" data-region="Latin America"><h4>Latin America</h4><div class="roi" data-roi></div></div>
+          <div class="region" data-region="South Asia"><h4>South Asia</h4><div class="roi" data-roi></div></div>
+          <div class="region" data-region="Southeast Asia"><h4>Southeast Asia</h4><div class="roi" data-roi></div></div>
+          <div class="region" data-region="East Asia"><h4>East Asia</h4><div class="roi" data-roi></div></div>
+          <div class="region" data-region="Oceania"><h4>Oceania</h4><div class="roi" data-roi></div></div>
         </div>
       </div>
     </div>
-  );
-}
+
+    <div class="card" style="margin-top:16px">
+      <h2>Narrative</h2>
+      <p>
+        Digital is inherently asynchronous (e.g., WhatsApp): agents can juggle multiple sessions concurrently and many “multi‑question” intents are split across separate short sessions. Voice is synchronous: concurrency is ~1 and a caller tends to ask multiple questions inside a single continuous session. When pricing is <em>equal</em> for Digital and Voice, customers pay disproportionately more for Digital outcomes because replacing the same hour of agent labor consumes more sessions—and thus more tokens—on Digital.
+      </p>
+      <ul>
+        <li><strong>Virtual Agent (VA):</strong> 1 token per 2 sessions → more sessions on Digital ⇒ more tokens per hour than Voice.</li>
+        <li><strong>AI Guides:</strong> 1 token per session → the gap widens further.</li>
+      </ul>
+      <p class="bad"><strong>Implication:</strong> Keeping the same price for Voice and Digital is not competitive.</p>
+    </div>
+
+    <div class="footer">Rates are illustrative; plug in your real benchmarks/token price to see ROI change by region.</div>
+  </div>
+
+  <script>
+    const els = {
+      dAht: document.getElementById('dAht'), dAhtVal: document.getElementById('dAhtVal'),
+      dConc: document.getElementById('dConc'), dConcVal: document.getElementById('dConcVal'),
+      dOcc: document.getElementById('dOcc'), dOccVal: document.getElementById('dOccVal'),
+      dSSCR: document.getElementById('dSSCR'), dSSCRVal: document.getElementById('dSSCRVal'),
+      vAht: document.getElementById('vAht'), vAhtVal: document.getElementById('vAhtVal'),
+      vConc: document.getElementById('vConc'), vConcVal: document.getElementById('vConcVal'),
+      vOcc: document.getElementById('vOcc'), vOccVal: document.getElementById('vOccVal'),
+      vSSCR: document.getElementById('vSSCR'), vSSCRVal: document.getElementById('vSSCRVal'),
+      dSph: document.getElementById('dSph'), vSph: document.getElementById('vSph'),
+      dNeed: document.getElementById('dNeed'), vNeed: document.getElementById('vNeed'),
+      conclusion: document.getElementById('conclusion'),
+      tokenModel: document.getElementById('tokenModel'),
+      channel: document.getElementById('channel'),
+      tokenPrice: document.getElementById('tokenPrice'),
+      industry: document.getElementById('industry'),
+      rateChart: document.getElementById('rateChart'),
+      selInd: document.getElementById('selInd'),
+      map: document.getElementById('map'),
+    };
+
+    const fmt = (n, d=1)=> (Math.round(n*10**d)/10**d).toLocaleString();
+
+    // --- Benchmark data (illustrative; edit as needed) ---
+    const INDUSTRIES = ["Retail","Banking","Telecom","Travel","Healthcare","Utilities","Tech Support"];
+    const REGIONS = [
+      "North America","Europe","Middle East","Africa","Latin America",
+      "South Asia","Southeast Asia","East Asia","Oceania"
+    ];
+    const laborUSD = {
+      "Retail": {"North America":32, "Europe":28, "Middle East":18, "Africa":8, "Latin America":12, "South Asia":6, "Southeast Asia":7, "East Asia":20, "Oceania":27},
+      "Banking": {"North America":40, "Europe":34, "Middle East":22, "Africa":10, "Latin America":15, "South Asia":8, "Southeast Asia":10, "East Asia":25, "Oceania":33},
+      "Telecom": {"North America":30, "Europe":26, "Middle East":16, "Africa":7, "Latin America":11, "South Asia":6, "Southeast Asia":8, "East Asia":18, "Oceania":26},
+      "Travel": {"North America":28, "Europe":24, "Middle East":15, "Africa":7, "Latin America":10, "South Asia":6, "Southeast Asia":7, "East Asia":17, "Oceania":24},
+      "Healthcare": {"North America":35, "Europe":30, "Middle East":20, "Africa":9, "Latin America":13, "South Asia":7, "Southeast Asia":9, "East Asia":23, "Oceania":31},
+      "Utilities": {"North America":33, "Europe":29, "Middle East":19, "Africa":8, "Latin America":12, "South Asia":7, "Southeast Asia":8, "East Asia":21, "Oceania":29},
+      "Tech Support": {"North America":29, "Europe":25, "Middle East":16, "Africa":7, "Latin America":10, "South Asia":5, "Southeast Asia":7, "East Asia":17, "Oceania":25}
+    };
+
+    function sessionsPerHour(channel){
+      if(channel==='digital'){
+        const aht = parseFloat(els.dAht.value);
+        const conc = parseFloat(els.dConc.value);
+        const occ = parseFloat(els.dOcc.value)/100;
+        return (60*conc*occ)/aht;
+      }else{
+        const aht = parseFloat(els.vAht.value);
+        const conc = parseFloat(els.vConc.value);
+        const occ = parseFloat(els.vOcc.value)/100;
+        return (60*conc*occ)/aht;
+      }
+    }
+
+    function sessionsNeededPerHour(channel){
+      const sph = sessionsPerHour(channel);
+      const ss = channel==='digital' ? parseFloat(els.dSSCR.value)/100 : parseFloat(els.vSSCR.value)/100;
+      return sph / Math.max(ss,0.0001);
+    }
+
+    function tokensPerHour(channel){
+      const need = sessionsNeededPerHour(channel);
+      const model = els.tokenModel.value;
+      if(model==='VA') return need * 0.5; // 1 token / 2 sessions
+      return need * 1.0; // Guides
+    }
+
+    function tokenCostPerHour(channel){
+      return tokensPerHour(channel) * parseFloat(els.tokenPrice.value);
+    }
+
+    function buildRateChart(){
+      const ind = els.industry.value;
+      els.selInd.textContent = ind;
+      const rates = laborUSD[ind];
+      const max = Math.max(...REGIONS.map(r=>rates[r]||0));
+      els.rateChart.innerHTML = REGIONS.map(r=>{
+        const v = rates[r]||0; const pct = max? (v/max*100) : 0;
+        return `<div class="barrow"><span class="lbl">${r}</span><div class="bar"><i style="width:${pct}%"></i></div><span class="val">$${fmt(v,0)}/h</span></div>`;
+      }).join('');
+    }
+
+    function paintMap(){
+      const ind = els.industry.value;
+      const rates = laborUSD[ind];
+      const ch = els.channel.value;
+      const cost = tokenCostPerHour(ch);
+      els.map.querySelectorAll('.region').forEach(box=>{
+        const r = box.getAttribute('data-region');
+        const wage = rates[r]||0;
+        const roi = wage? (wage - cost)/wage : -1;
+        const pct = Math.round(roi*100);
+        const sw = roi>=0.2 ? '#14532d' : (roi>=0 ? '#1f2937' : '#4c1d1d');
+        box.style.background = `linear-gradient(180deg, ${sw}, #0c1a33)`;
+        box.querySelector('[data-roi]').textContent = wage ? `${pct}% ROI` : 'n/a';
+        box.title = `Labor $${fmt(wage,0)}/h vs bot cost $${fmt(cost,2)}/h`;
+      });
+    }
+
+    function updateKPIs(){
+      const dS = (60 * parseFloat(els.dConc.value) * (parseFloat(els.dOcc.value)/100)) / parseFloat(els.dAht.value);
+      const vS = (60 * parseFloat(els.vConc.value) * (parseFloat(els.vOcc.value)/100)) / parseFloat(els.vAht.value);
+      const dNeed = dS / Math.max(parseFloat(els.dSSCR.value)/100,0.0001);
+      const vNeed = vS / Math.max(parseFloat(els.vSSCR.value)/100,0.0001);
+      els.dSph.textContent = fmt(dS,1);
+      els.vSph.textContent = fmt(vS,1);
+      els.dNeed.textContent = fmt(dNeed,0);
+      els.vNeed.textContent = fmt(vNeed,0);
+    }
+
+    function conclusion(){
+      const ch = els.channel.value;
+      const cost = tokenCostPerHour(ch);
+      const modelTxt = els.tokenModel.value==='VA'? 'VA tokens' : 'AI Guides tokens';
+      const channelTxt = ch==='digital'? 'Digital' : 'Voice';
+      els.conclusion.innerHTML = `At $${fmt(parseFloat(els.tokenPrice.value),2)} per token using <strong>${modelTxt}</strong> on <strong>${channelTxt}</strong>, bot cost is <strong>$${fmt(cost,2)}</strong> per hour saved. Regions where labor/hour exceeds this show positive ROI.`;
+    }
+
+    function calc(){
+      els.dAhtVal.textContent = parseFloat(els.dAht.value);
+      els.dConcVal.textContent = parseFloat(els.dConc.value);
+      els.dOccVal.textContent = Math.round(parseFloat(els.dOcc.value)) + '%';
+      els.dSSCRVal.textContent = Math.round(parseFloat(els.dSSCR.value)) + '%';
+      els.vAhtVal.textContent = parseFloat(els.vAht.value);
+      els.vConcVal.textContent = parseFloat(els.vConc.value);
+      els.vOccVal.textContent = Math.round(parseFloat(els.vOcc.value)) + '%';
+      els.vSSCRVal.textContent = Math.round(parseFloat(els.vSSCR.value)) + '%';
+
+      updateKPIs();
+      buildRateChart();
+      paintMap();
+      conclusion();
+    }
+
+    INDUSTRIES.forEach(i=>{
+      const o = document.createElement('option'); o.value=i; o.textContent=i; els.industry.appendChild(o);
+    });
+    els.industry.value = 'Retail';
+
+    [els.dAht, els.dConc, els.dOcc, els.dSSCR, els.vAht, els.vConc, els.vOcc, els.vSSCR, els.tokenModel, els.channel, els.tokenPrice, els.industry]
+      .forEach(el => el.addEventListener('input', calc));
+
+    calc();
+  </script>
+</body>
+</html>
