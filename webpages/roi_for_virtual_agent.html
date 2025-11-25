@@ -1,0 +1,258 @@
+import React, { useState, useMemo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { AlertCircle } from 'lucide-react';
+
+export default function PricingModelValidator() {
+  const [occupancyRate, setOccupancyRate] = useState(80);
+  const [digitalAHT, setDigitalAHT] = useState(8);
+  const [voiceAHT, setVoiceAHT] = useState(5);
+  const [concurrentCalls, setConcurrentCalls] = useState(4);
+  const [completionRate, setCompletionRate] = useState(85);
+
+  const calculations = useMemo(() => {
+    // Digital calculations
+    const digitalSessionsPerHour = (60 * concurrentCalls * (occupancyRate / 100)) / digitalAHT;
+    const digitalSessionsNeeded = digitalSessionsPerHour / (completionRate / 100);
+    const digitalCurrentTokens = digitalSessionsNeeded / 2;
+    const digitalAIGuidesTokens = digitalSessionsNeeded;
+    
+    // Voice calculations
+    const voiceSessionsPerHour = (60 * (occupancyRate / 100)) / voiceAHT;
+    const voiceSessionsNeeded = voiceSessionsPerHour / (completionRate / 100);
+    const voiceCurrentTokens = voiceSessionsNeeded / 2;
+    const voiceAIGuidesTokens = voiceSessionsNeeded;
+    
+    // Cost increase percentages
+    const digitalIncrease = ((digitalAIGuidesTokens - digitalCurrentTokens) / digitalCurrentTokens) * 100;
+    const voiceIncrease = ((voiceAIGuidesTokens - voiceCurrentTokens) / voiceCurrentTokens) * 100;
+    
+    return {
+      digital: {
+        sessionsPerHour: digitalSessionsPerHour.toFixed(1),
+        sessionsNeeded: digitalSessionsNeeded.toFixed(1),
+        currentTokens: digitalCurrentTokens.toFixed(1),
+        aiGuidesTokens: digitalAIGuidesTokens.toFixed(1),
+        increase: digitalIncrease.toFixed(0)
+      },
+      voice: {
+        sessionsPerHour: voiceSessionsPerHour.toFixed(1),
+        sessionsNeeded: voiceSessionsNeeded.toFixed(1),
+        currentTokens: voiceCurrentTokens.toFixed(1),
+        aiGuidesTokens: voiceAIGuidesTokens.toFixed(1),
+        increase: voiceIncrease.toFixed(0)
+      }
+    };
+  }, [occupancyRate, digitalAHT, voiceAHT, concurrentCalls, completionRate]);
+
+  const chartData = [
+    {
+      name: 'Digital',
+      'Virtual Agent': parseFloat(calculations.digital.currentTokens),
+      'With AI Guides': parseFloat(calculations.digital.aiGuidesTokens)
+    },
+    {
+      name: 'Voice',
+      'Virtual Agent': parseFloat(calculations.voice.currentTokens),
+      'With AI Guides': parseFloat(calculations.voice.aiGuidesTokens)
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">AI Conversation Pricing Model</h1>
+          <p className="text-slate-300">Validate assumptions & evaluate pricing competitiveness</p>
+        </div>
+
+        {/* Alert Banner */}
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-8 flex items-start gap-3">
+          <AlertCircle className="text-amber-500 mt-0.5 flex-shrink-0" size={20} />
+          <div>
+            <h3 className="text-amber-400 font-semibold mb-1">Pricing Model Concern</h3>
+            <p className="text-amber-200/90 text-sm">
+              Analysis shows a 100% cost increase with AI Guides pricing model. Current token economics may not be compelling for customer adoption.
+            </p>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8 border border-slate-700">
+          <h2 className="text-xl font-semibold text-white mb-6">Model Parameters</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Occupancy Rate: <span className="text-blue-400 font-semibold">{occupancyRate}%</span>
+              </label>
+              <input
+                type="range"
+                min="50"
+                max="100"
+                value={occupancyRate}
+                onChange={(e) => setOccupancyRate(Number(e.target.value))}
+                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Digital AHT (mins): <span className="text-blue-400 font-semibold">{digitalAHT}</span>
+              </label>
+              <input
+                type="range"
+                min="3"
+                max="15"
+                value={digitalAHT}
+                onChange={(e) => setDigitalAHT(Number(e.target.value))}
+                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Voice AHT (mins): <span className="text-blue-400 font-semibold">{voiceAHT}</span>
+              </label>
+              <input
+                type="range"
+                min="2"
+                max="10"
+                value={voiceAHT}
+                onChange={(e) => setVoiceAHT(Number(e.target.value))}
+                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Concurrent Digital Calls: <span className="text-blue-400 font-semibold">{concurrentCalls}</span>
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="8"
+                value={concurrentCalls}
+                onChange={(e) => setConcurrentCalls(Number(e.target.value))}
+                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Self-Service Completion: <span className="text-blue-400 font-semibold">{completionRate}%</span>
+              </label>
+              <input
+                type="range"
+                min="60"
+                max="95"
+                value={completionRate}
+                onChange={(e) => setCompletionRate(Number(e.target.value))}
+                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Results Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Digital Channel */}
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
+            <h3 className="text-xl font-semibold text-white mb-4">Digital Channel</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
+                <span className="text-slate-300">Sessions/Hour @ {occupancyRate}%</span>
+                <span className="text-white font-semibold">{calculations.digital.sessionsPerHour}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
+                <span className="text-slate-300">Sessions to Save 1hr Labor</span>
+                <span className="text-white font-semibold">{calculations.digital.sessionsNeeded}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                <span className="text-emerald-300">Virtual Agent: Tokens/Labor Hour</span>
+                <span className="text-emerald-400 font-bold">{calculations.digital.currentTokens}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <span className="text-red-300">AI Guides: Tokens/Labor Hour</span>
+                <span className="text-red-400 font-bold">{calculations.digital.aiGuidesTokens}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <span className="text-amber-300 font-semibold">Cost Increase</span>
+                <span className="text-amber-400 font-bold text-lg">+{calculations.digital.increase}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Voice Channel */}
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
+            <h3 className="text-xl font-semibold text-white mb-4">Voice Channel</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
+                <span className="text-slate-300">Sessions/Hour @ {occupancyRate}%</span>
+                <span className="text-white font-semibold">{calculations.voice.sessionsPerHour}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
+                <span className="text-slate-300">Sessions to Save 1hr Labor</span>
+                <span className="text-white font-semibold">{calculations.voice.sessionsNeeded}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                <span className="text-emerald-300">Virtual Agent: Tokens/Labor Hour</span>
+                <span className="text-emerald-400 font-bold">{calculations.voice.currentTokens}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <span className="text-red-300">AI Guides: Tokens/Labor Hour</span>
+                <span className="text-red-400 font-bold">{calculations.voice.aiGuidesTokens}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <span className="text-amber-300 font-semibold">Cost Increase</span>
+                <span className="text-amber-400 font-bold text-lg">+{calculations.voice.increase}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
+          <h3 className="text-xl font-semibold text-white mb-6">Token Usage Comparison (Per Labor Hour Saved)</h3>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="name" stroke="#94a3b8" />
+              <YAxis stroke="#94a3b8" label={{ value: 'Tokens', angle: -90, position: 'insideLeft', fill: '#94a3b8' }} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#1e293b', 
+                  border: '1px solid #475569',
+                  borderRadius: '8px',
+                  color: '#fff'
+                }}
+              />
+              <Legend />
+              <Bar dataKey="Virtual Agent" fill="#10b981" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="With AI Guides" fill="#ef4444" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Summary */}
+        <div className="mt-8 bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
+          <h3 className="text-xl font-semibold text-white mb-4">Key Findings</h3>
+          <ul className="space-y-2 text-slate-300">
+            <li className="flex items-start gap-2">
+              <span className="text-red-400 mt-1">•</span>
+              <span>The AI Guides pricing model doubles the token cost for the same labor savings (100% increase)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-red-400 mt-1">•</span>
+              <span>Virtual Agent model: 1 token per 2 sessions provides better value proposition</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-red-400 mt-1">•</span>
+              <span>Pricing needs revision to maintain competitive positioning and customer adoption</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
