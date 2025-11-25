@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Token Utilization Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Layout Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Input Groups */
+        .input-group {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .input-group:last-child {
+            border-bottom: none;
+        }
+
+        .input-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .small-input {
+            width: 70px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+        }
+
+        .value-display {
+            font-weight: bold;
+            color: var(--primary);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #eff6ff;
+            font-size: 1.1rem;
+        }
+
+        /* Charts container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>AI Token Utilization Dashboard</h1>
+
+    <div class="dashboard-grid">
+        
+        <div class="card">
+            <h2>Dynamic Parameters (Volumes)</h2>
+            <div id="dynamic-params-container">
+                </div>
+        </div>
+
+        <div class="card">
+            <h2>Traffic Distribution (%)</h2>
+            <div id="percent-params-container">
+                </div>
+        </div>
+
+        <div class="card full-width">
+            <h2>Static Configuration</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;" id="static-params-container">
+                </div>
+        </div>
+
+        <div class="card">
+            <h2>Token Consumption Breakdown</h2>
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Tokens</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td>Total Monthly Tokens</td>
+                        <td id="total-tokens-display">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Token Distribution (Pie)</h2>
+            <div class="chart-container">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <h2>Scenario Analysis: Min vs Max Capacity</h2>
+            <p style="font-size: 0.9em; color: #666;">Based on the Min/Max limits set in the Dynamic Parameters section.</p>
+            <div class="chart-container">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // --- Configuration Data Structures ---
+
+    const dynamicParams = [
+        { id: 'voice_conv_month', label: 'Voice Conversations / Month', min: 1000, max: 50000, val: 10000 },
+        { id: 'wa_sessions_month', label: 'WhatsApp Sessions / Month', min: 1000, max: 100000, val: 20000 },
+        { id: 'secs_per_call', label: 'Seconds per Voice Call', min: 30, max: 600, val: 180 },
+        { id: 'concurrent_agents', label: 'Concurrent Agents', min: 1, max: 500, val: 50 },
+        { id: 'ai_scored_conv', label: 'Conversations Scored by AI / Month', min: 0, max: 50000, val: 5000 }
+    ];
+
+    const percentParams = [
+        { id: 'pct_voice_reg', label: '% Voice via Regular Bot', val: 30 },
+        { id: 'pct_voice_va', label: '% Voice via Virtual Agent', val: 40 },
+        { id: 'pct_voice_agentic', label: '% Voice via Agentic AI', val: 30 },
+        { id: 'pct_wa_reg', label: '% WhatsApp via Regular Bot', val: 50 },
+        { id: 'pct_wa_va', label: '% WhatsApp via Virtual Agent', val: 30 },
+        { id: 'pct_wa_agentic', label: '% WhatsApp via Agentic AI', val: 20 }
+    ];
+
+    const staticParams = [
+        { id: 'msgs_per_wa_session', label: 'Avg Messages per WA Session', val: 10 }, // Added as it was missing in list but needed for formula
+        { id: 'msgs_per_token', label: 'WhatsApp Msgs per AI Token', val: 200 },
+        { id: 'tokens_per_agent', label: 'Tokens per Concurrent Agent', val: 40 },
+        { id: 'mins_reg_voice_per_token', label: 'Mins Regular Voice Bot per Token', val: 17 },
+        { id: 'sess_reg_wa_per_token', label: 'Sessions Regular WA Bot per Token', val: 51 },
+        { id: 'sess_va_voice_per_token', label: 'Sessions VA Voice Bot per Token', val: 2 },
+        { id: 'sess_va_wa_per_token', label: 'Sessions VA WA Bot per Token', val: 5 }, // Default assumed as 5 (prompt cutoff)
+        { id: 'sess_agent_voice_per_token', label: 'Sessions Agentic Voice Bot per Token', val: 1 },
+        { id: 'sess_agent_wa_per_token', label: 'Sessions Agentic WA Bot per Token', val: 1 },
+        { id: 'scored_conv_per_token', label: 'AI Scored Conversations per Token', val: 20 }
+    ];
+
+    // --- UI Generation ---
+
+    function initUI() {
+        // Generate Dynamic Params
+        const dynContainer = document.getElementById('dynamic-params-container');
+        dynamicParams.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'input-group';
+            div.innerHTML = `
+                <label class="input-label">${p.label}</label>
+                <div class="controls-row">
+                    <label>Min:</label>
+                    <input type="number" class="small-input" id="min_${p.id}" value="${p.min}" onchange="updateRangeLimits('${p.id}')">
+                    <input type="range" id="slider_${p.id}" min="${p.min}" max="${p.max}" value="${p.val}" oninput="updateValueDisplay('${p.id}')">
+                    <label>Max:</label>
+                    <input type="number" class="small-input" id="max_${p.id}" value="${p.max}" onchange="updateRangeLimits('${p.id}')">
+                    <span class="value-display" id="val_${p.id}">${p.val}</span>
+                </div>
+            `;
+            dynContainer.appendChild(div);
+        });
+
+        // Generate Percent Params
+        const pctContainer = document.getElementById('percent-params-container');
+        percentParams.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'input-group';
+            div.innerHTML = `
+                <label class="input-label">${p.label}</label>
+                <div class="controls-row">
+                    <input type="range" id="slider_${p.id}" min="0" max="100" value="${p.val}" oninput="updateValueDisplay('${p.id}', true)">
+                    <span class="value-display" id="val_${p.id}">${p.val}%</span>
+                </div>
+            `;
+            pctContainer.appendChild(div);
+        });
+
+        // Generate Static Params
+        const statContainer = document.getElementById('static-params-container');
+        staticParams.forEach(p => {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <label class="input-label">${p.label}</label>
+                <input type="number" class="small-input" style="width: 100%" id="static_${p.id}" value="${p.val}" onchange="calculateAll()">
+            `;
+            statContainer.appendChild(div);
+        });
+
+        // Initial Calculation
+        calculateAll();
+    }
+
+    // --- Event Handlers ---
+
+    window.updateRangeLimits = function(id) {
+        const minVal = parseInt(document.getElementById(`min_${id}`).value);
+        const maxVal = parseInt(document.getElementById(`max_${id}`).value);
+        const slider = document.getElementById(`slider_${id}`);
+        
+        slider.min = minVal;
+        slider.max = maxVal;
+        
+        // Adjust current value if out of bounds
+        if(parseInt(slider.value) < minVal) slider.value = minVal;
+        if(parseInt(slider.value) > maxVal) slider.value = maxVal;
+        
+        updateValueDisplay(id);
+    };
+
+    window.updateValueDisplay = function(id, isPct = false) {
+        const slider = document.getElementById(`slider_${id}`);
+        const display = document.getElementById(`val_${id}`);
+        display.innerText = slider.value + (isPct ? '%' : '');
+        calculateAll();
+    };
+
+    // --- Calculation Engine ---
+
+    function getVal(id) {
+        // Try slider first
+        const slider = document.getElementById(`slider_${id}`);
+        if(slider) return parseFloat(slider.value);
+        
+        // Try static input
+        const staticInput = document.getElementById(`static_${id}`);
+        if(staticInput) return parseFloat(staticInput.value);
+        
+        return 0;
+    }
+
+    // Helper to calculate tokens for a specific set of inputs (used for current, min, and max scenarios)
+    function computeTokens(inputs) {
+        // Inputs is an object mapping IDs to values
+        
+        // 1. WA Message Processing
+        // Formula: (Sessions * MsgsPerSession) / MsgsPerToken
+        const waMsgTokens = (inputs.wa_sessions_month * inputs.msgs_per_wa_session) / inputs.msgs_per_token;
+
+        // 2. Agent CoPilot
+        // Formula: ConcurrentAgents * TokensPerAgent
+        const copilotTokens = inputs.concurrent_agents * inputs.tokens_per_agent;
+
+        // 3. Regular Voice Bot
+        // Formula: (% * Calls * (Secs/60)) / MinsPerToken
+        const regVoiceTokens = ((inputs.pct_voice_reg/100) * inputs.voice_conv_month * (inputs.secs_per_call/60)) / inputs.mins_reg_voice_per_token;
+
+        // 4. Regular Digital Bot
+        // Formula: (% * Sessions) / SessionsPerToken
+        const regDigTokens = ((inputs.pct_wa_reg/100) * inputs.wa_sessions_month) / inputs.sess_reg_wa_per_token;
+
+        // 5. Virtual Agent Voice
+        // Formula: (% * Calls) / SessionsPerToken
+        const vaVoiceTokens = ((inputs.pct_voice_va/100) * inputs.voice_conv_month) / inputs.sess_va_voice_per_token;
+
+        // 6. Virtual Agent Digital
+        // Formula: (% * Sessions) / SessionsPerToken
+        const vaDigTokens = ((inputs.pct_wa_va/100) * inputs.wa_sessions_month) / inputs.sess_va_wa_per_token;
+
+        // 7. Agentic Voice
+        // Formula: (% * Calls) / SessionsPerToken
+        const agentVoiceTokens = ((inputs.pct_voice_agentic/100) * inputs.voice_conv_month) / inputs.sess_agent_voice_per_token;
+
+        // 8. Agentic Digital
+        // Formula: (% * Sessions) / SessionsPerToken
+        const agentDigTokens = ((inputs.pct_wa_agentic/100) * inputs.wa_sessions_month) / inputs.sess_agent_wa_per_token;
+
+        // 9. AI Scoring
+        // Formula: ScoredConvs / ScoredPerToken
+        const scoringTokens = inputs.ai_scored_conv / inputs.scored_conv_per_token;
+
+        const total = waMsgTokens + copilotTokens + regVoiceTokens + regDigTokens + vaVoiceTokens + vaDigTokens + agentVoiceTokens + agentDigTokens + scoringTokens;
+
+        return {
+            breakdown: {
+                'WhatsApp Msg Processing': waMsgTokens,
+                'Agent CoPilot': copilotTokens,
+                'Regular Voice Bot': regVoiceTokens,
+                'Regular Digital Bot': regDigTokens,
+                'Virtual Agent Voice': vaVoiceTokens,
+                'Virtual Agent Digital': vaDigTokens,
+                'Agentic Voice Bot': agentVoiceTokens,
+                'Agentic Digital Bot': agentDigTokens,
+                'AI Conversation Scoring': scoringTokens
+            },
+            total: total
+        };
+    }
+
+    function calculateAll() {
+        // Gather Current Values
+        const currentInputs = {};
+        // Dynamic
+        dynamicParams.forEach(p => currentInputs[p.id] = getVal(p.id));
+        // Percent
+        percentParams.forEach(p => currentInputs[p.id] = getVal(p.id));
+        // Static
+        staticParams.forEach(p => currentInputs[p.id] = getVal(p.id));
+
+        const currentResult = computeTokens(currentInputs);
+
+        // Gather Min Scenario (Dynamic params at Min, others same)
+        const minInputs = {...currentInputs};
+        dynamicParams.forEach(p => {
+            minInputs[p.id] = parseFloat(document.getElementById(`min_${p.id}`).value);
+        });
+        const minResult = computeTokens(minInputs);
+
+        // Gather Max Scenario (Dynamic params at Max, others same)
+        const maxInputs = {...currentInputs};
+        dynamicParams.forEach(p => {
+            maxInputs[p.id] = parseFloat(document.getElementById(`max_${p.id}`).value);
+        });
+        const maxResult = computeTokens(maxInputs);
+
+        updateTable(currentResult);
+        updateCharts(currentResult, minResult.total, maxResult.total);
+    }
+
+    // --- Visualization Updates ---
+
+    let pieChartInstance = null;
+    let barChartInstance = null;
+
+    function updateTable(result) {
+        const tbody = document.querySelector('#results-table tbody');
+        tbody.innerHTML = '';
+        
+        for (const [key, value] of Object.entries(result.breakdown)) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${key}</td><td>${Math.round(value).toLocaleString()}</td>`;
+            tbody.appendChild(tr);
+        }
+        
+        document.getElementById('total-tokens-display').innerText = Math.round(result.total).toLocaleString();
+    }
+
+    function updateCharts(currentResult, minTotal, maxTotal) {
+        // 1. Pie Chart
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        const labels = Object.keys(currentResult.breakdown);
+        const data = Object.values(currentResult.breakdown);
+
+        if (pieChartInstance) {
+            pieChartInstance.data.labels = labels;
+            pieChartInstance.data.datasets[0].data = data;
+            pieChartInstance.update();
+        } else {
+            pieChartInstance = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#3b82f6', '#ef4444', '#10b981', '#f59e0b', 
+                            '#6366f1', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        // 2. Bar Chart (Min/Max/Current)
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        
+        if (barChartInstance) {
+            barChartInstance.data.datasets[0].data = [minTotal, currentResult.total, maxTotal];
+            barChartInstance.update();
+        } else {
+            barChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Minimum Scenario', 'Current Selection', 'Maximum Scenario'],
+                    datasets: [{
+                        label: 'Total AI Tokens',
+                        data: [minTotal, currentResult.total, maxTotal],
+                        backgroundColor: ['#94a3b8', '#2563eb', '#1e40af'],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    }
+
+    // Start
+    initUI();
+
+</script>
+
+</body>
+</html>
