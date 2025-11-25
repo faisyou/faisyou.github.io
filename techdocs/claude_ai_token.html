@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Token Utilization Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .param-group {
+            margin-bottom: 25px;
+        }
+
+        .param-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .min-max {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            gap: 10px;
+        }
+
+        .min-max span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .range-input {
+            width: 70px;
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .range-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        input[type="number"] {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            width: 100%;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .value-display {
+            min-width: 80px;
+            text-align: right;
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .results-section {
+            grid-column: 1 / -1;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .total-row {
+            background: #667eea !important;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .total-row:hover {
+            background: #5568d3 !important;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .range-viz {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .range-bar {
+            height: 60px;
+            background: linear-gradient(90deg, #4ade80 0%, #fbbf24 50%, #ef4444 100%);
+            border-radius: 30px;
+            position: relative;
+            margin: 30px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .range-marker {
+            position: absolute;
+            top: -30px;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .marker-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .marker-value {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: #333;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .marker-dot {
+            width: 16px;
+            height: 16px;
+            background: white;
+            border: 4px solid #333;
+            border-radius: 50%;
+            position: absolute;
+            top: 52px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .current-marker .marker-dot {
+            border-color: #667eea;
+            width: 20px;
+            height: 20px;
+            top: 50px;
+        }
+
+        .static-params-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Token Utilization Calculator</h1>
+            <p>Dynamic Analysis & Visualization Dashboard</p>
+        </div>
+
+        <div class="content">
+            <!-- Dynamic Parameters -->
+            <div class="panel">
+                <h2>📊 Dynamic Parameters</h2>
+                
+                <div class="param-group">
+                    <label class="param-label">Voice Conversations per Month</label>
+                    <div class="slider-container">
+                        <input type="range" id="voiceCalls" min="0" max="100000" value="10000" step="100">
+                        <span class="value-display" id="voiceCallsVal">10000</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="voiceCallsMin" value="0" min="0" max="100000"></span>
+                        <span>Max: <input type="number" class="range-input" id="voiceCallsMax" value="100000" min="0" max="100000"></span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">WhatsApp Sessions per Month</label>
+                    <div class="slider-container">
+                        <input type="range" id="whatsappSessions" min="0" max="100000" value="15000" step="100">
+                        <span class="value-display" id="whatsappSessionsVal">15000</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="whatsappSessionsMin" value="0" min="0" max="100000"></span>
+                        <span>Max: <input type="number" class="range-input" id="whatsappSessionsMax" value="100000" min="0" max="100000"></span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">Seconds per Voice Call</label>
+                    <div class="slider-container">
+                        <input type="range" id="secsPerCall" min="0" max="600" value="180" step="10">
+                        <span class="value-display" id="secsPerCallVal">180</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="secsPerCallMin" value="0" min="0" max="600"></span>
+                        <span>Max: <input type="number" class="range-input" id="secsPerCallMax" value="600" min="0" max="600"></span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">Concurrent Agents</label>
+                    <div class="slider-container">
+                        <input type="range" id="concurrentAgents" min="0" max="500" value="50" step="5">
+                        <span class="value-display" id="concurrentAgentsVal">50</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="concurrentAgentsMin" value="0" min="0" max="500"></span>
+                        <span>Max: <input type="number" class="range-input" id="concurrentAgentsMax" value="500" min="0" max="500"></span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">Conversations Scored by AI per Month</label>
+                    <div class="slider-container">
+                        <input type="range" id="aiScored" min="0" max="50000" value="5000" step="100">
+                        <span class="value-display" id="aiScoredVal">5000</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="aiScoredMin" value="0" min="0" max="50000"></span>
+                        <span>Max: <input type="number" class="range-input" id="aiScoredMax" value="50000" min="0" max="50000"></span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">% Regular Voice Bot</label>
+                    <div class="slider-container">
+                        <input type="range" id="pctRegularVoice" min="0" max="100" value="60" step="1">
+                        <span class="value-display" id="pctRegularVoiceVal">60%</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="pctRegularVoiceMin" value="0" min="0" max="100">%</span>
+                        <span>Max: <input type="number" class="range-input" id="pctRegularVoiceMax" value="100" min="0" max="100">%</span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">% Virtual Agent Voice Bot</label>
+                    <div class="slider-container">
+                        <input type="range" id="pctVirtualVoice" min="0" max="100" value="30" step="1">
+                        <span class="value-display" id="pctVirtualVoiceVal">30%</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="pctVirtualVoiceMin" value="0" min="0" max="100">%</span>
+                        <span>Max: <input type="number" class="range-input" id="pctVirtualVoiceMax" value="100" min="0" max="100">%</span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">% Agentic AI Voice Bot</label>
+                    <div class="slider-container">
+                        <input type="range" id="pctAgenticVoice" min="0" max="100" value="10" step="1">
+                        <span class="value-display" id="pctAgenticVoiceVal">10%</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="pctAgenticVoiceMin" value="0" min="0" max="100">%</span>
+                        <span>Max: <input type="number" class="range-input" id="pctAgenticVoiceMax" value="100" min="0" max="100">%</span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">% Regular Digital Bot</label>
+                    <div class="slider-container">
+                        <input type="range" id="pctRegularDigital" min="0" max="100" value="50" step="1">
+                        <span class="value-display" id="pctRegularDigitalVal">50%</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="pctRegularDigitalMin" value="0" min="0" max="100">%</span>
+                        <span>Max: <input type="number" class="range-input" id="pctRegularDigitalMax" value="100" min="0" max="100">%</span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">% Virtual Agent Digital Bot</label>
+                    <div class="slider-container">
+                        <input type="range" id="pctVirtualDigital" min="0" max="100" value="35" step="1">
+                        <span class="value-display" id="pctVirtualDigitalVal">35%</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="pctVirtualDigitalMin" value="0" min="0" max="100">%</span>
+                        <span>Max: <input type="number" class="range-input" id="pctVirtualDigitalMax" value="100" min="0" max="100">%</span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <label class="param-label">% Agentic AI Digital Bot</label>
+                    <div class="slider-container">
+                        <input type="range" id="pctAgenticDigital" min="0" max="100" value="15" step="1">
+                        <span class="value-display" id="pctAgenticDigitalVal">15%</span>
+                    </div>
+                    <div class="min-max">
+                        <span>Min: <input type="number" class="range-input" id="pctAgenticDigitalMin" value="0" min="0" max="100">%</span>
+                        <span>Max: <input type="number" class="range-input" id="pctAgenticDigitalMax" value="100" min="0" max="100">%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Static Parameters -->
+            <div class="panel">
+                <h2>⚙️ Static Parameters</h2>
+                <div class="static-params-grid">
+                    <div class="param-group">
+                        <label class="param-label">Messages per WhatsApp Session</label>
+                        <input type="number" id="msgsPerSession" value="10" min="1">
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label">WhatsApp Messages per AI Token</label>
+                        <input type="number" id="msgsPerToken" value="200" min="1">
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label">Tokens per Concurrent Agent</label>
+                        <input type="number" id="tokensPerAgent" value="40" min="1">
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label">Mins Regular Voice Bot per Token</label>
+                        <input type="number" id="minsRegularVoice" value="17" min="1">
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label">Sessions Regular Digital per Token</label>
+                        <input type="number" id="sessionsRegularDigital" value="51" min="1">
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label">Sessions Virtual Voice per Token</label>
+                        <input type="number" id="sessionsVirtualVoice" value="2" min="1">
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label">Sessions Virtual Digital per Token</label>
+                        <input type="number" id="sessionsVirtualDigital" value="2" min="1">
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label">Sessions Agentic Voice per Token</label>
+                        <input type="number" id="sessionsAgenticVoice" value="1" min="1">
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label">Sessions Agentic Digital per Token</label>
+                        <input type="number" id="sessionsAgenticDigital" value="1" min="1">
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label">AI Scored Conversations per Token</label>
+                        <input type="number" id="scoredPerToken" value="20" min="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="panel results-section">
+                <h2>📈 Token Utilization Results</h2>
+                <div class="results-grid">
+                    <div>
+                        <table id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>AI Tokens</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Range Visualization -->
+            <div class="panel results-section">
+                <h2>🎯 Min/Current/Max Token Range</h2>
+                <div class="range-viz">
+                    <div class="range-bar">
+                        <div class="range-marker" id="minMarker">
+                            <div class="marker-label">Minimum</div>
+                            <div class="marker-value" id="minValue">0</div>
+                            <div class="marker-dot"></div>
+                        </div>
+                        <div class="range-marker current-marker" id="currentMarker">
+                            <div class="marker-label">Current</div>
+                            <div class="marker-value" id="currentValue">0</div>
+                            <div class="marker-dot"></div>
+                        </div>
+                        <div class="range-marker" id="maxMarker">
+                            <div class="marker-label">Maximum</div>
+                            <div class="marker-value" id="maxValue">0</div>
+                            <div class="marker-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pieChart;
+
+        function updateDisplay(id) {
+            const input = document.getElementById(id);
+            const display = document.getElementById(id + 'Val');
+            let value = input.value;
+            if (id.startsWith('pct')) {
+                value += '%';
+            }
+            display.textContent = value;
+        }
+
+        function calculate() {
+            const voiceCalls = parseFloat(document.getElementById('voiceCalls').value);
+            const whatsappSessions = parseFloat(document.getElementById('whatsappSessions').value);
+            const secsPerCall = parseFloat(document.getElementById('secsPerCall').value);
+            const concurrentAgents = parseFloat(document.getElementById('concurrentAgents').value);
+            const aiScored = parseFloat(document.getElementById('aiScored').value);
+            
+            const pctRegularVoice = parseFloat(document.getElementById('pctRegularVoice').value) / 100;
+            const pctVirtualVoice = parseFloat(document.getElementById('pctVirtualVoice').value) / 100;
+            const pctAgenticVoice = parseFloat(document.getElementById('pctAgenticVoice').value) / 100;
+            const pctRegularDigital = parseFloat(document.getElementById('pctRegularDigital').value) / 100;
+            const pctVirtualDigital = parseFloat(document.getElementById('pctVirtualDigital').value) / 100;
+            const pctAgenticDigital = parseFloat(document.getElementById('pctAgenticDigital').value) / 100;
+
+            const msgsPerSession = parseFloat(document.getElementById('msgsPerSession').value);
+            const msgsPerToken = parseFloat(document.getElementById('msgsPerToken').value);
+            const tokensPerAgent = parseFloat(document.getElementById('tokensPerAgent').value);
+            const minsRegularVoice = parseFloat(document.getElementById('minsRegularVoice').value);
+            const sessionsRegularDigital = parseFloat(document.getElementById('sessionsRegularDigital').value);
+            const sessionsVirtualVoice = parseFloat(document.getElementById('sessionsVirtualVoice').value);
+            const sessionsVirtualDigital = parseFloat(document.getElementById('sessionsVirtualDigital').value);
+            const sessionsAgenticVoice = parseFloat(document.getElementById('sessionsAgenticVoice').value);
+            const sessionsAgenticDigital = parseFloat(document.getElementById('sessionsAgenticDigital').value);
+            const scoredPerToken = parseFloat(document.getElementById('scoredPerToken').value);
+
+            const whatsappTokens = (whatsappSessions * msgsPerSession) / msgsPerToken;
+            const copilotTokens = concurrentAgents * tokensPerAgent;
+            const regularVoiceTokens = (pctRegularVoice * voiceCalls * (secsPerCall / 60)) / minsRegularVoice;
+            const regularDigitalTokens = (pctRegularDigital * whatsappSessions) / sessionsRegularDigital;
+            const virtualVoiceTokens = (pctVirtualVoice * voiceCalls) / sessionsVirtualVoice;
+            const virtualDigitalTokens = (pctVirtualDigital * whatsappSessions) / sessionsVirtualDigital;
+            const agenticVoiceTokens = (pctAgenticVoice * voiceCalls) / sessionsAgenticVoice;
+            const agenticDigitalTokens = (pctAgenticDigital * whatsappSessions) / sessionsAgenticDigital;
+            const aiScoredTokens = aiScored / scoredPerToken;
+
+            const results = {
+                'WhatsApp Message Processing': whatsappTokens,
+                'Agent CoPilot': copilotTokens,
+                'Regular Voice Bot': regularVoiceTokens,
+                'Regular Digital Bot': regularDigitalTokens,
+                'Virtual Agent Voice Bot': virtualVoiceTokens,
+                'Virtual Agent Digital Bot': virtualDigitalTokens,
+                'Agentic AI Voice Bot': agenticVoiceTokens,
+                'Agentic AI Digital Bot': agenticDigitalTokens,
+                'AI Conversation Scoring': aiScoredTokens
+            };
+
+            return results;
+        }
+
+        function calculateMinMax() {
+            const sliders = [
+                'voiceCalls', 'whatsappSessions', 'secsPerCall', 'concurrentAgents', 'aiScored',
+                'pctRegularVoice', 'pctVirtualVoice', 'pctAgenticVoice',
+                'pctRegularDigital', 'pctVirtualDigital', 'pctAgenticDigital'
+            ];
+
+            const originalValues = {};
+            sliders.forEach(id => {
+                originalValues[id] = document.getElementById(id).value;
+            });
+
+            sliders.forEach(id => {
+                document.getElementById(id).value = document.getElementById(id).min;
+            });
+            const minResults = calculate();
+            const minTotal = Object.values(minResults).reduce((a, b) => a + b, 0);
+
+            sliders.forEach(id => {
+                document.getElementById(id).value = document.getElementById(id).max;
+            });
+            const maxResults = calculate();
+            const maxTotal = Object.values(maxResults).reduce((a, b) => a + b, 0);
+
+            sliders.forEach(id => {
+                document.getElementById(id).value = originalValues[id];
+            });
+
+            return { minTotal, maxTotal };
+        }
+
+        function updateResults() {
+            const results = calculate();
+            const total = Object.values(results).reduce((a, b) => a + b, 0);
+
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+
+            Object.entries(results).forEach(([key, value]) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = key;
+                row.insertCell(1).textContent = Math.round(value).toLocaleString();
+            });
+
+            const totalRow = tbody.insertRow();
+            totalRow.className = 'total-row';
+            totalRow.insertCell(0).textContent = 'TOTAL';
+            totalRow.insertCell(1).textContent = Math.round(total).toLocaleString();
+
+            updatePieChart(results);
+            updateRangeViz(total);
+        }
+
+        function updatePieChart(results) {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            if (pieChart) {
+                pieChart.destroy();
+            }
+
+            const colors = [
+                '#667eea', '#764ba2', '#f093fb', '#4facfe',
+                '#43e97b', '#fa709a', '#fee140', '#30cfd0', '#a8edea'
+            ];
+
+            pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(results),
+                    datasets: [{
+                        data: Object.values(results),
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = Math.round(context.parsed);
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRangeViz(current) {
+            const { minTotal, maxTotal } = calculateMinMax();
+            
+            document.getElementById('minValue').textContent = Math.round(minTotal).toLocaleString();
+            document.getElementById('currentValue').textContent = Math.round(current).toLocaleString();
+            document.getElementById('maxValue').textContent = Math.round(maxTotal).toLocaleString();
+
+            const range = maxTotal - minTotal;
+            const minPos = 5;
+            const maxPos = 95;
+            const currentPos = range > 0 ? minPos + ((current - minTotal) / range) * (maxPos - minPos) : 50;
+
+            document.getElementById('minMarker').style.left = minPos + '%';
+            document.getElementById('currentMarker').style.left = currentPos + '%';
+            document.getElementById('maxMarker').style.left = maxPos + '%';
+        }
+
+        const sliders = [
+            'voiceCalls', 'whatsappSessions', 'secsPerCall', 'concurrentAgents', 'aiScored',
+            'pctRegularVoice', 'pctVirtualVoice', 'pctAgenticVoice',
+            'pctRegularDigital', 'pctVirtualDigital', 'pctAgenticDigital'
+        ];
+
+        function updateSliderRange(id) {
+            const slider = document.getElementById(id);
+            const minInput = document.getElementById(id + 'Min');
+            const maxInput = document.getElementById(id + 'Max');
+            
+            const minVal = parseFloat(minInput.value);
+            const maxVal = parseFloat(maxInput.value);
+            
+            // Ensure min is less than max
+            if (minVal >= maxVal) {
+                minInput.value = maxVal - 1;
+            }
+            
+            // Update slider range to match the min/max inputs
+            slider.min = minInput.value;
+            slider.max = maxInput.value;
+            
+            // Also update the max attribute of min input and min attribute of max input
+            minInput.max = maxInput.value;
+            maxInput.min = minInput.value;
+            
+            // Constrain slider value to new range
+            if (parseFloat(slider.value) < parseFloat(slider.min)) {
+                slider.value = slider.min;
+            }
+            if (parseFloat(slider.value) > parseFloat(slider.max)) {
+                slider.value = slider.max;
+            }
+            
+            updateDisplay(id);
+            updateResults();
+        }
+
+        sliders.forEach(id => {
+            const input = document.getElementById(id);
+            const minInput = document.getElementById(id + 'Min');
+            const maxInput = document.getElementById(id + 'Max');
+            
+            input.addEventListener('input', () => {
+                updateDisplay(id);
+                updateResults();
+            });
+            
+            minInput.addEventListener('input', () => updateSliderRange(id));
+            maxInput.addEventListener('input', () => updateSliderRange(id));
+            
+            updateDisplay(id);
+        });
+
+        const staticParams = [
+            'msgsPerSession', 'msgsPerToken', 'tokensPerAgent', 'minsRegularVoice',
+            'sessionsRegularDigital', 'sessionsVirtualVoice', 'sessionsVirtualDigital',
+            'sessionsAgenticVoice', 'sessionsAgenticDigital', 'scoredPerToken'
+        ];
+
+        staticParams.forEach(id => {
+            document.getElementById(id).addEventListener('input', updateResults);
+        });
+
+        updateResults();
+    </script>
+</body>
+</html>
