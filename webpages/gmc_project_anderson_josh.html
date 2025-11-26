@@ -1,192 +1,458 @@
+Here’s a more polished, exec-friendly and visually elevated HTML layout.
+You can open this as a standalone HTML file or embed in a portal.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>GMC Support Modernisation – Project Highlights</title>
+  <title>GMC Support Modernisation – Executive Summary</title>
   <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #020617;
+      --card: #020617;
+      --border: #1e293b;
+      --accent: #6366f1;
+      --accent-soft: rgba(99, 102, 241, 0.18);
+      --accent-strong: #4f46e5;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --muted-soft: #6b7280;
+      --pill-bg: rgba(15, 23, 42, 0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f3f4f6;
       margin: 0;
       padding: 32px;
-      color: #111827;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #1f2937 0, #020617 45%, #020617 100%);
+      color: var(--text);
     }
-    .page {
-      max-width: 960px;
+
+    .shell {
+      max-width: 1120px;
       margin: 0 auto;
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 32px 40px;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
     }
-    h1, h2 {
-      margin: 0 0 12px;
+
+    .page {
+      position: relative;
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.06), transparent 55%),
+                  radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.16), transparent 60%),
+                  linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+      border-radius: 24px;
+      padding: 28px 32px 30px;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      box-shadow:
+        0 26px 80px rgba(15, 23, 42, 0.6),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+      overflow: hidden;
     }
-    h1 {
-      font-size: 26px;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      color: #111827;
+
+    .halo {
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 10% 0, rgba(96, 165, 250, 0.10), transparent 55%),
+        radial-gradient(circle at 90% 30%, rgba(129, 140, 248, 0.22), transparent 60%),
+        radial-gradient(circle at 50% 100%, rgba(45, 212, 191, 0.18), transparent 65%);
+      opacity: 0.65;
+      pointer-events: none;
+      mix-blend-mode: screen;
     }
-    h2 {
-      font-size: 18px;
-      color: #111827;
+
+    .page-inner {
+      position: relative;
+      z-index: 1;
     }
-    .sub {
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #6b7280;
-      margin-bottom: 4px;
+
+    .pill-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
     }
+
     .pill {
-      display: inline-block;
-      padding: 4px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 11px;
       border-radius: 999px;
-      background: #eef2ff;
-      color: #3730a3;
+      background: linear-gradient(135deg, rgba(15,23,42,0.85), rgba(30,64,175,0.9));
+      border: 1px solid rgba(129, 140, 248, 0.7);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #e5e7eb;
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.25);
+    }
+
+    .pill-right {
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 16px;
+      letter-spacing: 0.18em;
+      color: var(--muted-soft);
+      opacity: 0.9;
     }
+
+    h1 {
+      font-size: 26px;
+      margin: 0 0 4px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #f9fafb;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 640px;
+    }
+
+    .subtitle span {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
     .grid {
       display: grid;
-      gap: 18px;
+      gap: 22px;
+      margin-top: 26px;
     }
-    @media (min-width: 900px) {
+
+    @media (min-width: 980px) {
+      .grid-hero {
+        grid-template-columns: 1.6fr 1.4fr;
+        align-items: stretch;
+      }
       .grid-2 {
-        grid-template-columns: 2fr 3fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       .grid-3 {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
-    .card {
-      background: #f9fafb;
-      border-radius: 14px;
-      padding: 16px 18px;
-      border: 1px solid #e5e7eb;
+
+    .panel {
+      border-radius: 18px;
+      background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.12), transparent 55%),
+                  radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(51, 65, 85, 0.95);
+      padding: 16px 18px 18px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
-    .kpi-number {
-      font-size: 22px;
-      font-weight: 700;
-      color: #111827;
-    }
-    .kpi-label {
-      font-size: 12px;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-    }
-    .tag-row {
+
+    .panel-header {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 4px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
     }
-    .tag {
+
+    .panel-title {
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .panel-chip {
       font-size: 11px;
       padding: 4px 8px;
       border-radius: 999px;
-      background: #e5e7eb;
-      color: #374151;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: var(--muted);
     }
+
+    .metric-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    @media (min-width: 720px) {
+      .metric-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .metric-card {
+      border-radius: 14px;
+      padding: 10px 11px;
+      border: 1px solid rgba(51, 65, 85, 0.95);
+      background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), rgba(15, 23, 42, 0.96));
+    }
+
+    .metric-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted-soft);
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-size: 19px;
+      font-weight: 700;
+      color: #f9fafb;
+    }
+
+    .metric-footnote {
+      font-size: 11px;
+      color: var(--muted-soft);
+      margin-top: 2px;
+    }
+
+    .context-text {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(75, 85, 99, 0.85);
+      color: #e5e7eb;
+    }
+
+    .badge-accent {
+      border-color: rgba(129, 140, 248, 0.9);
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(15, 23, 42, 0.9));
+    }
+
     ul {
       padding-left: 18px;
       margin: 6px 0 0;
-      font-size: 14px;
-      color: #374151;
+      font-size: 13px;
+      color: var(--muted);
     }
+
     li {
+      margin-bottom: 5px;
+    }
+
+    .impact-strip {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: radial-gradient(circle at left, rgba(52, 211, 153, 0.16), transparent 65%),
+                  linear-gradient(90deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.92));
+      border: 1px solid rgba(45, 212, 191, 0.5);
+    }
+
+    @media (min-width: 900px) {
+      .impact-strip {
+        grid-template-columns: 1.1fr 2fr;
+      }
+    }
+
+    .impact-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #bbf7d0;
       margin-bottom: 4px;
     }
-    .muted {
+
+    .impact-caption {
       font-size: 13px;
-      color: #6b7280;
+      color: #dcfce7;
+    }
+
+    .impact-bullets {
+      display: grid;
+      gap: 6px;
+    }
+
+    .impact-pill {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      color: #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .impact-pill span:first-child {
+      font-weight: 500;
+    }
+
+    .impact-pill span:last-child {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: var(--muted-soft);
+      margin-top: 16px;
+      opacity: 0.9;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 18px;
+      }
+      .page {
+        padding: 20px 18px 22px;
+      }
+      .pill-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="pill">Executive Project Highlight</div>
-    <h1>GMC (UK) Support Modernisation</h1>
-    <p class="muted">
-      Migration from LivePerson to Genesys Cloud with AI-powered support across WhatsApp, Facebook, SMS, and WebMessaging for the UK’s medical regulator.
-    </p>
+  <div class="shell">
+    <div class="page">
+      <div class="halo"></div>
+      <div class="page-inner">
+        <!-- Header -->
+        <div class="pill-row">
+          <div class="pill">
+            <span class="pill-dot"></span>
+            GMC Support Modernisation
+          </div>
+          <div class="pill-right">
+            Executive Project Summary
+          </div>
+        </div>
 
-    <div class="grid grid-2" style="margin-top: 24px;">
-      <!-- Left: About GMC -->
-      <div>
-        <div class="sub">Context</div>
-        <h2>About GMC (General Medical Council)</h2>
-        <p class="muted">
-          UK statutory regulator for doctors, Physician Associates (PAs) and Anaesthesia Associates (AAs), safeguarding patient safety and professional standards.
+        <h1>GMC (UK) – AI-Enabled Support at Scale</h1>
+        <p class="subtitle">
+          Migration from <span>LivePerson</span> to <span>Genesys Cloud</span>, delivering AI-powered support for the UK’s medical regulator across
+          <span>WhatsApp</span>, <span>Facebook</span>, <span>SMS</span> and <span>WebMessaging</span>.
         </p>
 
-        <div class="grid grid-3" style="margin-top: 14px;">
-          <div class="card">
-            <div class="kpi-number">390k+</div>
-            <div class="kpi-label">Registered Doctors</div>
+        <!-- Hero Grid -->
+        <div class="grid grid-hero">
+          <!-- Left: GMC Context & KPIs -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Regulatory Context</div>
+              <div class="panel-chip">GMC – General Medical Council</div>
+            </div>
+
+            <p class="context-text">
+              GMC is the statutory regulator for doctors, Physician Associates (PAs) and Anaesthesia Associates (AAs) in the UK, responsible for registration, standards, and fitness-to-practise.
+            </p>
+
+            <div class="metric-grid">
+              <div class="metric-card">
+                <div class="metric-label">Registered Doctors</div>
+                <div class="metric-value">390k+</div>
+                <div class="metric-footnote">On the GMC register</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Provider Reliance</div>
+                <div class="metric-value">Nationwide</div>
+                <div class="metric-footnote">NHS & private organisations use the register for credentialing</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">User Base</div>
+                <div class="metric-value">Global</div>
+                <div class="metric-footnote">International medical graduates & UK-trained clinicians</div>
+              </div>
+            </div>
+
+            <div class="badge-row">
+              <div class="badge badge-accent">Statutory regulator</div>
+              <div class="badge">Registration & licensing</div>
+              <div class="badge">Standards & revalidation</div>
+            </div>
           </div>
-          <div class="card">
-            <div class="kpi-number">Nationwide</div>
-            <div class="kpi-label">NHS & Private Providers Rely on GMC Register</div>
+
+          <!-- Right: Project Snapshot & Agents -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Project Snapshot</div>
+              <div class="panel-chip">Delivery on Genesys Cloud</div>
+            </div>
+
+            <ul>
+              <li><strong>Migration:</strong> LivePerson → Genesys Cloud digital & AI platform</li>
+              <li><strong>Channels:</strong> WhatsApp, Facebook Messenger, SMS, WebMessaging</li>
+              <li><strong>Agents:</strong> 75 agents supported with AI CoPilots</li>
+              <li><strong>Scope:</strong> High-volume queries on registration, revalidation and guidance</li>
+            </ul>
+
+            <div class="badge-row">
+              <div class="badge badge-accent">AI-first engagement</div>
+              <div class="badge">Omnichannel experience</div>
+              <div class="badge">Regulated environment</div>
+            </div>
           </div>
-          <div class="card">
-            <div class="kpi-number">Global</div>
-            <div class="kpi-label">International Medical Graduates Supported</div>
+        </div>
+
+        <!-- Capabilities & Impact -->
+        <div class="grid grid-2" style="margin-top: 26px;">
+          <!-- AI & Automation -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Virtual Agent & CoPilots</div>
+              <div class="panel-chip">AI Capabilities</div>
+            </div>
+            <ul>
+              <li><strong>Virtual Agent:</strong> Intent classification with AI-powered slots to collect key details (e.g., GMC reference, route, document type).</li>
+              <li><strong>Knowledgebase:</strong> Answers sourced from approved content, with highlight & summarisation for clarity.</li>
+              <li><strong>CoPilots:</strong> Real-time agent assist (summary, context, suggested responses) for 75 agents.</li>
+              <li><strong>Handover:</strong> Seamless escalation from bot to live agents for complex or sensitive cases.</li>
+            </ul>
+          </div>
+
+          <!-- Executive Outcomes -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Executive Outcomes</div>
+              <div class="panel-chip">Key Value Drivers</div>
+            </div>
+            <ul>
+              <li><strong>Scalability:</strong> Automates routine questions across a registrant base of 390k+ doctors.</li>
+              <li><strong>Experience:</strong> 24/7, mobile-first access via WhatsApp & Facebook for busy clinicians.</li>
+              <li><strong>Efficiency:</strong> Reduced handle times and workload through AI-assisted workflows for 75 agents.</li>
+              <li><strong>Strategic Fit:</strong> Modern, data-driven service aligned with NHS and UK digital health ambitions.</li>
+            </ul>
           </div>
         </div>
-      </div>
 
-      <!-- Right: Project Snapshot -->
-      <div>
-        <div class="sub">Project Snapshot</div>
-        <h2>From Legacy Chat to AI-Driven Engagement</h2>
-        <div class="card">
-          <ul>
-            <li><strong>Migration:</strong> LivePerson → Genesys Cloud digital & AI platform</li>
-            <li><strong>Channels:</strong> WhatsApp, Facebook Messenger, SMS, WebMessaging</li>
-            <li><strong>Agents:</strong> 75 agents supported with AI CoPilots</li>
-            <li><strong>Coverage:</strong> Registration, revalidation, guidance & high-volume FAQs</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Capabilities & Value -->
-    <div class="grid grid-2" style="margin-top: 28px;">
-      <div>
-        <div class="sub">AI & Automation</div>
-        <h2>Virtual Agent & CoPilots</h2>
-        <div class="card">
-          <ul>
-            <li><strong>Virtual Agent:</strong> Intent classification & AI-powered slots</li>
-            <li><strong>Knowledgebase:</strong> Policy-aligned answers with highlight & summarisation</li>
-            <li><strong>CoPilots for Agents:</strong> Real-time suggestions, context and summarised histories</li>
-            <li><strong>Escalation:</strong> Seamless handoff from bot to live agents when needed</li>
-          </ul>
-        </div>
-      </div>
-
-      <div>
-        <div class="sub">Impact</div>
-        <h2>Executive-Level Outcomes</h2>
-        <div class="card">
-          <ul>
-            <li><strong>Scalability:</strong> Automates routine queries across hundreds of thousands of practitioners.</li>
-            <li><strong>Experience:</strong> 24/7, mobile-first access via WhatsApp & Facebook for busy clinicians.</li>
-            <li><strong>Efficiency:</strong> Reduced handle times and load for 75 agents with AI assist.</li>
-            <li><strong>Strategic Fit:</strong> Modern, data-driven regulatory service aligned with NHS digital ambitions.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <p class="muted" style="margin-top: 22px;">
-      This modernisation positions GMC to support growing registrant volumes (including PAs and AAs) while improving responsiveness, consistency and overall service quality.
-    </p>
-  </div>
-</body>
-</html>
+        <!-- Impact Strip -->
+        <div class="impact-strip">
+          <div>
+            <div class="impact-title">At-a-Glance Impact</div>
+            <div class="impact-caption">
+              A single AI-enabled platform to support hundreds of thousands of practitioners and the organisations that rely on GMC every day.
+            </div>
+          </div>
+          <div
+```
