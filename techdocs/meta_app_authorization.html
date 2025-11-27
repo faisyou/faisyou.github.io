@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Method 1 – OAuth Authorization for WhatsApp Template Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f6f7fb;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            background: #1877f2;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        section {
+            padding: 20px;
+            margin: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #1877f2;
+        }
+        h3 {
+            color: #333;
+        }
+        code, pre {
+            background: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            display: block;
+            overflow-x: auto;
+        }
+        ul {
+            margin-top: 10px;
+        }
+        .highlight {
+            background: #e8f0fe;
+            padding: 10px;
+            border-left: 4px solid #1877f2;
+            border-radius: 5px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #555;
+        }
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .tag {
+            display: inline-block;
+            background: #eef3ff;
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin-right: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>OAuth-Based Template Management for WhatsApp Business Accounts</h1>
+    <p>Allowing 3rd Parties to Create WhatsApp HSM Templates via API</p>
+</header>
+
+<section>
+    <h2>Overview</h2>
+    <p>
+        This document describes how a business user can authorize a 3rd-party service to 
+        create WhatsApp Message Templates (HSM templates) using Meta’s OAuth flow. 
+        This works even when a Business Solution Provider (BSP) controls the WABA phone number, 
+        because <strong>template assets are controlled by Meta Business Manager</strong>, 
+        not the BSP.
+    </p>
+</section>
+
+<section>
+    <h2>Why Use OAuth?</h2>
+    <p>OAuth allows the business user to:</p>
+    <ul>
+        <li>Click a link provided by the 3rd party</li>
+        <li>Log into Facebook Business Manager</li>
+        <li>Grant the 3rd-party app access to manage WhatsApp templates</li>
+        <li>Enable API-driven template creation without sharing credentials</li>
+    </ul>
+
+    <div class="highlight">
+        This method does <strong>not</strong> require giving the 3rd party admin access to 
+        your Facebook Business Manager or your BSP portal.
+    </div>
+</section>
+
+<section>
+    <h2>Step-by-Step Workflow</h2>
+
+    <h3>1. 3rd Party Registers a Meta App</h3>
+    <p>The 3rd party creates a Meta Developer App with:</p>
+    <ul>
+        <li>Facebook Login enabled</li>
+        <li>WhatsApp Business Management API enabled</li>
+    </ul>
+
+    <h3>2. 3rd Party Generates the OAuth Login Link</h3>
+    <p>The 3rd party generates a link such as:</p>
+    <pre>
+https://www.facebook.com/v17.0/dialog/oauth?
+  client_id={APP_ID}
+  &redirect_uri={REDIRECT_URI}
+  &scope=whatsapp_business_management,whatsapp_business_messaging
+  &state={custom_state}
+    </pre>
+
+    <p>You (the business user) click this link to begin authorization.</p>
+
+    <h3>3. User Logs In With Facebook Business Manager Credentials</h3>
+    <p>You log in with the admin account that owns or manages the WABA and template assets.</p>
+
+    <h3>4. User Grants the Required Permissions</h3>
+    <p>You see a permission screen requesting:</p>
+    <ul>
+        <li><strong>whatsapp_business_management</strong></li>
+        <li><strong>whatsapp_business_messaging</strong></li>
+    </ul>
+    <p>Click <strong>Allow</strong> to grant the 3rd party access.</p>
+
+    <h3>5. Meta Returns an Authorization Code</h3>
+    <p>The user is redirected back to the 3rd-party site:</p>
+    <pre>
+https://3rdparty.com/oauth/callback?code=ABC123&state=xyz
+    </pre>
+
+    <h3>6. 3rd Party Exchanges Code for an Access Token</h3>
+    <pre>
+POST https://graph.facebook.com/v17.0/oauth/access_token
+    </pre>
+
+    <p>This token now allows API access to the user's WhatsApp business assets.</p>
+
+    <h3>7. Template Management via WhatsApp Cloud API</h3>
+    <p>The 3rd party can now call the WhatsApp API on behalf of the business.</p>
+
+    <p>Example: List WABAs the user can manage:</p>
+    <pre>
+GET /v17.0/me/whatsapp_business_accounts
+    </pre>
+
+    <p>Create a template:</p>
+    <pre>
+POST /v17.0/{WABA_ID}/message_templates
+    </pre>
+</section>
+
+<section>
+    <h2>Flowchart: OAuth Flow for WhatsApp Template Management</h2>
+    <p>The diagram below shows the interaction between the Business User, the 3rd-Party App, and Meta (Facebook).</p>
+
+    <div class="svg-container">
+        <!-- Simple SVG flow diagram -->
+        <svg width="800" height="420" xmlns="http://www.w3.org/2000/svg">
+            <!-- Boxes -->
+            <rect x="40" y="30" width="200" height="60" rx="8" ry="8" fill="#e8f0fe" stroke="#1877f2"/>
+            <text x="140" y="65" font-size="14" text-anchor="middle" fill="#000">Business User</text>
+
+            <rect x="300" y="30" width="200" height="60" rx="8" ry="8" fill="#fff4e5" stroke="#f4a300"/>
+            <text x="400" y="55" font-size="14" text-anchor="middle" fill="#000">3rd-Party App</text>
+            <text x="400" y="73" font-size="11" text-anchor="middle" fill="#555">OAuth + API Backend</text>
+
+            <rect x="560" y="30" width="200" height="60" rx="8" ry="8" fill="#e6f4ea" stroke="#34a853"/>
+            <text x="660" y="55" font-size="14" text-anchor="middle" fill="#000">Meta / Facebook</text>
+            <text x="660" y="73" font-size="11" text-anchor="middle" fill="#555">Login + Graph API</text>
+
+            <!-- Step 1 -->
+            <text x="400" y="120" font-size="13" text-anchor="middle" fill="#000">
+                1. User clicks "Connect WhatsApp" link
+            </text>
+            <line x1="140" y1="90" x2="400" y2="110" stroke="#999" marker-end="url(#arrow)"/>
+
+            <!-- Step 2 -->
+            <text x="540" y="160" font-size="13" text-anchor="middle" fill="#000">
+                2. App redirects user to Facebook OAuth
+            </text>
+            <line x1="400" y1="110" x2="660" y2="140" stroke="#999" marker-end="url(#arrow)"/>
+
+            <!-- Step 3 -->
+            <text x="660" y="200" font-size="13" text-anchor="middle" fill="#000">
+                3. User logs in & grants permissions
+            </text>
+            <line x1="660" y1="90" x2="660" y2="185" stroke="#999" marker-end="url(#arrow)"/>
+
+            <!-- Step 4 -->
+            <text x="520" y="240" font-size="13" text-anchor="middle" fill="#000">
+                4. Facebook redirects back with ?code=...
+            </text>
+            <line x1="660" y1="205" x2="400" y2="230" stroke="#999" marker-end="url(#arrow)"/>
+
+            <!-- Step 5 -->
+            <text x="400" y="280" font-size="13" text-anchor="middle" fill="#000">
+                5. App exchanges code for access token
+            </text>
+            <line x1="400" y1="230" x2="660" y2="260" stroke="#999" marker-end="url(#arrow)"/>
+
+            <!-- Step 6 -->
+            <text x="660" y="320" font-size="13" text-anchor="middle" fill="#000">
+                6. App uses token to call Graph API
+            </text>
+            <line x1="660" y1="265" x2="660" y2="305" stroke="#999" marker-end="url(#arrow)"/>
+
+            <!-- Step 7 -->
+            <text x="400" y="360" font-size="13" text-anchor="middle" fill="#000">
+                7. App creates / manages WhatsApp templates on WABA
+            </text>
+            <line x1="660" y1="305" x2="400" y2="345" stroke="#999" marker-end="url(#arrow)"/>
+
+            <!-- Arrow marker definition -->
+            <defs>
+                <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M2,2 L10,6 L2,10 Z" fill="#999"/>
+                </marker>
+            </defs>
+        </svg>
+    </div>
+
+    <div class="highlight">
+        The 3rd-party app never sees the user's password. It only receives an 
+        OAuth access token with specific WhatsApp-related permissions.
+    </div>
+</section>
+
+<section>
+    <h2>What OAuth Authorization Allows</h2>
+    <ul>
+        <li>Create WhatsApp templates</li>
+        <li>Submit them for Meta approval</li>
+        <li>List existing templates</li>
+        <li>Check approval status</li>
+        <li>Delete or update templates</li>
+    </ul>
+
+    <div class="highlight">
+        The BSP is <strong>not involved</strong> in template creation.  
+        Templates are created and approved directly through Meta (Facebook).
+    </div>
+</section>
+
+<section>
+    <h2>What OAuth Does NOT Allow</h2>
+    <ul>
+        <li>Managing BSP configurations</li>
+        <li>Changing phone number routing or setup</li>
+        <li>Accessing the user’s Facebook password</li>
+        <li>Sending WhatsApp messages unless the app also uses a sending channel (BSP or Cloud API)</li>
+    </ul>
+</section>
+
+<section>
+    <h2>Security Benefits</h2>
+    <ul>
+        <li>You never share passwords or private tokens with the 3rd party</li>
+        <li>Access can be revoked anytime in Facebook Business Integrations</li>
+        <li>OAuth scopes restrict the 3rd party to WhatsApp business management only</li>
+        <li>Tokens expire and can be rotated for better security</li>
+    </ul>
+</section>
+
+<section>
+    <h2>Technical Appendix</h2>
+    <p>This section is intended for developers implementing the 3rd-party integration.</p>
+
+    <h3>1. OAuth Authorization URL</h3>
+    <p>Construct an authorization URL like:</p>
+    <pre>
+GET https://www.facebook.com/v17.0/dialog/oauth?
+    client_id={APP_ID}
+    &redirect_uri={URL_ENCODED_REDIRECT_URI}
+    &scope=whatsapp_business_management,whatsapp_business_messaging
+    &state={CSRF_TOKEN_OR_CUSTOM_STATE}
+    </pre>
+
+    <p><span class="tag">Scope</span> <code>whatsapp_business_management</code> is required for template management.</p>
+
+    <h3>2. Exchange Authorization Code for Access Token</h3>
+    <pre>
+POST https://graph.facebook.com/v17.0/oauth/access_token
+  ?client_id={APP_ID}
+  &redirect_uri={URL_ENCODED_REDIRECT_URI}
+  &client_secret={APP_SECRET}
+  &code={AUTHORIZATION_CODE}
+    </pre>
+
+    <p>Example JSON response:</p>
+    <pre>
+{
+  "access_token": "EAAG...", 
+  "token_type": "bearer", 
+  "expires_in": 5183944
+}
+    </pre>
+
+    <h3>3. Get WhatsApp Business Accounts Accessible to the User</h3>
+    <pre>
+GET https://graph.facebook.com/v17.0/me/whatsapp_business_accounts
+  ?access_token={ACCESS_TOKEN}
+    </pre>
+
+    <p>Example response:</p>
+    <pre>
+{
+  "data": [
+    {
+      "id": "123456789012345",
+      "name": "My Business WABA"
+    }
+  ]
+}
+    </pre>
+
+    <p>The <code>id</code> value is the <strong>WABA_ID</strong>.</p>
+
+    <h3>4. Create a WhatsApp Message Template</h3>
+    <pre>
+POST https://graph.facebook.com/v17.0/{WABA_ID}/message_templates
+  ?access_token={ACCESS_TOKEN}
+Content-Type: application/json
+
+{
+  "name": "order_update_1",
+  "category": "UTILITY",
+  "language": "en",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "Hi {{1}}, your order {{2}} has been shipped and will arrive on {{3}}."
+    }
+  ]
+}
+    </pre>
+
+    <p>Key fields:</p>
+    <ul>
+        <li><code>name</code> – lowercase, underscores only</li>
+        <li><code>category</code> – e.g. <code>UTILITY</code>, <code>MARKETING</code>, <code>AUTHENTICATION</code></li>
+        <li><code>language</code> – ISO language code (e.g. <code>en</code>, <code>en_GB</code>)</li>
+        <li><code>components</code> – BODY, HEADER, FOOTER, BUTTONS etc.</li>
+    </ul>
+
+    <h3>5. List Templates</h3>
+    <pre>
+GET https://graph.facebook.com/v17.0/{WABA_ID}/message_templates
+  ?access_token={ACCESS_TOKEN}
+  &limit=50
+    </pre>
+
+    <h3>6. Delete a Template</h3>
+    <pre>
+DELETE https://graph.facebook.com/v17.0/{WABA_ID}/message_templates
+  ?name=order_update_1
+  &access_token={ACCESS_TOKEN}
+    </pre>
+
+    <h3>7. Long-Lived Tokens (Optional)</h3>
+    <p>In production, you usually exchange short-lived user tokens for long-lived tokens:</p>
+    <pre>
+GET https://graph.facebook.com/v17.0/oauth/access_token
+  ?grant_type=fb_exchange_token
+  &client_id={APP_ID}
+  &client_secret={APP_SECRET}
+  &fb_exchange_token={SHORT_LIVED_TOKEN}
+    </pre>
+
+    <p>Store the resulting long-lived token securely (e.g., encrypted in your DB).</p>
+</section>
+
+<footer>
+    <p>© 2025 WhatsApp Template OAuth Integration Guide</p>
+</footer>
+
+</body>
+</html>
