@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WhatsApp Campaign Management Process - B2B Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-alt: #020617;
+      --card: #020617;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --shadow-soft: 0 20px 40px rgba(15,23,42,0.7);
+      --radius-xl: 18px;
+      --transition-fast: 0.25s ease;
+      --slide-width: min(980px, 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0b1120, #020617 55%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .deck {
+      width: var(--slide-width);
+      max-width: 100%;
+      background: radial-gradient(circle at top left, #111827, #020617 60%);
+      border-radius: 26px;
+      border: 1px solid rgba(148,163,184,0.25);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .deck-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(51,65,85,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(30,64,175,0.5));
+      backdrop-filter: blur(12px);
+    }
+
+    .deck-title {
+      font-size: 15px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(56,189,248,0.8);
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      70% { transform: scale(1.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    .deck-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .pill {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      padding: 4px 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15,23,42,0.85);
+    }
+
+    .pill span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    /* Slides */
+    .slides-wrapper {
+      position: relative;
+      height: 520px;
+      max-height: calc(100vh - 200px);
+      overflow: hidden;
+      background: radial-gradient(circle at top, rgba(15,23,42,1), rgba(15,23,42,0.9));
+    }
+
+    .slides {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 28px 32px 24px;
+      opacity: 0;
+      transform: translateX(40px) scale(0.98);
+      pointer-events: none;
+      transition:
+        opacity var(--transition-fast),
+        transform var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .slide-title {
+      font-size: 22px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slide-title-badge {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(56,189,248,0.4);
+    }
+
+    .slide-subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 80%;
+    }
+
+    /* Content blocks */
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #0b1120, #020617 80%);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      box-shadow: 0 15px 30px rgba(15,23,42,0.9);
+      padding: 16px 18px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      border: 1px solid rgba(148,163,184,0.3);
+      background: rgba(15,23,42,0.9);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(56,189,248,0.7);
+    }
+
+    ul {
+      margin-left: 18px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    ul li {
+      margin-bottom: 6px;
+    }
+
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .step {
+      position: relative;
+      padding: 9px 11px;
+      border-radius: 999px;
+      border: 1px dashed rgba(148,163,184,0.4);
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(15,23,42,0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step span.num {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(56,189,248,0.5);
+    }
+
+    .step-arrow {
+      font-size: 14px;
+      color: var(--muted);
+      align-self: center;
+    }
+
+    .list-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .code-block {
+      font-family: "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 10px 12px;
+      font-size: 11px;
+      overflow-x: auto;
+      line-height: 1.5;
+      color: #e5e7eb;
+    }
+
+    .code-block .comment {
+      color: #9ca3af;
+    }
+
+    .code-block .keyword {
+      color: #38bdf8;
+    }
+
+    .code-block .string {
+      color: #a5b4fc;
+    }
+
+    .code-block .var {
+      color: #f97316;
+    }
+
+    /* Bottom bar */
+    .deck-footer {
+      padding: 12px 18px;
+      border-top: 1px solid rgba(31,41,55,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15,23,42,0.92);
+      backdrop-filter: blur(12px);
+      gap: 10px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 6px 12px;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,0.98));
+      color: var(--text);
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background var(--transition-fast), transform 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: 0 0 0 rgba(15,23,42,0);
+    }
+
+    .btn[disabled] {
+      opacity: 0.4;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .btn:not([disabled]):hover {
+      background: radial-gradient(circle at top, rgba(30,64,175,0.9), rgba(15,23,42,0.98));
+      box-shadow: 0 12px 25px rgba(30,64,175,0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .dot-row {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dot-row span {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(148,163,184,0.4);
+      transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .dot-row span.active {
+      background: var(--accent);
+      transform: scale(1.25);
+      box-shadow: 0 0 10px rgba(56,189,248,0.9);
+    }
+
+    .slide-counter {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+      .deck {
+        border-radius: 20px;
+      }
+      .slides-wrapper {
+        height: 480px;
+      }
+      .slide {
+        padding: 20px 18px 18px;
+      }
+      .two-col {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .slide-subtitle {
+        max-width: 100%;
+      }
+      .deck-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" aria-label="WhatsApp Campaign Management Process slide deck">
+    <header class="deck-header">
+      <div>
+        <div class="deck-title">
+          <span class="pulse-dot"></span>
+          WhatsApp Campaign Management
+        </div>
+        <div class="deck-subtitle">B2B Portal · Campaign Provider · Genesys Cloud</div>
+      </div>
+      <div class="pill">
+        <span class="dot"></span>
+        <span>Process Walkthrough</span>
+      </div>
+    </header>
+
+    <main class="slides-wrapper">
+      <section class="slides">
+        <!-- Slide 1: Overview -->
+        <article class="slide active" data-slide="1">
+          <div>
+            <h2 class="slide-title">
+              Overview
+              <span class="slide-title-badge">Slide 1</span>
+            </h2>
+            <p class="slide-subtitle">
+              High-level view of how a B2B Customer uses the Campaign Provider Portal to run WhatsApp campaigns,
+              while the Campaign Provider and Genesys Cloud handle execution behind the scenes.
+            </p>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Parties Involved</div>
+              </div>
+              <div class="list-tag">Roles</div>
+              <ul>
+                <li><strong>B2B Customer</strong> – business that initiates and configures WhatsApp campaigns.</li>
+                <li><strong>Campaign Provider</strong> – owns customer data, executes campaigns, and masks phone numbers.</li>
+                <li><strong>Genesys Cloud</strong> – outbound engine that manages calling lists and sends WhatsApp messages.</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Key Principles</div>
+              </div>
+              <ul>
+                <li>Only <strong>pre-approved WhatsApp templates</strong> can be sent.</li>
+                <li>B2B Customer never sees the underlying <strong>phone numbers or calling list</strong>.</li>
+                <li>Campaign Provider maintains a <strong>per-B2B Do Not Contact (DNC)</strong> list for WhatsApp.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Slide 2: B2B Portal Flow -->
+        <article class="slide" data-slide="2">
+          <div>
+            <h2 class="slide-title">
+              B2B Portal Journey
+              <span class="slide-title-badge">Slide 2</span>
+            </h2>
+            <p class="slide-subtitle">
+              The steps the B2B Customer performs directly in the Campaign Provider Portal, from login to launch.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="list-tag">Steps in the Portal</div>
+            <div class="flow">
+              <div class="step">
+                <span class="num">1</span>
+                <span>Login to Campaign Provider Portal</span>
+              </div>
+              <span class="step-arrow">→</span>
+              <div class="step">
+                <span class="num">2</span>
+                <span>Create or select campaign</span>
+              </div>
+              <span class="step-arrow">→</span>
+              <div class="step">
+                <span class="num">3</span>
+                <span>Select pre-approved WhatsApp template</span>
+              </div>
+              <span class="step-arrow">→</span>
+              <div class="step">
+                <span class="num">4</span>
+                <span>Apply filters (segment, demographics, etc.)</span>
+              </div>
+              <span class="step-arrow">→</span>
+              <div class="step">
+                <span class="num">5</span>
+                <span>Launch campaign</span>
+              </div>
+            </div>
+
+            <br />
+            <div class="two-col" style="margin-top: 10px;">
+              <div>
+                <div class="list-tag">Filtering Examples</div>
+                <div class="chip-row">
+                  <span class="chip"><span class="chip-dot"></span>Age group</span>
+                  <span class="chip"><span class="chip-dot"></span>Gender</span>
+                  <span class="chip"><span class="chip-dot"></span>Location</span>
+                  <span class="chip"><span class="chip-dot"></span>Customer segment</span>
+                  <span class="chip"><span class="chip-dot"></span>Purchase history</span>
+                </div>
+              </div>
+              <div>
+                <div class="list-tag">What B2B Customer Sees</div>
+                <ul>
+                  <li>Campaign configuration (name, template, filters).</li>
+                  <li>Population size / estimated recipients.</li>
+                  <li>High-level campaign status after launch.</li>
+                  <li><strong>Never</strong> sees phone numbers or raw calling list.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Slide 3: Behind the Scenes (Genesys) -->
+        <article class="slide" data-slide="3">
+          <div>
+            <h2 class="slide-title">
+              Behind the Scenes: Genesys Cloud
+              <span class="slide-title-badge">Slide 3</span>
+            </h2>
+            <p class="slide-subtitle">
+              What happens once the B2B Customer hits "Launch" — how the Campaign Provider and Genesys Cloud
+              collaborate to create and start the outbound WhatsApp campaign.
+            </p>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Campaign Creation & Calling List</div>
+              </div>
+              <ul>
+                <li>Portal sends launch request to <strong>Campaign Provider backend</strong>.</li>
+                <li>Backend:
+                  <ul>
+                    <li>Resolves filters into a concrete customer list.</li>
+                    <li>Excludes any customers on the B2B DNC list.</li>
+                    <li>Creates a <strong>Genesys Outbound Campaign</strong> via API.</li>
+                    <li>Creates / populates a <strong>Genesys Calling List</strong>.</li>
+                  </ul>
+                </li>
+                <li>Each calling list record includes:
+                  <ul>
+                    <li>Contact identifier (internal ID, not shown to B2B Customer).</li>
+                    <li>WhatsApp-enabled phone field.</li>
+                    <li>Template ID + personalization parameters (if any).</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Campaign Execution View</div>
+              </div>
+              <ul>
+                <li>Campaign Provider starts the campaign in <strong>Genesys Cloud</strong>.</li>
+                <li>B2B Customer sees only:
+                  <ul>
+                    <li>Total contacts selected / targeted.</li>
+                    <li>Status (Running / Completed / Failed).</li>
+                    <li>Optional: basic delivery and interaction metrics.</li>
+                  </ul>
+                </li>
+                <li>Actual sending is handled by Genesys → WhatsApp integration.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Slide 4: Customer WhatsApp Experience -->
+        <article class="slide" data-slide="4">
+          <div>
+            <h2 class="slide-title">
+              Customer WhatsApp Experience
+              <span class="slide-title-badge">Slide 4</span>
+            </h2>
+            <p class="slide-subtitle">
+              The end-customer receives a WhatsApp template message containing three action buttons:
+              Interested, Not Interested, and Opt Out.
+            </p>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Interactive WhatsApp Message</div>
+              </div>
+              <div class="list-tag">Buttons in the Template</div>
+              <ul>
+                <li><strong>Interested</strong> – customer wants to engage.</li>
+                <li><strong>Not Interested</strong> – customer declines the offer.</li>
+                <li><strong>Opt Out</strong> – customer does not want to be contacted again on WhatsApp for this B2B Customer.</li>
+              </ul>
+              <br />
+              <div class="list-tag">Technical Handling</div>
+              <ul>
+                <li>WhatsApp button click → Genesys receives callback.</li>
+                <li>Genesys calls Campaign Provider APIs per interaction.</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <div class="list-tag">Example Callback Design</div>
+              <div class="code-block">
+                <span class="comment">// Interested</span><br />
+                <span class="keyword">POST</span>
+                <span class="string"> /campaigns/&lt;campaignId&gt;/customer/&lt;customerId&gt;/interested</span><br /><br />
+
+                <span class="comment">// Not Interested</span><br />
+                <span class="keyword">POST</span>
+                <span class="string"> /campaigns/&lt;campaignId&gt;/customer/&lt;customerId&gt;/not-interested</span><br /><br />
+
+                <span class="comment">// Opt Out (DNC)</span><br />
+                <span class="keyword">POST</span>
+                <span class="string"> /campaigns/&lt;campaignId&gt;/customer/&lt;customerId&gt;/optout</span><br /><br />
+
+                <span class="comment">// Body (example)</span><br />
+                {<br />
+                &nbsp;&nbsp;<span class="string">"interactionId"</span>: <span class="string">"&lt;genesysInteractionId&gt;"</span>,<br />
+                &nbsp;&nbsp;<span class="string">"timestamp"</span>: <span class="string">"2025-01-01T12:34:56Z"</span>,<br />
+                &nbsp;&nbsp;<span class="string">"channel"</span>: <span class="string">"whatsapp"</span><br />
+                }
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Slide 5: DNC & Responsibilities -->
+        <article class="slide" data-slide="5">
+          <div>
+            <h2 class="slide-title">
+              DNC & Responsibilities
+              <span class="slide-title-badge">Slide 5</span>
+            </h2>
+            <p class="slide-subtitle">
+              How Opt-Out is enforced and who is responsible for what across B2B Customer, Campaign Provider, and Genesys Cloud.
+            </p>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Do Not Contact (DNC) Logic</div>
+              </div>
+              <ul>
+                <li><strong>Opt Out</strong> button adds customer to a DNC list maintained by Campaign Provider.</li>
+                <li>DNC is <strong>per B2B Customer</strong>:
+                  <ul>
+                    <li>Customer may opt out for one B2B brand but still receive campaigns for another.</li>
+                  </ul>
+                </li>
+                <li>Before every campaign launch, Campaign Provider:
+                  <ul>
+                    <li>Applies filters.</li>
+                    <li>Removes any DNC customers for that B2B Customer.</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Responsibilities Summary</div>
+              </div>
+              <div class="chip-row">
+                <span class="chip"><span class="chip-dot"></span>B2B Customer</span>
+                <span class="chip"><span class="chip-dot"></span>Campaign Provider</span>
+                <span class="chip"><span class="chip-dot"></span>Genesys Cloud</span>
+              </div>
+              <br />
+              <ul>
+                <li><strong>B2B Customer</strong>: defines campaign, selects template & filters, launches campaigns, views stats.</li>
+                <li><strong>Campaign Provider</strong>: owns data, creates Genesys campaigns, handles callbacks, maintains DNC.</li>
+                <li><strong>Genesys Cloud</strong>: manages outbound campaign & calling list, sends WhatsApp messages, triggers callbacks.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="deck-footer">
+      <div class="controls">
+        <button class="btn" id="prevBtn">
+          <svg class="btn-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M12.5 5L7.5 10L12.5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Prev
+        </button>
+        <button class="btn" id="nextBtn">
+          Next
+          <svg class="btn-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="controls">
+        <div class="dot-row" id="dotRow">
+          <!-- dots will be injected -->
+        </div>
+        <div class="slide-counter" id="slideCounter">Slide 1 of 5</div>
+      </div>
+
+      <div class="hint">
+        Use <strong>←</strong> / <strong>→</strong> keys to navigate
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const slideCounter = document.getElementById("slideCounter");
+      const dotRow = document.getElementById("dotRow");
+      const total = slides.length;
+      let current = 0;
+
+      // Create dots
+      slides.forEach((_, idx) => {
+        const dot = document.createElement("span");
+        if (idx === 0) dot.classList.add("active");
+        dot.dataset.index = idx;
+        dot.addEventListener("click", () => goToSlide(idx));
+        dotRow.appendChild(dot);
+      });
+
+      const dots = Array.from(dotRow.querySelectorAll("span"));
+
+      function updateUI() {
+        slides.forEach((slide, idx) => {
+          slide.classList.toggle("active", idx === current);
+        });
+        dots.forEach((dot, idx) => {
+          dot.classList.toggle("active", idx === current);
+        });
+        slideCounter.textContent = `Slide ${current + 1} of ${total}`;
+        prevBtn.disabled = current === 0;
+        nextBtn.disabled = current === total - 1;
+      }
+
+      function goToSlide(idx) {
+        if (idx < 0 || idx >= total) return;
+        current = idx;
+        updateUI();
+      }
+
+      prevBtn.addEventListener("click", () => goToSlide(current - 1));
+      nextBtn.addEventListener("click", () => goToSlide(current + 1));
+
+      // Keyboard navigation
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") goToSlide(current - 1);
+        if (e.key === "ArrowRight") goToSlide(current + 1);
+      });
+
+      updateUI();
+    })();
+  </script>
+</body>
+</html>
