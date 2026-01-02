@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pan Kitchen WhatsApp Group - Member of the Month</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #0b1220;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #06b6d4;
+      --accent-2: #a855f7;
+      --danger: #ef4444;
+      --border: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: radial-gradient(120% 120% at 20% 20%, rgba(8,47,73,0.6), transparent 60%), radial-gradient(90% 90% at 80% 0%, rgba(124,58,237,0.35), transparent 55%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    h1 { margin: 0; font-size: 24px; letter-spacing: 0.4px; }
+    p { margin: 6px 0; color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .panel, .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+    }
+    .card { background: var(--card); }
+    .panel h3, .card h3 { margin: 0 0 8px 0; font-size: 16px; letter-spacing: 0.2px; }
+    .input-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 8px 0;
+    }
+    input[type="file"], select, input[type="number"], input[type="text"] {
+      background: #0b1220;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+    input[type="number"] { width: 90px; }
+    button {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0b1220;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(6,182,212,0.25);
+    }
+    button.secondary {
+      background: #1f2937;
+      color: var(--text);
+      box-shadow: none;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); font-weight: 600; }
+    .status { color: var(--muted); font-size: 13px; }
+    .status.error { color: var(--danger); }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      background: rgba(6,182,212,0.15);
+      color: var(--accent);
+      font-size: 12px;
+      margin-left: 6px;
+    }
+    .muted { color: var(--muted); }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #1f2937;
+      margin: 4px 4px 0 0;
+      font-size: 13px;
+    }
+    .chip button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      padding: 0;
+      box-shadow: none;
+      font-size: 14px;
+    }
+    @media (max-width: 640px) {
+      h1 { font-size: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+      <header>
+        <div>
+          <h1>Pan Kitchen — Member of the Month</h1>
+        <p>Upload a WhatsApp chat export, pick a month, set weights, ignore admins, and rank contributors.</p>
+        </div>
+        <div class="badge" id="parseStatus">No file loaded</div>
+      </header>
+
+    <div class="grid" style="margin-top:16px;">
+      <div class="panel">
+        <h3>1) Upload chat export</h3>
+        <p class="muted">Use “Export chat” without media. Upload the .txt or the .zip; everything stays in your browser.</p>
+        <input type="file" id="fileInput" accept=".txt,.zip">
+        <div class="status" id="decodeStatus"></div>
+        <div class="status" id="malformedStatus"></div>
+        <div class="status" id="summaryStatus"></div>
+      </div>
+
+      <div class="panel">
+        <h3>2) Filters</h3>
+        <div class="input-row">
+          <label for="monthSelect">Month/Year</label>
+          <select id="monthSelect"></select>
+        </div>
+        <div class="input-row">
+          <label for="metricSelect">Metric</label>
+          <select id="metricSelect">
+            <option value="score">Overall score (weighted)</option>
+            <option value="messages">Messages sent</option>
+            <option value="media">Media shared</option>
+            <option value="links">Links shared</option>
+            <option value="words">Words sent</option>
+            <option value="activeDays">Active days</option>
+            <option value="replies">Replies/quotes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>3) Scoring weights</h3>
+        <div id="weightsForm"></div>
+        <div class="input-row" style="margin-top:10px;">
+          <button class="secondary" id="resetWeights">Reset defaults</button>
+          <div class="status muted">Score = Σ(metric count × weight)</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>4) Ignore members (admins, etc.)</h3>
+        <div class="input-row">
+          <input type="text" id="ignoreInput" placeholder="Type name as it appears in chat">
+          <button id="addIgnore">Add</button>
+        </div>
+        <div id="ignoreList"></div>
+        <div class="status muted" id="ignoreCount"></div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:18px;">
+      <div class="card">
+        <h3>Leaderboard (Top 5)</h3>
+        <div class="status muted" id="leaderboardMeta"></div>
+        <table>
+          <thead>
+            <tr><th>#</th><th>Member</th><th id="metricHeader">Score</th><th>Details</th></tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Summary</h3>
+        <div id="summaryCards" class="grid" style="grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="fflate.min.js"></script>
+  <script>
+    const encodings = ["utf-8", "windows-1252", "utf-16le"];
+    const defaultWeights = { messages: 1, media: 2, links: 2, words: 0.1, activeDays: 0.5, replies: 1 };
+    let weights = loadWeights();
+    let ignoreSet = loadIgnoreSet();
+    let parsed = { messages: [], malformed: 0, decodeUsed: null };
+    let monthOptions = [];
+
+    const fileInput = document.getElementById("fileInput");
+    const monthSelect = document.getElementById("monthSelect");
+    const metricSelect = document.getElementById("metricSelect");
+    const weightsForm = document.getElementById("weightsForm");
+    const resetWeightsBtn = document.getElementById("resetWeights");
+    const ignoreInput = document.getElementById("ignoreInput");
+    const addIgnoreBtn = document.getElementById("addIgnore");
+    const ignoreListEl = document.getElementById("ignoreList");
+    const ignoreCountEl = document.getElementById("ignoreCount");
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const metricHeader = document.getElementById("metricHeader");
+    const leaderboardMeta = document.getElementById("leaderboardMeta");
+    const parseStatus = document.getElementById("parseStatus");
+    const decodeStatus = document.getElementById("decodeStatus");
+    const malformedStatus = document.getElementById("malformedStatus");
+    const summaryStatus = document.getElementById("summaryStatus");
+    const summaryCards = document.getElementById("summaryCards");
+
+    renderWeightsForm();
+    renderIgnoreList();
+    monthSelect.innerHTML = "<option value=\"\">Load a file...</option>";
+
+    fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      await handleFile(file);
+    });
+
+    monthSelect.addEventListener("change", refreshUI);
+    metricSelect.addEventListener("change", refreshUI);
+    resetWeightsBtn.addEventListener("click", () => {
+      weights = { ...defaultWeights };
+      saveWeights();
+      renderWeightsForm();
+      refreshUI();
+    });
+    addIgnoreBtn.addEventListener("click", () => {
+      const name = ignoreInput.value.trim();
+      if (!name) return;
+      ignoreSet.add(normalizeName(name));
+      saveIgnoreSet();
+      ignoreInput.value = "";
+      renderIgnoreList();
+      refreshUI();
+    });
+
+    function renderWeightsForm() {
+      weightsForm.innerHTML = "";
+      Object.keys(defaultWeights).forEach((key) => {
+        const row = document.createElement("div");
+        row.className = "input-row";
+        row.innerHTML = `
+          <label style="width:120px;">${labelForMetric(key)}</label>
+          <input type="number" step="0.1" id="weight-${key}" value="${weights[key] ?? 0}" />
+        `;
+        weightsForm.appendChild(row);
+        const input = row.querySelector("input");
+        input.addEventListener("input", () => {
+          const v = Number(input.value);
+          weights[key] = Number.isFinite(v) ? v : 0;
+          saveWeights();
+          refreshUI();
+        });
+      });
+    }
+
+    function renderIgnoreList() {
+      ignoreListEl.innerHTML = "";
+      if (ignoreSet.size === 0) {
+        ignoreListEl.innerHTML = '<div class="status muted">No members ignored.</div>';
+        ignoreCountEl.textContent = "";
+        return;
+      }
+      ignoreSet.forEach((name) => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = name;
+        const btn = document.createElement("button");
+        btn.textContent = "×";
+        btn.addEventListener("click", () => {
+          ignoreSet.delete(name);
+          saveIgnoreSet();
+          renderIgnoreList();
+          refreshUI();
+        });
+        chip.appendChild(btn);
+        ignoreListEl.appendChild(chip);
+      });
+      ignoreCountEl.textContent = `${ignoreSet.size} ignored`;
+    }
+
+    function refreshUI() {
+      if (!parsed.messages.length) {
+        parseStatus.textContent = "No file loaded";
+        parseStatus.className = "badge";
+        decodeStatus.textContent = "";
+        malformedStatus.textContent = "";
+        summaryStatus.textContent = "";
+        leaderboardBody.innerHTML = "";
+        summaryCards.innerHTML = "";
+        leaderboardMeta.textContent = "";
+        return;
+      }
+      parseStatus.textContent = `Loaded ${parsed.messages.length} messages`;
+      parseStatus.className = "badge";
+      decodeStatus.textContent = `Encoding: ${parsed.decodeUsed}`;
+      malformedStatus.textContent = parsed.malformed ? `Malformed/continuation without header: ${parsed.malformed}` : "All lines matched headers";
+      summaryStatus.textContent = `System messages skipped automatically`;
+
+      const monthKey = monthSelect.value || monthOptions[0];
+      if (!monthSelect.value && monthOptions.length) monthSelect.value = monthOptions[0];
+      const filtered = parsed.messages.filter((m) => monthKey ? monthKey === monthKeyFromDate(m.ts) : true);
+      const aggregates = aggregate(filtered, ignoreSet);
+      const metric = metricSelect.value;
+      const leaderboard = buildLeaderboard(aggregates, metric);
+      renderLeaderboard(leaderboard, metric, monthKey);
+      renderSummary(filtered, aggregates, monthKey);
+    }
+
+    async function handleFile(file) {
+      const name = file.name.toLowerCase();
+      try {
+        if (name.endsWith(".zip")) {
+          parseStatus.textContent = "Unzipping…";
+          const ab = await file.arrayBuffer();
+          const unzip = unzipChat(ab);
+          const decode = decodeWithFallback(unzip.buffer);
+          parsed = parseChat(decode.text);
+          parsed.decodeUsed = `${decode.encoding} from ${unzip.filename}`;
+        } else {
+          parseStatus.textContent = "Decoding…";
+          const ab = await file.arrayBuffer();
+          const decode = decodeWithFallback(ab);
+          parsed = parseChat(decode.text);
+          parsed.decodeUsed = decode.encoding;
+        }
+        updateMonths(parsed.messages);
+        refreshUI();
+      } catch (err) {
+        parseStatus.textContent = "Error loading file";
+        decodeStatus.textContent = "";
+        malformedStatus.textContent = err?.message || String(err);
+        leaderboardBody.innerHTML = "";
+        summaryCards.innerHTML = "";
+      }
+    }
+
+    function renderLeaderboard(rows, metric, monthKey) {
+      leaderboardBody.innerHTML = "";
+      metricHeader.textContent = metric === "score" ? "Score" : labelForMetric(metric);
+      leaderboardMeta.textContent = `${rows.length ? rows.length : 0} participants | Month ${monthKey || "All"}`;
+      if (!rows.length) {
+        leaderboardBody.innerHTML = '<tr><td colspan="4" class="muted">No data for selection.</td></tr>';
+        return;
+      }
+      rows.slice(0, 5).forEach((row, idx) => {
+        const tr = document.createElement("tr");
+        const details = `msg: ${row.messages}, media: ${row.media}, links: ${row.links}, words: ${row.words}, days: ${row.activeDays}, replies: ${row.replies}`;
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${row.sender}</td>
+          <td>${metric === "score" ? row.score.toFixed(2) : row[metric]}</td>
+          <td class="muted">${details}</td>
+        `;
+        leaderboardBody.appendChild(tr);
+      });
+    }
+
+    function renderSummary(filtered, aggregates, monthKey) {
+      const totalMessages = filtered.filter(m => m.type === "message").length;
+      const totalMedia = filtered.filter(m => m.flags.media && m.type === "message").length;
+      const totalLinks = filtered.filter(m => m.flags.link && m.type === "message").length;
+      const distinctSenders = new Set(filtered.filter(m => m.type === "message").map(m => normalizeName(m.sender))).size;
+      const cards = [
+        { label: "Month", value: monthKey || "All" },
+        { label: "Messages", value: totalMessages },
+        { label: "Media", value: totalMedia },
+        { label: "Links", value: totalLinks },
+        { label: "Active senders", value: distinctSenders },
+        { label: "Ignored", value: ignoreSet.size }
+      ];
+      summaryCards.innerHTML = cards.map(c => `
+        <div class="card">
+          <div class="muted" style="font-size:13px;">${c.label}</div>
+          <div style="font-size:20px; font-weight:700;">${c.value}</div>
+        </div>
+      `).join("");
+    }
+
+    function buildLeaderboard(aggregates, metric) {
+      const rows = Object.values(aggregates).map((entry) => {
+        const score = computeScore(entry, weights);
+        return { ...entry, score };
+      });
+      const sortKey = metric === "score" ? "score" : metric;
+      return rows.sort((a, b) => (b[sortKey] ?? 0) - (a[sortKey] ?? 0));
+    }
+
+    function aggregate(messages, ignoreSet) {
+      const data = {};
+      messages.forEach((m) => {
+        if (m.type !== "message") return;
+        const key = normalizeName(m.sender);
+        if (ignoreSet.has(key)) return;
+        if (!data[key]) {
+          data[key] = { sender: m.sender, messages: 0, media: 0, links: 0, words: 0, activeDays: new Set(), replies: 0 };
+        }
+        const entry = data[key];
+        entry.messages += 1;
+        entry.media += m.flags.media ? 1 : 0;
+        entry.links += m.flags.link ? 1 : 0;
+        entry.words += m.body.split(/\s+/).filter(Boolean).length;
+        entry.activeDays.add(m.ts.toDateString());
+        entry.replies += m.flags.reply ? 1 : 0;
+      });
+      Object.values(data).forEach((entry) => {
+        entry.activeDays = entry.activeDays.size;
+      });
+      return data;
+    }
+
+    function computeScore(entry, w) {
+      return (entry.messages * (w.messages ?? 0)) +
+             (entry.media * (w.media ?? 0)) +
+             (entry.links * (w.links ?? 0)) +
+             (entry.words * (w.words ?? 0)) +
+             (entry.activeDays * (w.activeDays ?? 0)) +
+             (entry.replies * (w.replies ?? 0));
+    }
+
+    function updateMonths(messages) {
+      monthOptions = Array.from(new Set(messages.map(m => monthKeyFromDate(m.ts)))).sort().reverse();
+      monthSelect.innerHTML = monthOptions.map(m => `<option value="${m}">${m}</option>`).join("");
+      if (monthOptions.length) {
+        monthSelect.value = monthOptions[0];
+      }
+    }
+
+    function decodeWithFallback(arrayBuffer) {
+      let best = { text: "", encoding: encodings[0], replacements: Infinity };
+      for (const enc of encodings) {
+        try {
+          const text = new TextDecoder(enc, { fatal: false }).decode(arrayBuffer);
+          const replacements = (text.match(/\uFFFD/g) || []).length;
+          if (replacements < best.replacements) best = { text, encoding: enc, replacements };
+        } catch (e) { /* ignore */ }
+      }
+      return best;
+    }
+
+    function unzipChat(arrayBuffer) {
+      if (!window.fflate || !fflate.unzipSync) throw new Error("Zip support unavailable");
+      const files = fflate.unzipSync(new Uint8Array(arrayBuffer));
+      const names = Object.keys(files);
+      const targetName = names.find(n => n.toLowerCase().endsWith(".txt"));
+      if (!targetName) throw new Error("No .txt file found inside zip");
+      const content = files[targetName];
+      const buffer = content.buffer.slice(content.byteOffset, content.byteOffset + content.byteLength);
+      return { buffer, filename: targetName };
+    }
+
+    function parseChat(text) {
+      const lines = text.split(/\r?\n/);
+      const regex = /^\[(\d{2}\/\d{2}\/\d{4}),\s*(\d{1,2}:\d{2}:\d{2})([^\]]*)\]\s([^:]+):\s(.+)$/;
+      const messages = [];
+      let malformed = 0;
+      let current = null;
+      for (const rawLine of lines) {
+        const line = rawLine.trimEnd();
+        if (!line) continue;
+        const match = line.match(regex);
+        if (match) {
+          if (current) messages.push(current);
+          const [ , dateStr, timeStr, suffix, sender, body ] = match;
+          const ts = parseTimestamp(dateStr, timeStr, suffix);
+          current = {
+            ts,
+            sender: sender.trim(),
+            body: body.trim(),
+            type: classifyType(body),
+            flags: deriveFlags(body)
+          };
+        } else if (current) {
+          current.body += "\n" + line;
+        } else {
+          malformed += 1;
+        }
+      }
+      if (current) messages.push(current);
+      return { messages, malformed };
+    }
+
+    function parseTimestamp(dateStr, timeStr, suffix) {
+      const [day, month, year] = dateStr.split("/").map(Number);
+      let [hour, minute, second] = timeStr.split(":").map(Number);
+      const suffixLower = (suffix || "").toLowerCase();
+      const isPM = suffixLower.includes("pm");
+      const isAM = suffixLower.includes("am");
+      if (isPM && hour < 12) hour += 12;
+      if (isAM && hour === 12) hour = 0;
+      return new Date(year, month - 1, day, hour, minute, second);
+    }
+
+    function classifyType(body) {
+      const systemPhrases = [
+        "Messages and calls are end-to-end encrypted",
+        "was added",
+        "left",
+        "changed the subject",
+        "changed this group's icon",
+        "created group"
+      ];
+      return systemPhrases.some(p => body.includes(p)) ? "system" : "message";
+    }
+
+    function deriveFlags(body) {
+      const media = /<Media omitted>/i.test(body);
+      const link = /(https?:\/\/|www\.)/i.test(body);
+      const reply = body.startsWith("\u202a") || body.includes("\n>") || body.includes("\n“") || body.includes("\n\"");
+      return { media, link, reply };
+    }
+
+    function labelForMetric(key) {
+      switch (key) {
+        case "messages": return "Messages";
+        case "media": return "Media";
+        case "links": return "Links";
+        case "words": return "Words";
+        case "activeDays": return "Active days";
+        case "replies": return "Replies";
+        default: return key;
+      }
+    }
+
+    function monthKeyFromDate(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function normalizeName(name) {
+      return name.trim().toLowerCase();
+    }
+
+    function loadWeights() {
+      try {
+        const stored = localStorage.getItem("pk_weights");
+        if (stored) return { ...defaultWeights, ...JSON.parse(stored) };
+      } catch (_) {}
+      return { ...defaultWeights };
+    }
+
+    function saveWeights() {
+      try { localStorage.setItem("pk_weights", JSON.stringify(weights)); } catch (_) {}
+    }
+
+    function loadIgnoreSet() {
+      try {
+        const stored = localStorage.getItem("pk_ignore");
+        if (stored) return new Set(JSON.parse(stored));
+      } catch (_) {}
+      return new Set();
+    }
+
+    function saveIgnoreSet() {
+      try { localStorage.setItem("pk_ignore", JSON.stringify(Array.from(ignoreSet))); } catch (_) {}
+    }
+  </script>
+</body>
+</html>
