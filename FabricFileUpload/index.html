@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genesys Cloud Knowledge App</title>
+    <!-- Include the CJS SDK -->
+    <script src="https://sdk-cdn.mypurecloud.com/javascript/241.1.0/purecloud-platform-client-v2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.0/spark-md5.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 2rem;
+            max-width: 960px;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            background: #eee;
+        }
+
+        .status-Active {
+            background: #e6f4ea;
+            color: #1e7e34;
+        }
+
+        .add-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .add-button:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .save-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        /* Config Form Styles */
+        #config-section {
+            display: none;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #save-config-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #save-config-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #error-msg {
+            color: #dc3545;
+            padding: 1rem;
+            display: none;
+            background: #f8d7da;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        #loading {
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Upload Section Styles */
+        #upload-section {
+            margin-top: 2rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            display: none;
+        }
+
+        #upload-section h3 {
+            margin-top: 0;
+        }
+
+        .upload-controls {
+            margin-top: 1rem;
+        }
+
+        .upload-field {
+            margin-bottom: 1rem;
+        }
+
+        .upload-field label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-field input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+        }
+
+        button.action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            color: white;
+        }
+
+        .btn-blue {
+            background-color: #007bff;
+        }
+
+        .btn-blue:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-green {
+            background-color: #28a745;
+        }
+
+        .btn-green:hover {
+            background-color: #218838;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 10px;
+            height: 10px;
+            display: none;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #28a745;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Genesys Cloud Integration</h1>
+        <div id="status">Checking Configuration...</div>
+        <div id="error-msg"></div>
+
+        <!-- Configuration Section -->
+        <div id="config-section">
+            <h3>Configuration</h3>
+            <div class="form-group">
+                <label for="cfg-clientId">Client ID</label>
+                <input type="text" id="cfg-clientId" placeholder="e.g. 16b2a307-..." />
+            </div>
+            <div class="form-group">
+                <label for="cfg-region">Region</label>
+                <input type="text" id="cfg-region" placeholder="e.g. mypurecloud.de" />
+            </div>
+            <div class="form-group">
+                <label for="cfg-redirectUri">Redirect URI</label>
+                <input type="text" id="cfg-redirectUri" placeholder="e.g. http://localhost/index.html" />
+            </div>
+            <button id="save-config-btn">Save Configuration & Authenticate</button>
+        </div>
+
+        <div id="content-area" style="display: none;">
+            <div id="loading">Waiting for authentication...</div>
+            <table id="sources-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Trigger Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be added here -->
+                </tbody>
+            </table>
+
+            <button id="add-source-btn" class="add-button" style="display: none;">+ Add Source</button>
+
+            <!-- File Upload UI -->
+            <div id="upload-section">
+                <h3>Manage Content: <span id="upload-source-name"></span></h3>
+                <div id="sync-status"></div>
+
+                <div id="file-selection-area">
+                    <div class="upload-field">
+                        <label>Select File</label>
+                        <input type="file" id="file-input" />
+                    </div>
+
+                    <div id="file-metadata-form" style="display:none;">
+                        <div class="upload-field">
+                            <label>File Name</label>
+                            <input type="text" id="meta-filename" />
+                        </div>
+                        <div class="upload-field">
+                            <label>Content Type</label>
+                            <input type="text" id="meta-contenttype" />
+                        </div>
+                        <button id="perform-upload-btn" class="action-btn btn-green">Upload File</button>
+                    </div>
+
+                    <div class="progress-bar" id="upload-progress">
+                        <div class="progress-bar-fill" id="upload-progress-fill"></div>
+                    </div>
+                    <div id="upload-msg"></div>
+                </div>
+
+                <hr>
+                <button id="complete-sync-btn" class="action-btn btn-blue">Complete Synchronization</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import {
+            genesysCloudBroker
+        } from './scripts/genesys-cloud-broker.js';
+
+        const statusEl = document.getElementById('status');
+        const errorEl = document.getElementById('error-msg');
+        const loadingEl = document.getElementById('loading');
+        const tableEl = document.getElementById('sources-table');
+        const tbodyEl = tableEl.querySelector('tbody');
+        const addBtn = document.getElementById('add-source-btn');
+        const contentArea = document.getElementById('content-area');
+
+        // Config Elements
+        const configSection = document.getElementById('config-section');
+        const cfgClientId = document.getElementById('cfg-clientId');
+        const cfgRegion = document.getElementById('cfg-region');
+        const cfgRedirectUri = document.getElementById('cfg-redirectUri');
+        const saveConfigBtn = document.getElementById('save-config-btn');
+
+        const CONFIG_KEY = 'genesys_cloud_config';
+
+        const currentSync = {
+            sourceId: null,
+            syncId: null
+        };
+
+        // Upload UI Elements
+        const uploadSection = document.getElementById('upload-section');
+        const uploadSourceName = document.getElementById('upload-source-name');
+        const fileInput = document.getElementById('file-input');
+        const metaForm = document.getElementById('file-metadata-form');
+        const metaFilename = document.getElementById('meta-filename');
+        const metaContentType = document.getElementById('meta-contenttype');
+        const performUploadBtn = document.getElementById('perform-upload-btn');
+        const completeSyncBtn = document.getElementById('complete-sync-btn');
+        const uploadProgress = document.getElementById('upload-progress');
+        const uploadProgressFill = document.getElementById('upload-progress-fill');
+        const uploadMsg = document.getElementById('upload-msg');
+
+        function showError(msg) {
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+            statusEl.innerText = 'Error';
+        }
+
+        function showConfigForm() {
+            configSection.style.display = 'block';
+            contentArea.style.display = 'none';
+            statusEl.innerText = 'Configuration Required';
+
+            // Pre-fill Redirect URI if empty
+            if (!cfgRedirectUri.value) {
+                // Remove query params for clean redirect URI
+                cfgRedirectUri.value = window.location.href.split('?')[0];
+            }
+        }
+
+        function hideConfigForm() {
+            configSection.style.display = 'none';
+            contentArea.style.display = 'block';
+        }
+
+        function loadConfig() {
+            const stored = localStorage.getItem(CONFIG_KEY);
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            return null;
+        }
+
+        function saveConfig(config) {
+            localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+        }
+
+        function renderTable(sources) {
+            tbodyEl.innerHTML = '';
+            configSection.style.display = 'none'; // Ensure config is hidden
+            sources.forEach(source => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-source-id', source.id);
+                tr.setAttribute('data-source-name', source.name);
+
+                let actions = `<td><button class="delete-btn" title="Delete Source">-</button>`;
+
+                // Check if FileUpload type for adding content button
+                if (source.type === 'FileUpload') {
+                    actions += `<button class="action-btn btn-blue add-content-btn" style="margin-left: 5px;" title="Add Content">+</button>`;
+                }
+                actions += `</td>`;
+
+                tr.innerHTML = `
+                    <td>${source.name || ''}</td>
+                    <td>${source.type || ''}</td>
+                    <td><span class="status-badge status-${source.status}">${source.status || ''}</span></td>
+                    <td>${source.triggerType || ''}</td>
+                    ${actions}
+                `;
+                tbodyEl.appendChild(tr);
+            });
+            tableEl.style.display = 'table';
+            addBtn.style.display = 'inline-block';
+            loadingEl.style.display = 'none';
+
+            // Attach event listeners for delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', handleDelete);
+            });
+
+            document.querySelectorAll('.add-content-btn').forEach(btn => {
+                btn.addEventListener('click', handleAddContent);
+            });
+        }
+
+        function handleAddContent(e) {
+            const tr = e.target.closest('tr');
+            const sourceId = tr.getAttribute('data-source-id');
+            const sourceName = tr.getAttribute('data-source-name');
+
+            statusEl.innerText = `Starting synchronization for ${sourceName}...`;
+
+            genesysCloudBroker.createSynchronization(sourceId)
+                .then(syncData => {
+                    console.log('Sync created', syncData);
+                    currentSync.sourceId = sourceId;
+                    currentSync.syncId = syncData.id;
+
+                    showUploadUI(sourceName);
+                    statusEl.innerText = 'Ready to upload';
+                })
+                .catch(err => {
+                    showError('Failed to start sync: ' + err.message);
+                });
+        }
+
+        function showUploadUI(sourceName) {
+            uploadSection.style.display = 'block';
+            uploadSourceName.innerText = sourceName;
+
+            // Reset UI
+            fileInput.value = '';
+            metaForm.style.display = 'none';
+            uploadProgress.style.display = 'none';
+            uploadMsg.innerText = '';
+        }
+
+        function handleDelete(e) {
+            const tr = e.target.closest('tr');
+            const sourceId = tr.getAttribute('data-source-id');
+            const sourceName = tr.cells[0].innerText;
+
+            if (confirm(`Are you sure you want to delete source "${sourceName}"?`)) {
+                genesysCloudBroker.deleteKnowledgeSource(sourceId)
+                    .then(() => {
+                        console.log(`Deleted source ${sourceId}`);
+                        return loadSources(); // Reload table logic as requested
+                    })
+                    .catch(err => {
+                        showError('Delete Failed: ' + err.message);
+                        console.error(err);
+                    });
+            }
+        }
+
+        function calculateMD5(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                const spark = new SparkMD5.ArrayBuffer();
+
+                reader.onload = function (e) {
+                    spark.append(e.target.result);
+                    const md5 = spark.end(false); // Hex string
+                    // Convert Hex to Base64 as required by API
+                    // Hex to binary string -> btoa
+                    const hex = md5.toString();
+                    let binaryString = '';
+                    for (let i = 0; i < hex.length; i += 2) {
+                        binaryString += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+                    }
+                    const base64 = btoa(binaryString);
+                    resolve(base64);
+                };
+
+                reader.onerror = function () {
+                    reject(new Error('File read failed'));
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) {
+                metaFilename.value = file.name;
+                metaContentType.value = file.type || 'application/octet-stream';
+                metaForm.style.display = 'block';
+                uploadMsg.innerText = '';
+            }
+        });
+
+        performUploadBtn.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('No file selected');
+                return;
+            }
+
+            statusEl.innerText = 'Calculating MD5...';
+            calculateMD5(file).then(md5 => {
+                const metadata = {
+                    fileName: metaFilename.value,
+                    contentMd5: md5,
+                    contentType: metaContentType.value,
+                    contentLength: file.size
+                };
+
+                statusEl.innerText = 'Requesting upload URL...';
+                return genesysCloudBroker.createUpload(currentSync.sourceId, currentSync.syncId, metadata)
+                    .then(data => {
+                        return { data, file };
+                    });
+            })
+                .then(({ data, file }) => {
+                    statusEl.innerText = 'Uploading file...';
+                    uploadProgress.style.display = 'block';
+                    uploadProgressFill.style.width = '20%';
+
+                    console.log('--- UPLOAD DEBUG INFO ---');
+                    console.log('File Name:', file.name);
+                    console.log('File Type (browser):', file.type);
+                    console.log('File Size:', file.size);
+                    console.log('Signed URL:', data.url);
+                    console.log('Response Headers:', data.headers);
+
+                    // Use XMLHttpRequest instead of fetch for better CORS handling
+                    return new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('PUT', data.url, true);
+
+                        // Set headers from the presigned URL response
+                        if (data.headers) {
+                            Object.keys(data.headers).forEach(key => {
+                                const lowerKey = key.toLowerCase();
+                                // Skip browser-controlled headers
+                                if (lowerKey !== 'content-length' && lowerKey !== 'host') {
+                                    try {
+                                        xhr.setRequestHeader(key, data.headers[key]);
+                                        console.log(`Set header: ${key} = ${data.headers[key]}`);
+                                    } catch (e) {
+                                        console.warn(`Could not set header ${key}:`, e);
+                                    }
+                                }
+                            });
+                        }
+
+                        xhr.upload.onprogress = function (e) {
+                            if (e.lengthComputable) {
+                                const percent = (e.loaded / e.total) * 100;
+                                uploadProgressFill.style.width = percent + '%';
+                            }
+                        };
+
+                        xhr.onload = function () {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                resolve({ ok: true, status: xhr.status });
+                            } else {
+                                reject(new Error('S3 Upload Failed: ' + xhr.status + ' ' + xhr.statusText));
+                            }
+                        };
+
+                        xhr.onerror = function () {
+                            console.error('XHR Error:', xhr);
+                            reject(new Error('Network error during upload. Check browser console for CORS details.'));
+                        };
+
+                        xhr.send(file);
+                    });
+                })
+                .then(res => {
+                    uploadProgressFill.style.width = '100%';
+                    statusEl.innerText = 'Upload Successful';
+                    uploadMsg.innerText = 'File uploaded successfully. You can select another file.';
+                    uploadMsg.style.color = 'green';
+
+                    // Clear input for next
+                    fileInput.value = '';
+                    metaForm.style.display = 'none';
+                })
+                .catch(err => {
+                    console.error(err);
+                    showError('Upload Error: ' + err.message);
+                    uploadMsg.innerText = 'Upload failed.';
+                    uploadMsg.style.color = 'red';
+                });
+        });
+
+        completeSyncBtn.addEventListener('click', () => {
+            if (!currentSync.sourceId || !currentSync.syncId) return;
+
+            statusEl.innerText = 'Completing synchronization...';
+            genesysCloudBroker.completeSynchronization(currentSync.sourceId, currentSync.syncId)
+                .then(() => {
+                    statusEl.innerText = 'Synchronization Completed';
+                    uploadSection.style.display = 'none';
+                    currentSync.sourceId = null;
+                    currentSync.syncId = null;
+                })
+                .catch(err => {
+                    showError('Complete Sync Failed: ' + err.message);
+                });
+        });
+
+        // Initialize and Authenticate
+        function loadSources() {
+            return genesysCloudBroker.getKnowledgeSources()
+                .then((data) => {
+                    statusEl.innerText = 'Ready';
+                    console.log('Knowledge Sources:', data);
+                    if (data && data.entities) {
+                        renderTable(data.entities);
+                    } else {
+                        showError('No entities found in response');
+                    }
+                });
+        }
+
+        function startApp(config) {
+            try {
+                hideConfigForm();
+                genesysCloudBroker.initialize(config);
+                statusEl.innerText = 'Redirecting to login / Authenticating...';
+
+                genesysCloudBroker.authenticate()
+                    .then(() => {
+                        statusEl.innerText = 'Authenticated! Fetching knowledge sources...';
+                        return loadSources();
+                    })
+                    .catch((err) => {
+                        console.error('Authentication Error:', err);
+                        showError('Authentication Failed: ' + err.toString());
+                        // Show config form again to allow user to fix potential config issues
+                        showConfigForm();
+                        // Populate with the config we tried
+                        cfgClientId.value = config.clientId;
+                        cfgRegion.value = config.region;
+                        cfgRedirectUri.value = config.redirectUri;
+                    });
+            } catch (error) {
+                showError('Initialization Failed: ' + error.toString());
+                console.error(error);
+                showConfigForm();
+            }
+        }
+
+        // Main Logic
+        const storedConfig = loadConfig();
+        if (storedConfig) {
+            startApp(storedConfig);
+        } else {
+            showConfigForm();
+        }
+
+        // Event Listeners
+        saveConfigBtn.addEventListener('click', () => {
+            const config = {
+                clientId: cfgClientId.value.trim(),
+                region: cfgRegion.value.trim(),
+                redirectUri: cfgRedirectUri.value.trim()
+            };
+
+            if (!config.clientId || !config.region || !config.redirectUri) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            saveConfig(config);
+            // Reload page to clear any existing SDK state or URL params
+            window.location.href = window.location.href.split('?')[0];
+        });
+
+        addBtn.addEventListener('click', () => {
+            // Insert a new row at the top
+            const tr = document.createElement('tr');
+            tr.className = 'new-row';
+            tr.innerHTML = `
+                <td><input type="text" id="new-source-name" placeholder="Enter Name"></td>
+                <td>FileUpload</td>
+                <td>(New)</td>
+                <td>Manual</td>
+                <td>
+                    <button class="save-btn">Save</button>
+                    <button class="cancel-btn">Cancel</button>
+                </td>
+           `;
+
+            // Insert as first child of tbody
+            if (tbodyEl.firstChild) {
+                tbodyEl.insertBefore(tr, tbodyEl.firstChild);
+            } else {
+                tbodyEl.appendChild(tr);
+            }
+
+            // Attach listeners
+            const saveBtn = tr.querySelector('.save-btn');
+            const cancelBtn = tr.querySelector('.cancel-btn');
+            const input = tr.querySelector('#new-source-name');
+
+            input.focus();
+
+            cancelBtn.addEventListener('click', () => {
+                tr.remove();
+            });
+
+            saveBtn.addEventListener('click', () => {
+                const name = input.value.trim();
+                if (!name) {
+                    alert('Please enter a name');
+                    return;
+                }
+
+                statusEl.innerText = 'Creating source...';
+                genesysCloudBroker.createKnowledgeSource(name)
+                    .then(newSource => {
+                        // Reload the table or just replace the row
+                        // For simplicity and correctness (to get all fields properly), let's reload
+                        tr.remove();
+                        loadSources();
+                    })
+                    .catch(err => {
+                        showError('Create Failed: ' + err.message);
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>
