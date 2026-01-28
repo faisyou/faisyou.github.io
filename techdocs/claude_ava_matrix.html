@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Future of Conversational AI | Genesys</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
+                linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            display: inline-block;
+            padding: 8px 24px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 14px;
+            color: white;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        h1 {
+            font-size: 56px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            letter-spacing: -2px;
+        }
+
+        .subtitle {
+            font-size: 22px;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            font-weight: 400;
+        }
+
+        .tagline {
+            font-size: 16px;
+            color: #64748b;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .tagline strong {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        /* Matrix Section */
+        .matrix-wrapper {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 50px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            margin-bottom: 60px;
+        }
+
+        .matrix-container {
+            position: relative;
+            width: 100%;
+            height: 650px;
+            margin: 30px 0;
+        }
+
+        .matrix-canvas {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            background: 
+                radial-gradient(circle at 90% 60%, rgba(16, 185, 129, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 10% 90%, rgba(239, 68, 68, 0.1) 0%, transparent 40%),
+                linear-gradient(to right, 
+                    rgba(239, 68, 68, 0.08) 0%, 
+                    rgba(251, 191, 36, 0.08) 50%, 
+                    rgba(16, 185, 129, 0.12) 100%),
+                linear-gradient(to top,
+                    rgba(239, 68, 68, 0.08) 0%,
+                    rgba(251, 191, 36, 0.08) 40%,
+                    rgba(16, 185, 129, 0.12) 100%);
+            overflow: hidden;
+        }
+
+        .matrix-canvas::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, transparent 1px, transparent 50px, rgba(255,255,255,0.03) 51px),
+                repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, transparent 1px, transparent 50px, rgba(255,255,255,0.03) 51px);
+            pointer-events: none;
+        }
+
+        /* Quadrant labels */
+        .quadrant-label {
+            position: absolute;
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .quadrant-top-left {
+            top: 20px;
+            left: 20px;
+            color: rgba(59, 130, 246, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .quadrant-top-right {
+            top: 20px;
+            right: 20px;
+            color: rgba(16, 185, 129, 0.9);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            font-size: 14px;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .quadrant-bottom-left {
+            bottom: 20px;
+            left: 20px;
+            color: rgba(239, 68, 68, 0.8);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .quadrant-bottom-right {
+            bottom: 20px;
+            right: 20px;
+            color: rgba(251, 191, 36, 0.8);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        /* Reliability threshold line */
+        .reliability-threshold {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, 
+                rgba(239, 68, 68, 0.4), 
+                rgba(251, 191, 36, 0.6), 
+                rgba(16, 185, 129, 0.8));
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+
+        .reliability-threshold::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            right: 0;
+            height: 5px;
+            border-top: 3px dashed rgba(251, 191, 36, 0.6);
+        }
+
+        .threshold-label {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            color: white;
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
+            letter-spacing: 1.5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Axis labels */
+        .axis-label {
+            position: absolute;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .x-axis-label {
+            bottom: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .y-axis-label {
+            left: -120px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: center;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .axis-end-label {
+            position: absolute;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .x-left { bottom: -65px; left: 0; }
+        .x-right { bottom: -65px; right: 0; }
+        .y-bottom { left: -100px; bottom: 0; }
+        .y-top { left: -100px; top: 0; }
+
+        /* Solution points */
+        .solution {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+        }
+
+        .solution:hover {
+            transform: translate(-50%, -50%) scale(1.15);
+            z-index: 100;
+            filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+        }
+
+        .solution-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 0 0 0 rgba(59, 130, 246, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .solution-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+        }
+
+        .solution-label {
+            position: absolute;
+            top: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 40, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            white-space: nowrap;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .solution:hover .solution-label {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-5px);
+        }
+
+        .solution-label small {
+            display: block;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Special styling for centerpiece */
+        .agentic {
+            z-index: 50;
+        }
+
+        .agentic .solution-dot {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+            border: 4px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 
+                0 0 0 0 rgba(16, 185, 129, 0.7),
+                0 0 40px rgba(16, 185, 129, 0.6),
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                inset 0 2px 8px rgba(255, 255, 255, 0.4);
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            position: relative;
+        }
+
+        .agentic .solution-dot::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            border-radius: 50%;
+            animation: ripple 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        .agentic .solution-dot::after {
+            width: 12px;
+            height: 12px;
+            background: white;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 
+                    0 0 0 0 rgba(16, 185, 129, 0.7),
+                    0 0 40px rgba(16, 185, 129, 0.6),
+                    0 8px 32px rgba(0, 0, 0, 0.5),
+                    inset 0 2px 8px rgba(255, 255, 255, 0.4);
+            }
+            50% {
+                box-shadow: 
+                    0 0 0 8px rgba(16, 185, 129, 0),
+                    0 0 60px rgba(16, 185, 129, 0.8),
+                    0 12px 40px rgba(0, 0, 0, 0.6),
+                    inset 0 2px 8px rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        @keyframes ripple {
+            0% {
+                width: 60px;
+                height: 60px;
+                opacity: 0.8;
+            }
+            100% {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+            }
+        }
+
+        .agentic .solution-label {
+            opacity: 1;
+            font-size: 16px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 14px 24px;
+            box-shadow: 
+                0 8px 40px rgba(16, 185, 129, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            letter-spacing: 0.5px;
+            top: 60px;
+        }
+
+        .agentic .solution-subtitle {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 6px;
+            opacity: 0.95;
+            letter-spacing: 0.3px;
+        }
+
+        .agentic:hover .solution-label {
+            transform: translateX(-50%) translateY(-8px);
+        }
+
+        /* Warning for AI Guide V1 */
+        .below-threshold .solution-dot {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3);
+            animation: warningPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes warningPulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(245, 158, 11, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(245, 158, 11, 0.7), 0 4px 20px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        .below-threshold .solution-label::after {
+            content: '⚠ Below Reliability Threshold';
+            display: block;
+            font-size: 10px;
+            color: #fbbf24;
+            margin-top: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Feature Cards Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.2);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .feature-text {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.7;
+        }
+
+        .feature-text strong {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding: 60px 40px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 30px;
+            color: #10b981;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 24px;
+        }
+
+        .cta-title {
+            font-size: 42px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+
+        .cta-title .highlight {
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cta-text {
+            font-size: 18px;
+            color: #94a3b8;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+
+        .cta-stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 36px; }
+            .subtitle { font-size: 18px; }
+            .matrix-wrapper { padding: 30px 20px; }
+            .features { grid-template-columns: 1fr; }
+            .cta-stats { gap: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="logo">Genesys AI Innovation</div>
+            <h1>The Future of<br>Conversational AI</h1>
+            <p class="subtitle">Where Reliability Meets Effortless Customer Experience</p>
+            <p class="tagline">
+                Introducing <strong>Agentic Virtual Agent</strong> — the breakthrough that achieves 
+                production-ready reliability while delivering near-maximum flexibility
+            </p>
+        </div>
+
+        <!-- Matrix Section -->
+        <div class="matrix-wrapper">
+            <div class="matrix-container">
+                <div class="matrix-canvas">
+                    <!-- Quadrant labels -->
+                    <div class="quadrant-label quadrant-top-left">Legacy Zone</div>
+                    <div class="quadrant-label quadrant-top-right">✨ Innovation Zone</div>
+                    <div class="quadrant-label quadrant-bottom-left">High Risk</div>
+                    <div class="quadrant-label quadrant-bottom-right">Experimental</div>
+
+                    <!-- Reliability threshold line (at 40% height) -->
+                    <div class="reliability-threshold" style="bottom: 40%;">
+                        <div class="threshold-label" style="top: -16px;">RELIABILITY THRESHOLD</div>
+                    </div>
+
+                    <!-- Axis labels -->
+                    <div class="axis-label x-axis-label">Customer Experience Ease</div>
+                    <div class="axis-label y-axis-label">System Determinism</div>
+                    
+                    <div class="axis-end-label x-left">Rigid</div>
+                    <div class="axis-end-label x-right">Flexible</div>
+                    <div class="axis-end-label y-bottom">Unpredictable</div>
+                    <div class="axis-end-label y-top">Predictable</div>
+
+                    <!-- Solution points -->
+                    <!-- Traditional IVR: top-left corner (5% flexibility, 95% determinism) -->
+                    <div class="solution" style="left: 5%; bottom: 95%;">
+                        <div class="solution-dot"></div>
+                        <div class="solution-label">Traditional IVR<br><small>Highly Reliable, Highly Rigid</small></div>
+                    </div>
+
+                    <!-- NLU-Based Bot: (60% flexibility, 70% determinism) -->
+                    <div class="solution" style="left: 60%; bottom: 70%;">
+                        <div class="solution-dot"></div>
+                        <div class="solution-label">NLU-Based Bot<br><small>Good Balance</small></div>
+                    </div>
+
+                    <!-- Virtual Agent Bot: (65% flexibility, 65% determinism) -->
+                    <div class="solution" style="left: 65%; bottom: 65%;">
+                        <div class="solution-dot"></div>
+                        <div class="solution-label">Virtual Agent Bot<br><small>Enhanced Flexibility</small></div>
+                    </div>
+
+                    <!-- AI Guide V2: (70% flexibility, 60% determinism) -->
+                    <div class="solution" style="left: 70%; bottom: 60%;">
+                        <div class="solution-dot"></div>
+                        <div class="solution-label">AI Guide V2<br><small>More Flexible, Still Reliable</small></div>
+                    </div>
+
+                    <!-- AI Guide V1: (90% flexibility, 35% determinism) - BELOW THRESHOLD -->
+                    <div class="solution below-threshold" style="left: 90%; bottom: 35%;">
+                        <div class="solution-dot"></div>
+                        <div class="solution-label">AI Guide V1<br><small>Maximum Flexibility</small></div>
+                    </div>
+
+                    <!-- Agentic Virtual Agent: (85% flexibility, 55% determinism) - CENTERPIECE -->
+                    <div class="solution agentic" style="left: 85%; bottom: 55%;">
+                        <div class="solution-dot"></div>
+                        <div class="solution-label">
+                            Agentic Virtual Agent
+                            <span class="solution-subtitle">The Optimal Balance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">The Challenge</div>
+                <div class="feature-text">
+                    Traditional systems achieve determinism through rigidity, creating frustrating customer experiences. 
+                    Flexible systems often sacrifice reliability, falling below production standards.
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">The Breakthrough</div>
+                <div class="feature-text">
+                    <strong>Agentic Virtual Agent</strong> shatters this trade-off. GenAI-powered intelligence delivers 
+                    production-ready reliability <strong>while maintaining near-maximum flexibility</strong>.
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🚀</div>
+                <div class="feature-title">The Result</div>
+                <div class="feature-text">
+                    Enterprise-grade conversational AI that customers love to use. Above the reliability threshold, 
+                    in the innovation zone, <strong>ready for deployment today</strong>.
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <div class="cta-content">
+                <div class="cta-badge">The Future Is Here</div>
+                <h2 class="cta-title">
+                    Position Your Business in the<br>
+                    <span class="highlight">Innovation Zone</span>
+                </h2>
+                <p class="cta-text">
+                    Agentic Virtual Agent represents the evolution of customer service — 
+                    where AI agents handle complex conversations with the reliability enterprises demand 
+                    and the flexibility customers expect.
+                </p>
+                <div class="cta-stats">
+                    <div class="stat">
+                        <div class="stat-number">85%</div>
+                        <div class="stat-label">Flexibility Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">55%</div>
+                        <div class="stat-label">Above Threshold</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">∞</div>
+                        <div class="stat-label">Possibilities</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced interactivity
+        document.querySelectorAll('.solution').forEach(solution => {
+            solution.addEventListener('click', function() {
+                // Add click animation
+                this.style.transform = 'translate(-50%, -50%) scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+
+        // Staggered animation on load
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.solution').forEach((solution, index) => {
+                solution.style.opacity = '0';
+                solution.style.transform = 'translate(-50%, -50%) scale(0)';
+                setTimeout(() => {
+                    solution.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    solution.style.opacity = '1';
+                    solution.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, index * 150);
+            });
+
+            // Animate feature cards
+            document.querySelectorAll('.feature-card').forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.8s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 1000 + (index * 200));
+            });
+
+            // Animate CTA section
+            setTimeout(() => {
+                const cta = document.querySelector('.cta-section');
+                cta.style.opacity = '0';
+                cta.style.transform = 'translateY(30px)';
+                cta.style.transition = 'all 1s ease';
+                setTimeout(() => {
+                    cta.style.opacity = '1';
+                    cta.style.transform = 'translateY(0)';
+                }, 100);
+            }, 1800);
+        });
+
+        // Parallax effect on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.bg-animation');
+            if (parallax) {
+                parallax.style.transform = `translateY(${scrolled * 0.5}px)`;
+            }
+        });
+    </script>
+</body>
+</html>
