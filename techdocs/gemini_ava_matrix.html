@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genesys AI Solution Matrix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 75%; /* Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+        }
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .annotation-box {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #f0f7ff;
+            border-left: 5px solid #007bff;
+            border-radius: 4px;
+            font-size: 0.95em;
+            line-height: 1.5;
+            color: #34495e;
+        }
+        .annotation-box strong {
+            color: #0056b3;
+        }
+        /* Tooltip hover effect simulation */
+        circle {
+            transition: all 0.3s ease;
+        }
+        circle:hover {
+            stroke: #333;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Genesys Conversational AI Solutions</h2>
+    <div class="subtitle">Matrix: Customer Experience Ease vs. System Determinism</div>
+
+    <div class="chart-wrapper">
+        <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#bdc3c7"/>
+                </marker>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+
+            <rect x="50" y="50" width="375" height="300" fill="#eaf4ff" opacity="0.6"/>
+            <rect x="425" y="50" width="325" height="300" fill="#e8f8f5" opacity="0.6"/>
+            <rect x="50" y="350" width="375" height="200" fill="#fdedec" opacity="0.6"/>
+            <rect x="425" y="350" width="325" height="200" fill="#fef9e7" opacity="0.6"/>
+
+            <g stroke="#e0e0e0" stroke-width="1" stroke-dasharray="4,4">
+                <line x1="50" y1="150" x2="750" y2="150"/>
+                <line x1="50" y1="250" x2="750" y2="250"/>
+                <line x1="50" y1="350" x2="750" y2="350"/> <line x1="50" y1="450" x2="750" y2="450"/>
+                <line x1="225" y1="50" x2="225" y2="550"/>
+                <line x1="400" y1="50" x2="400" y2="550"/> <line x1="575" y1="50" x2="575" y2="550"/>
+            </g>
+
+            <line x1="50" y1="350" x2="750" y2="350" stroke="#e74c3c" stroke-width="2" stroke-dasharray="8,4"/>
+            <text x="740" y="340" text-anchor="end" font-size="12" fill="#c0392b" font-weight="bold">Reliability Threshold (Production Ready)</text>
+            <text x="740" y="365" text-anchor="end" font-size="10" fill="#c0392b" font-style="italic">▼ Below = Risky / Experimental</text>
+
+            <line x1="50" y1="550" x2="750" y2="550" stroke="#2c3e50" stroke-width="2"/>
+            <text x="400" y="590" text-anchor="middle" font-weight="bold" fill="#2c3e50">Customer Experience Ease (Rigidity ➝ Flexibility)</text>
+            <text x="60" y="570" text-anchor="start" font-size="12" fill="#7f8c8d">Rigid</text>
+            <text x="740" y="570" text-anchor="end" font-size="12" fill="#7f8c8d">Flexible (Effortless)</text>
+
+            <line x1="50" y1="550" x2="50" y2="50" stroke="#2c3e50" stroke-width="2"/>
+            <text x="20" y="300" text-anchor="middle" transform="rotate(-90, 20, 300)" font-weight="bold" fill="#2c3e50">Determinism (Predictability)</text>
+            <text x="40" y="540" text-anchor="start" transform="rotate(-90, 40, 540)" font-size="12" fill="#7f8c8d">Non-Deterministic</text>
+            <text x="40" y="60" text-anchor="end" transform="rotate(-90, 40, 60)" font-size="12" fill="#7f8c8d">Deterministic</text>
+
+            <path d="M 100 500 Q 200 400, 700 100" fill="none" stroke="#bdc3c7" stroke-width="20" opacity="0.2" marker-end="url(#arrowhead)"/>
+            <text x="180" y="460" transform="rotate(-35, 180, 460)" fill="#95a5a6" font-size="14" font-weight="bold">Evolution Path</text>
+
+            <circle cx="85" cy="75" r="6" fill="#34495e"/>
+            <text x="95" y="80" font-size="12" font-weight="bold" fill="#2c3e50">Traditional IVR</text>
+
+            <circle cx="470" cy="200" r="6" fill="#3498db"/>
+            <text x="480" y="205" font-size="12" font-weight="bold" fill="#2c3e50">NLU Bot</text>
+
+            <circle cx="505" cy="225" r="6" fill="#3498db"/>
+            <text x="515" y="230" font-size="12" font-weight="bold" fill="#2c3e50">Virtual Agent</text>
+
+            <circle cx="540" cy="250" r="6" fill="#3498db"/>
+            <text x="550" y="255" font-size="12" font-weight="bold" fill="#2c3e50">AI Guide V2</text>
+
+            <circle cx="680" cy="375" r="6" fill="#e74c3c"/>
+            <text x="680" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="#c0392b">AI Guide V1</text>
+            <text x="680" y="415" text-anchor="middle" font-size="10" fill="#c0392b">(Below reliability)</text>
+
+            <circle cx="645" cy="275" r="30" fill="rgba(46, 204, 113, 0.2)" filter="url(#glow)"/>
+            <circle cx="645" cy="275" r="12" fill="#2ecc71" stroke="#27ae60" stroke-width="3"/>
+            <text x="645" y="235" text-anchor="middle" font-size="16" font-weight="900" fill="#27ae60">AGENTIC VIRTUAL AGENT</text>
+            <text x="645" y="252" text-anchor="middle" font-size="11" font-weight="bold" fill="#27ae60">Optimal Balance</text>
+            <line x1="645" y1="258" x2="645" y2="263" stroke="#27ae60" stroke-width="2"/>
+
+        </svg>
+    </div>
+
+    <div class="annotation-box">
+        <strong>The Challenge:</strong> Traditional systems (like IVR) achieve high determinism through rigidity, forcing customers into unnatural paths. Early generative attempts (AI Guide V1) offered flexibility but fell below the reliability threshold.
+        <br><br>
+        <strong>The Breakthrough:</strong> The <span style="color: #27ae60; font-weight:bold;">Agentic Virtual Agent</span> occupies the "sweet spot." It maintains production-ready reliability (above the red threshold line) while unlocking near-maximum flexibility, resulting in a significantly superior customer experience.
+    </div>
+</div>
+
+</body>
+</html>
