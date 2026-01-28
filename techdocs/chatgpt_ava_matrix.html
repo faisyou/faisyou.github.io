@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Genesys Conversational AI Solutions — Flexibility vs. Determinism Matrix</title>
+  <style>
+    :root{
+      --ink:#111827;
+      --muted:#6b7280;
+      --grid:#e5e7eb;
+
+      --q-tr: rgba(34, 197, 94, 0.12);   /* light green  - Ideal */
+      --q-tl: rgba(59, 130, 246, 0.12);  /* light blue   */
+      --q-br: rgba(234, 179, 8, 0.12);   /* light yellow - Caution */
+      --q-bl: rgba(239, 68, 68, 0.12);   /* light red    - Avoid */
+    }
+
+    body{
+      margin:0;
+      background:#fff;
+      color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 0 16px 24px;
+    }
+
+    .header{
+      margin-bottom: 12px;
+    }
+    .header h1{
+      font-size: 20px;
+      margin: 0 0 6px 0;
+      letter-spacing: 0.2px;
+    }
+    .header p{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .card{
+      border: 1px solid #e6e6e6;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 22px rgba(17,24,39,0.06);
+    }
+
+    svg{
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* SVG text helpers */
+    .title { font-size: 18px; font-weight: 750; fill: var(--ink); }
+    .subtitle { font-size: 12.5px; fill: var(--muted); }
+
+    .axis-label { font-size: 13px; font-weight: 650; fill: var(--ink); }
+    .axis-end { font-size: 12px; fill: var(--muted); }
+    .axis-end-strong { font-size: 12px; font-weight: 650; fill: var(--ink); }
+
+    .quad-label { font-size: 12px; font-weight: 750; fill: rgba(17,24,39,0.75); letter-spacing: 0.2px; }
+    .quad-sub { font-size: 11px; fill: rgba(17,24,39,0.62); }
+
+    .gridline { stroke: var(--grid); stroke-width: 1; }
+    .midline { stroke: rgba(17,24,39,0.35); stroke-width: 1.5; }
+    .border { stroke: rgba(17,24,39,0.7); stroke-width: 1.6; fill: none; }
+
+    .threshold { stroke: rgba(17,24,39,0.75); stroke-width: 2; stroke-dasharray: 8 6; }
+    .threshold-label { font-size: 12px; font-weight: 750; fill: rgba(17,24,39,0.85); }
+    .threshold-note { font-size: 11.5px; fill: rgba(17,24,39,0.65); }
+
+    .dot { fill: rgba(17,24,39,0.9); stroke: #fff; stroke-width: 2; }
+    .dot-label {
+      font-size: 12px;
+      font-weight: 650;
+      fill: rgba(17,24,39,0.95);
+      paint-order: stroke;
+      stroke: #fff;
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+
+    .hero-dot { fill: #7c3aed; stroke: #4c1d95; stroke-width: 4; }
+    .hero-label {
+      font-size: 14px;
+      font-weight: 800;
+      fill: rgba(17,24,39,0.98);
+      paint-order: stroke;
+      stroke: #fff;
+      stroke-width: 5px;
+      stroke-linejoin: round;
+    }
+    .hero-sub {
+      font-size: 11.5px;
+      font-weight: 650;
+      fill: rgba(17,24,39,0.75);
+      paint-order: stroke;
+      stroke: #fff;
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+
+    .callout {
+      fill: rgba(255,255,255,0.92);
+      stroke: rgba(17,24,39,0.12);
+      stroke-width: 1.2;
+    }
+    .callout-title { font-size: 12.5px; font-weight: 800; fill: rgba(17,24,39,0.95); }
+    .callout-text { font-size: 12px; fill: rgba(17,24,39,0.72); }
+
+    .evo { stroke: rgba(17,24,39,0.55); stroke-width: 2; stroke-dasharray: 6 6; }
+    .evo-label {
+      font-size: 12px;
+      font-weight: 750;
+      fill: rgba(17,24,39,0.78);
+      paint-order: stroke;
+      stroke: #fff;
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+
+    .legend-title { font-size: 12.5px; font-weight: 800; fill: rgba(17,24,39,0.95); }
+    .legend-text { font-size: 11.5px; fill: rgba(17,24,39,0.70); }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>Genesys Conversational AI Solutions — Flexibility vs. Determinism</h1>
+      <p>Matrix highlights the “sweet spot”: production-ready reliability above the threshold, with near-maximum customer experience flexibility.</p>
+    </div>
+
+    <div class="card">
+      <svg id="matrix" viewBox="0 0 1000 720" role="img" aria-label="2x2 matrix plotting Genesys conversational AI solutions by Customer Experience Ease (rigid to flexible) and Determinism (non-deterministic to deterministic), including a reliability threshold line."></svg>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const svg = document.getElementById("matrix");
+      const NS = "http://www.w3.org/2000/svg";
+
+      const plot = { x: 120, y: 110, w: 650, h: 420 };
+      const rightPanelX = 800;
+
+      const xScale = (pct) => plot.x + (pct / 100) * plot.w;
+      const yScale = (pct) => plot.y + ((100 - pct) / 100) * plot.h;
+
+      function el(name, attrs = {}, parent = svg) {
+        const n = document.createElementNS(NS, name);
+        for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+        parent.appendChild(n);
+        return n;
+      }
+
+      // --- defs (arrow + glow) ---
+      const defs = el("defs");
+
+      const marker = el("marker", {
+        id: "arrow",
+        viewBox: "0 0 10 10",
+        refX: "9",
+        refY: "5",
+        markerWidth: "9",
+        markerHeight: "9",
+        orient: "auto-start-reverse"
+      }, defs);
+      el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "rgba(17,24,39,0.70)" }, marker);
+
+      const glow = el("filter", { id: "glow", x: "-40%", y: "-40%", width: "180%", height: "180%" }, defs);
+      el("feGaussianBlur", { stdDeviation: "3.2", result: "blur" }, glow);
+      const merge = el("feMerge", {}, glow);
+      el("feMergeNode", { in: "blur" }, merge);
+      el("feMergeNode", { in: "SourceGraphic" }, merge);
+
+      // --- background title inside svg (optional, subtle) ---
+      el("text", { x: 120, y: 48, class: "title" }).textContent = "Flexibility vs. Determinism Matrix";
+      el("text", { x: 120, y: 70, class: "subtitle" }).textContent =
+        "X: Customer Experience Ease (Rigid → Flexible)  •  Y: Determinism / Predictability (Non-Deterministic → Deterministic)";
+
+      // --- quadrants (2x2) ---
+      // Top-left
+      el("rect", { x: plot.x, y: plot.y, width: plot.w / 2, height: plot.h / 2, fill: "var(--q-tl)" });
+      // Top-right
+      el("rect", { x: plot.x + plot.w / 2, y: plot.y, width: plot.w / 2, height: plot.h / 2, fill: "var(--q-tr)" });
+      // Bottom-left
+      el("rect", { x: plot.x, y: plot.y + plot.h / 2, width: plot.w / 2, height: plot.h / 2, fill: "var(--q-bl)" });
+      // Bottom-right
+      el("rect", { x: plot.x + plot.w / 2, y: plot.y + plot.h / 2, width: plot.w / 2, height: plot.h / 2, fill: "var(--q-br)" });
+
+      // --- gridlines (subtle) ---
+      for (let i = 0; i <= 10; i++) {
+        const pct = i * 10;
+
+        // vertical
+        el("line", {
+          x1: xScale(pct), y1: plot.y,
+          x2: xScale(pct), y2: plot.y + plot.h,
+          class: "gridline"
+        });
+
+        // horizontal
+        el("line", {
+          x1: plot.x, y1: yScale(pct),
+          x2: plot.x + plot.w, y2: yScale(pct),
+          class: "gridline"
+        });
+      }
+
+      // Midlines (quadrant separators)
+      el("line", { x1: xScale(50), y1: plot.y, x2: xScale(50), y2: plot.y + plot.h, class: "midline" });
+      el("line", { x1: plot.x, y1: yScale(50), x2: plot.x + plot.w, y2: yScale(50), class: "midline" });
+
+      // Border
+      el("rect", { x: plot.x, y: plot.y, width: plot.w, height: plot.h, class: "border" });
+
+      // --- quadrant labels ---
+      function quadLabel(cxPct, cyPct, title, sub) {
+        const gx = xScale(cxPct);
+        const gy = yScale(cyPct);
+
+        el("text", { x: gx, y: gy, class: "quad-label", "text-anchor": "middle" }).textContent = title;
+        el("text", { x: gx, y: gy + 16, class: "quad-sub", "text-anchor": "middle" }).textContent = sub;
+      }
+
+      quadLabel(25, 82, "Deterministic + Rigid", "Traditional control");
+      quadLabel(75, 82, "Ideal Zone", "Deterministic + Flexible");
+      quadLabel(25, 18, "Avoid Zone", "Rigid + Non-Deterministic");
+      quadLabel(75, 18, "Caution Zone", "Flexible + Non-Deterministic");
+
+      // --- reliability threshold (dashed @ 40% height) ---
+      const thrPct = 40;
+      const thrY = yScale(thrPct);
+
+      el("line", { x1: plot.x, y1: thrY, x2: plot.x + plot.w, y2: thrY, class: "threshold" });
+
+      // Label + note near the threshold
+      el("text", { x: plot.x + 10, y: thrY - 10, class: "threshold-label" }).textContent = "Reliability Threshold";
+      el("text", { x: plot.x + 10, y: thrY - 10 + 16, class: "threshold-note" }).textContent = "Above threshold = Production-ready reliability";
+
+      // --- evolution path arrow (bottom-left → top-right) ---
+      const evo = el("line", {
+        x1: xScale(12), y1: yScale(12),
+        x2: xScale(92), y2: yScale(92),
+        class: "evo",
+        "marker-end": "url(#arrow)"
+      });
+
+      // evolution label (near midpoint)
+      el("text", {
+        x: xScale(56),
+        y: yScale(56) - 10,
+        class: "evo-label",
+        "text-anchor": "middle"
+      }).textContent = "Evolution Path";
+
+      // --- points (solutions) ---
+      const points = [
+        {
+          name: "Traditional IVR",
+          x: 8, y: 95,
+          r: 6,
+          labelDx: 12, labelDy: 4,
+          kind: "small"
+        },
+        {
+          name: "NLU-Based Bot",
+          x: 60, y: 70,
+          r: 6,
+          labelDx: -10, labelDy: -10,
+          anchor: "end",
+          kind: "small"
+        },
+        {
+          name: "Virtual Agent Bot",
+          x: 65, y: 65,
+          r: 6,
+          labelDx: 12, labelDy: 4,
+          kind: "small"
+        },
+        {
+          name: "AI Guide V2",
+          x: 70, y: 60,
+          r: 6,
+          labelDx: 12, labelDy: 18,
+          kind: "small"
+        },
+        {
+          name: "AI Guide V1",
+          x: 90, y: 35,
+          r: 6,
+          labelDx: 12, labelDy: 4,
+          kind: "small",
+          warn: true
+        },
+        {
+          name: "Agentic Virtual Agent",
+          x: 85, y: 55,
+          r: 16,
+          kind: "hero",
+          subtitle: "Optimal Balance: High Reliability + Maximum Flexibility"
+        }
+      ];
+
+      function addDot(p) {
+        const gx = xScale(p.x);
+        const gy = yScale(p.y);
+
+        const g = el("g", {});
+
+        if (p.kind === "hero") {
+          // glow halo
+          el("circle", { cx: gx, cy: gy, r: p.r + 4, fill: "rgba(124,58,237,0.18)", filter: "url(#glow)" }, g);
+
+          // main hero dot
+          el("circle", { cx: gx, cy: gy, r: p.r, class: "hero-dot", filter: "url(#glow)" }, g);
+
+          // label (bold + larger)
+          const labelX = gx + 22;
+          const labelY = gy - 14;
+
+          const t = el("text", { x: labelX, y: labelY, class: "hero-label" }, g);
+          t.textContent = p.name;
+
+          const sub = el("text", { x: labelX, y: labelY + 18, class: "hero-sub" }, g);
+          sub.textContent = p.subtitle;
+
+        } else {
+          // standard dot
+          el("circle", { cx: gx, cy: gy, r: p.r, class: "dot" }, g);
+
+          const txt = el("text", {
+            x: gx + (p.labelDx ?? 12),
+            y: gy + (p.labelDy ?? 4),
+            class: "dot-label",
+            "text-anchor": p.anchor || "start"
+          }, g);
+          txt.textContent = p.name;
+        }
+
+        return { gx, gy, group: g };
+      }
+
+      const placed = {};
+      for (const p of points) {
+        placed[p.name] = addDot(p);
+      }
+
+      // --- warning annotation for AI Guide V1 (below threshold) ---
+      const v1 = placed["AI Guide V1"];
+      const warnX = v1.gx + 8;
+      const warnY = v1.gy + 36;
+
+      el("path", {
+        d: `M ${v1.gx} ${v1.gy} L ${warnX} ${warnY - 16}`,
+        stroke: "rgba(17,24,39,0.55)",
+        "stroke-width": "1.6",
+        fill: "none",
+        "marker-end": "url(#arrow)"
+      });
+
+      el("text", { x: warnX + 6, y: warnY - 20, class: "dot-label" }).textContent = "Below reliability threshold";
+
+      // --- axes labels & endpoints ---
+      // X axis endpoints
+      el("text", { x: plot.x, y: plot.y + plot.h + 28, class: "axis-end-strong", "text-anchor": "start" }).textContent = "Rigid";
+      el("text", { x: plot.x, y: plot.y + plot.h + 46, class: "axis-end", "text-anchor": "start" }).textContent = "(harder for customers)";
+
+      el("text", { x: plot.x + plot.w, y: plot.y + plot.h + 28, class: "axis-end-strong", "text-anchor": "end" }).textContent = "Flexible";
+      el("text", { x: plot.x + plot.w, y: plot.y + plot.h + 46, class: "axis-end", "text-anchor": "end" }).textContent = "(effortless experience)";
+
+      // X axis label (center)
+      el("text", { x: plot.x + plot.w / 2, y: plot.y + plot.h + 64, class: "axis-label", "text-anchor": "middle" })
+        .textContent = "Customer Experience Ease";
+
+      // Y axis endpoints
+      el("text", { x: plot.x - 12, y: plot.y + 6, class: "axis-end-strong", "text-anchor": "end" }).textContent = "Deterministic";
+      el("text", { x: plot.x - 12, y: plot.y + 24, class: "axis-end", "text-anchor": "end" }).textContent = "(predictable)";
+
+      el("text", { x: plot.x - 12, y: plot.y + plot.h - 10, class: "axis-end-strong", "text-anchor": "end" }).textContent = "Non-Deterministic";
+      el("text", { x: plot.x - 12, y: plot.y + plot.h + 8, class: "axis-end", "text-anchor": "end" }).textContent = "(unpredictable)";
+
+      // Rotated Y axis label
+      const yLabel = el("text", {
+        x: 38,
+        y: plot.y + plot.h / 2,
+        class: "axis-label",
+        transform: `rotate(-90 38 ${plot.y + plot.h / 2})`,
+        "text-anchor": "middle"
+      });
+      yLabel.textContent = "Determinism / Predictability";
+
+      // --- right legend panel ---
+      // Legend box
+      el("rect", {
+        x: rightPanelX,
+        y: 140,
+        width: 180,
+        height: 170,
+        rx: 12,
+        class: "callout"
+      });
+
+      el("text", { x: rightPanelX + 14, y: 166, class: "legend-title" }).textContent = "Legend";
+      // threshold sample
+      el("line", {
+        x1: rightPanelX + 14, y1: 190,
+        x2: rightPanelX + 82, y2: 190,
+        class: "threshold"
+      });
+      el("text", { x: rightPanelX + 92, y: 194, class: "legend-text" }).textContent = "Reliability Threshold";
+
+      el("text", { x: rightPanelX + 14, y: 220, class: "legend-text" }).textContent =
+        "Above line: deterministic enough";
+      el("text", { x: rightPanelX + 14, y: 238, class: "legend-text" }).textContent =
+        "to be production-ready.";
+      el("text", { x: rightPanelX + 14, y: 264, class: "legend-text" }).textContent =
+        "Below line: higher variability";
+      el("text", { x: rightPanelX + 14, y: 282, class: "legend-text" }).textContent =
+        "→ increased risk in production.";
+
+      // --- challenge text box (bottom, full width) ---
+      el("rect", {
+        x: plot.x,
+        y: 585,
+        width: plot.w,
+        height: 110,
+        rx: 14,
+        class: "callout"
+      });
+
+      el("text", { x: plot.x + 16, y: 612, class: "callout-title" }).textContent = "The Challenge";
+      el("text", { x: plot.x + 16, y: 636, class: "callout-text" }).textContent =
+        "Traditional systems achieve determinism through rigidity.";
+      el("text", { x: plot.x + 16, y: 656, class: "callout-text" }).textContent =
+        "GenAI-based agents aim to achieve reliability while maintaining flexibility.";
+      el("text", { x: plot.x + 16, y: 680, class: "callout-text" }).textContent =
+        "Agentic Virtual Agent represents the breakthrough: Production-ready reliability with near-maximum customer experience flexibility.";
+
+    })();
+  </script>
+</body>
+</html>
