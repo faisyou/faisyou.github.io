@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Make the layout/mobile zoom behave properly on phones -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <title>Payment Capture</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --accent: #2563eb;
+        --accent-soft: #e0e7ff;
+        --border: #e5e7eb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 900px;
+        margin: 48px auto;
+        padding: 0 20px 48px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 16px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        padding: 28px;
+        border: 1px solid var(--border);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 26px;
+      }
+
+      p {
+        margin: 8px 0;
+        color: var(--muted);
+      }
+
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin: 18px 0 24px;
+        padding: 16px;
+        background: var(--accent-soft);
+        border-radius: 12px;
+      }
+
+      .summary strong {
+        display: block;
+        color: var(--text);
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        font-size: 14px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+      }
+
+      button {
+        border: none;
+        background: var(--accent);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .status {
+        padding: 14px 16px;
+        border-radius: 10px;
+        background: #fef3c7;
+        color: #92400e;
+        margin-top: 18px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .auth-success {
+        background: #dcfce7;
+        color: #166534;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="card">
+        <h1>Payment Capture</h1>
+        <p id="intro">
+          Use <code>startPayment(paymentCode, paymentAmount)</code> from your event
+          handler to load this page with payment details.
+        </p>
+
+        <div id="summary" class="summary hidden">
+          <div>
+            <strong>Payment Code</strong>
+            <span id="summary-code">—</span>
+          </div>
+          <div>
+            <strong>Payment Amount</strong>
+            <span id="summary-amount">—</span>
+          </div>
+        </div>
+
+        <form id="payment-form" class="hidden">
+          <div>
+            <label for="cardNumber">Card Number</label>
+            <input
+              id="cardNumber"
+              name="cardNumber"
+              type="text"
+              inputmode="numeric"
+              autocomplete="cc-number"
+              value="4111 1111 1111 1111"
+              required
+            />
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="expiry">Expiry Date</label>
+              <input
+                id="expiry"
+                name="expiry"
+                type="text"
+                placeholder="MM/YY"
+                inputmode="numeric"
+                autocomplete="cc-exp"
+                required
+              />
+            </div>
+            <div>
+              <label for="cvv">CVV</label>
+              <input
+                id="cvv"
+                name="cvv"
+                type="password"
+                inputmode="numeric"
+                autocomplete="cc-csc"
+                required
+              />
+            </div>
+          </div>
+
+          <button type="submit">Submit Payment</button>
+        </form>
+
+        <div id="status" class="status hidden">Authorizing payment...</div>
+      </div>
+    </div>
+
+    <script type="text/javascript" charset="utf-8">
+      (function (g, e, n, es, ys) {
+        g["_genesysJs"] = e;
+        g[e] =
+          g[e] ||
+          function () {
+            (g[e].q = g[e].q || []).push(arguments);
+          };
+        g[e].t = 1 * new Date();
+        g[e].c = es;
+        ys = document.createElement("script");
+        ys.async = 1;
+        ys.src = n;
+        ys.charset = "utf-8";
+        document.head.appendChild(ys);
+      })(
+        window,
+        "Genesys",
+        "https://apps.mypurecloud.ie/genesys-bootstrap/genesys.min.js",
+        {
+          environment: "euw1",
+          deploymentId: "2caf7ce8-cc75-4fcb-b308-7848bd1603d4",
+          debug: true,
+        }
+      );
+    </script>
+
+    <script>
+      function startPayment(paymentCode, paymentAmount) {
+        const params = new URLSearchParams(window.location.search);
+        params.set("paymentCode", paymentCode);
+        params.set("paymentAmount", paymentAmount);
+        params.delete("authCode");
+        window.location.search = params.toString();
+      }
+
+      function onAuthCodeReceived(authCode) {
+        console.log("Auth code received:", authCode);
+      }
+
+      function renderPage() {
+        const params = new URLSearchParams(window.location.search);
+        const paymentCode = params.get("paymentCode");
+        const paymentAmount = params.get("paymentAmount");
+        const authCode = params.get("authCode");
+
+        const summary = document.getElementById("summary");
+        const summaryCode = document.getElementById("summary-code");
+        const summaryAmount = document.getElementById("summary-amount");
+        const form = document.getElementById("payment-form");
+        const status = document.getElementById("status");
+        const intro = document.getElementById("intro");
+
+        if (paymentCode && paymentAmount) {
+          summary.classList.remove("hidden");
+          summaryCode.textContent = paymentCode;
+          summaryAmount.textContent = paymentAmount;
+          intro.textContent = "Confirm the details below and submit the payment.";
+        }
+
+        if (authCode) {
+          form.classList.add("hidden");
+          status.classList.remove("hidden");
+          status.classList.add("auth-success");
+          status.textContent = `Payment authorized. Auth code: ${authCode}`;
+          onAuthCodeReceived(authCode);
+          return;
+        }
+
+        if (paymentCode && paymentAmount) {
+          form.classList.remove("hidden");
+        }
+      }
+
+      document.getElementById("payment-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const params = new URLSearchParams(window.location.search);
+        const paymentCode = params.get("paymentCode");
+        const paymentAmount = params.get("paymentAmount");
+
+        const status = document.getElementById("status");
+        status.classList.remove("hidden");
+        status.classList.remove("auth-success");
+        status.textContent = "Authorizing payment...";
+
+        const authCode = `AUTH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
+        setTimeout(() => {
+          const nextParams = new URLSearchParams();
+          nextParams.set("paymentCode", paymentCode || "");
+          nextParams.set("paymentAmount", paymentAmount || "");
+          nextParams.set("authCode", authCode);
+          window.location.search = nextParams.toString();
+        }, 700);
+      });
+
+      renderPage();
+    </script>
+  </body>
+</html>
