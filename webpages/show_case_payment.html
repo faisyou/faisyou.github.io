@@ -215,6 +215,9 @@
 
       Genesys("subscribe", "MessagingService.messagesReceived", function({ data }) {
         console.log("MessageReceived:"+JSON.stringify(data)); 
+        var paymentRegex =
+  /(?:Payment Code:\s*|payment code\s+is\s*)(?:\*\*)?([A-Z0-9_-]+)(?:\*\*)?(?:\s*[.,])?.*?(?:Total:\s*|total amount\s+is\s*)(?:\*\*)?(\d+(?:\.\d+)?)(?:\*\*)?\s*AED/i;
+
           
         var found = null;
 
