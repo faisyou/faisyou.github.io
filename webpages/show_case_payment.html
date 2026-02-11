@@ -215,13 +215,28 @@
 
       Genesys("subscribe", "MessagingService.messagesReceived", function({ data }) {
         console.log("MessageReceived:"+JSON.stringify(data)); 
-          var paymentDetected = data?.messages?.some(function(message) {
-          return /Payment Code:\s*.+?\s*Total:/i.test(message.text);
-        });
+          
+        var found = null;
 
-        if (paymentDetected) {
-          startPayment("NotYetImplemented", "NotYetImplemented");
+        if (data && Array.isArray(data.messages)) {
+        for (var i = 0; i < data.messages.length; i++) {
+          var text = data.messages[i] && data.messages[i].text;
+          if (typeof text !== "string") continue;
+
+          var m = text.match(paymentRegex);
+          if (m) {
+            found = { paymentCode: m[1], total: m[2], currency: "AED", index: i };
+          break;
         }
+    }
+}
+
+    if (found) {
+      console.log("Payment flow detected:", found);
+      startPayment(found.paymentCode, found.total);
+  // found.paymentCode -> "MOVIEMZC5"
+  // found.total       -> "45"
+    } 
       });
 
 
