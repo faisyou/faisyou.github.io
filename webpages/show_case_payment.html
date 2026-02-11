@@ -212,10 +212,20 @@
           debug: true,
         }
       );
+
       Genesys("subscribe", "MessagingService.messagesReceived", function({ data }) {
         console.log("MessageReceived:"+JSON.stringify(data)); 
-        
+          var paymentDetected = data?.messages?.some(function(message) {
+          return /Payment Code:\s*.+?\s*Total:/i.test(message.text);
+        });
+
+        if (paymentDetected) {
+          startPayment("NotYetImplemented", "NotYetImplemented");
+        }
       });
+
+
+
     </script>
 
     <script>
@@ -229,6 +239,10 @@
 
       function onAuthCodeReceived(authCode) {
         console.log("Auth code received:", authCode);
+        Genesys("command", "MessagingService.sendMessage", {message: "AuthComplete"+authCode} ,
+        function() {/*fulfilled callback*/},
+        function() {/*rejected callback*/}
+        );
       }
 
       function renderPage() {
