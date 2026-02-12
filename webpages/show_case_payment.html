@@ -212,36 +212,34 @@
         }
       );
 
-      Genesys("subscribe", "MessagingService.messagesReceived", function({ data }) {
-        console.log("MessageReceived:"+JSON.stringify(data)); 
-        var paymentRegex =
-  /(?:Payment Code:\s*|payment code\s+is\s*)(?:\*\*)?([A-Z0-9_-]+)(?:\*\*)?(?:\s*[.,])?.*?(?:Total:\s*|total amount\s+is\s*)(?:\*\*)?(\d+(?:\.\d+)?)(?:\*\*)?\s*AED/i;
-
-          
-        var found = null;
-
-        if (data && Array.isArray(data.messages)) {
-        for (var i = 0; i < data.messages.length; i++) {
-          var text = data.messages[i] && data.messages[i].text;
-          if (typeof text !== "string") continue;
-
-          var m = text.match(paymentRegex);
-          if (m) {
-            found = { paymentCode: m[1], total: m[2], currency: "AED", index: i };
-          break;
-        }
-    }
-}
-
-    if (found) {
-      console.log("Payment flow detected:", found);
-      startPayment(found.paymentCode, found.total);
-  // found.paymentCode -> "MOVIEMZC5"
-  // found.total       -> "45"
-    } 
+      Genesys("subscribe", "Launcher.ready", function(){
+        Genesys("subscribe", "MessagingService.messagesReceived", function({ data }) {
+            console.log("MessageReceived:"+JSON.stringify(data)); 
+            var paymentRegex =
+                /(?:Payment Code:\s*|payment code\s+is\s*)(?:\*\*)?([A-Z0-9_-]+)(?:\*\*)?(?:\s*[.,])?.*?(?:Total:\s*|total amount\s+is\s*)(?:\*\*)?(\d+(?:\.\d+)?)(?:\*\*)?\s*AED/i;  
+            var found = null;
+            if (data && Array.isArray(data.messages)) {
+            for (var i = 0; i < data.messages.length; i++) {
+              var text = data.messages[i] && data.messages[i].text;
+              if (typeof text !== "string") continue;
+              var m = text.match(paymentRegex);
+              if (m) {
+                found = { paymentCode: m[1], total: m[2], currency: "AED", index: i };
+                break;
+              }
+            }
+            }
+            if (found) {
+              console.log("Payment flow detected:", found);
+              startPayment(found.paymentCode, found.total);
+        // found.paymentCode -> "MOVIEMZC5"
+        // found.total       -> "45"
+            } 
+        });
+        renderPage();
       });
-
-
+      
+      
 
     </script>
 
@@ -282,9 +280,15 @@
           summaryCode.textContent = paymentCode;
           summaryAmount.textContent = paymentAmount;
           intro.textContent = "Confirm the details below and submit the payment.";
-          setTimeout(()=> {Genesys("command", "Launcher.hide",{},
+          setTimeout(()=> {
+            Genesys("command", "Launcher.hide",{},
                   function() {/*fulfilled callback*/},
                   function() {/*rejected callback*/});
+            
+            Genesys("command", "Messenger.close",{},
+            function() {/*fulfilled callback*/},
+            function() {/*rejected callback*/});
+                  
         },500);
         }
 
@@ -295,9 +299,15 @@
           status.textContent = `Payment authorized. Auth code: ${authCode}`;
           setTimeout(()=> {
             onAuthCodeReceived(authCode);
+            
             Genesys("command", "Launcher.show",{},
             function() {/*fulfilled callback*/},
             function() {/*rejected callback*/});
+            Genesys("command", "Messenger.open",{},
+            function() {/*fulfilled callback*/},
+            function() {/*rejected callback*/});
+            
+            
           },1000);
           return;
         }
@@ -329,7 +339,7 @@
         }, 700);
       });
 
-      renderPage();
+      
     </script>
   </body>
 </html>
