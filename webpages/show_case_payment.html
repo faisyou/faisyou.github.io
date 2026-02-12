@@ -285,10 +285,6 @@
             Genesys("command", "Launcher.hide",{},
                   function() {/*fulfilled callback*/},
                   function() {/*rejected callback*/});
-            
-            Genesys("command", "Messenger.close",{},
-            function() {/*fulfilled callback*/},
-            function() {/*rejected callback*/});
                   
         },500);
         }
@@ -304,17 +300,20 @@
             Genesys("command", "Launcher.show",{},
             function() {/*fulfilled callback*/},
             function() {/*rejected callback*/});
-            Genesys("command", "Messenger.open",{},
-            function() {/*fulfilled callback*/},
-            function() {/*rejected callback*/});
+            
             
             
           },1000);
           return;
         }
 
-        if (paymentCode && paymentAmount) {
+        else if (paymentCode && paymentAmount) {
           form.classList.remove("hidden");
+        }
+        else {
+          Genesys("command", "Launcher.show",{},
+            function() {/*fulfilled callback*/},
+            function() {/*rejected callback*/});
         }
       }
 
