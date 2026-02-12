@@ -311,6 +311,7 @@
           form.classList.remove("hidden");
         }
         else {
+          console.log('Enabling Launcher');
           Genesys("command", "Launcher.show",{},
             function() {/*fulfilled callback*/},
             function() {/*rejected callback*/});
