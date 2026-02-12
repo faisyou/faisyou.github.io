@@ -125,8 +125,7 @@
       <div class="card">
         <h1>Payment Capture</h1>
         <p id="intro">
-          Use <code>startPayment(paymentCode, paymentAmount)</code> from your event
-          handler to load this page with payment details.
+          Demo to show payment Capture from AVA.
         </p>
 
         <div id="summary" class="summary hidden">
@@ -248,11 +247,13 @@
 
     <script>
       function startPayment(paymentCode, paymentAmount) {
-        const params = new URLSearchParams(window.location.search);
-        params.set("paymentCode", paymentCode);
-        params.set("paymentAmount", paymentAmount);
-        params.delete("authCode");
-        window.location.search = params.toString();
+        setTimeout(() => {
+          const params = new URLSearchParams(window.location.search);
+          params.set("paymentCode", paymentCode);
+          params.set("paymentAmount", paymentAmount);
+          params.delete("authCode");
+          window.location.search = params.toString();  
+        },1000);
       }
 
       function onAuthCodeReceived(authCode) {
