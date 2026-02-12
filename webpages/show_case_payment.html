@@ -282,6 +282,10 @@
           summaryCode.textContent = paymentCode;
           summaryAmount.textContent = paymentAmount;
           intro.textContent = "Confirm the details below and submit the payment.";
+          setTimeout(()=> {Genesys("command", "Launcher.hide",{},
+                  function() {/*fulfilled callback*/},
+                  function() {/*rejected callback*/});
+        },500);
         }
 
         if (authCode) {
@@ -289,7 +293,12 @@
           status.classList.remove("hidden");
           status.classList.add("auth-success");
           status.textContent = `Payment authorized. Auth code: ${authCode}`;
-          onAuthCodeReceived(authCode);
+          setTimeout(()=> {
+            onAuthCodeReceived(authCode);
+            Genesys("command", "Launcher.show",{},
+            function() {/*fulfilled callback*/},
+            function() {/*rejected callback*/});
+          },1000);
           return;
         }
 
