@@ -1,0 +1,84 @@
+{
+  "name": "CXasCode-Archy-Automation",
+  "description": "Service role for CX as Code Terraform export/import and Archy flow management. Grants read/write across all Terraform-managed resources.",
+  "permissionPolicies": [
+    { "domain": "authorization",    "entityName": "role",                    "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "authorization",    "entityName": "grant",                   "actionSet": ["view", "add", "delete"] },
+    { "domain": "authorization",    "entityName": "division",                "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "routing",          "entityName": "queue",                   "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "routing",          "entityName": "skill",                   "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "routing",          "entityName": "language",                "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "routing",          "entityName": "wrapupCode",              "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "routing",          "entityName": "utilization",             "actionSet": ["view", "edit"] },
+    { "domain": "routing",          "entityName": "emailDomain",             "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "routing",          "entityName": "smsAddress",              "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "routing",          "entityName": "predictor",               "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "architect",        "entityName": "flow",                    "actionSet": ["view", "add", "edit", "delete", "publish", "export", "import"] },
+    { "domain": "architect",        "entityName": "ivr",                     "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "architect",        "entityName": "schedules",               "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "architect",        "entityName": "scheduleGroups",          "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "architect",        "entityName": "userPrompts",             "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "architect",        "entityName": "emergencyGroups",         "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "architect",        "entityName": "flowOutcome",             "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "architect",        "entityName": "flowMilestone",           "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "telephony",        "entityName": "plugin",                  "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "telephony",        "entityName": "site",                    "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "telephony",        "entityName": "didPool",                 "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "telephony",        "entityName": "extensionPool",           "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "telephony",        "entityName": "trunk",                   "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "telephony",        "entityName": "trunkBase",               "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "telephony",        "entityName": "phone",                   "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "telephony",        "entityName": "phoneBase",               "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "telephony",        "entityName": "edgeGroup",               "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "users",            "entityName": "user",                    "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "groups",           "entityName": "group",                   "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "knowledge",        "entityName": "knowledgebase",           "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "knowledge",        "entityName": "document",                "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "knowledge",        "entityName": "category",                "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "knowledge",        "entityName": "label",                   "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "quality",          "entityName": "evaluationForm",          "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "quality",          "entityName": "surveyForm",              "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "outbound",         "entityName": "campaign",                "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "contactList",             "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "contactListTemplate",     "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "dncList",                 "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "callableTimeSet",         "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "callAnalysisResponseSet", "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "messagingCampaign",       "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "sequence",                "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "ruleSet",                 "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "attemptLimit",            "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "campaignRule",            "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "outbound",         "entityName": "wrapUpCodeMapping",       "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "integrations",     "entityName": "integration",             "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "integrations",     "entityName": "action",                  "actionSet": ["view", "add", "edit", "delete", "publish"] },
+    { "domain": "integrations",     "entityName": "credential",              "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "scripter",         "entityName": "publishedScript",         "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "journey",          "entityName": "actionMap",               "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "journey",          "entityName": "actionTemplate",          "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "journey",          "entityName": "outcome",                 "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "journey",          "entityName": "segment",                 "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "webDeployments",   "entityName": "configuration",           "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "webDeployments",   "entityName": "deployment",              "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "externalContacts", "entityName": "externalOrganization",    "actionSet": ["view", "add", "edit", "delete"] },
+    { "domain": "externalContacts", "entityName": "externalContact",         "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "oauth",            "entityName": "client",                  "actionSet": ["view", "add", "edit", "delete"] },
+
+    { "domain": "organization",     "entityName": "settings",                "actionSet": ["view", "edit"] },
+
+    { "domain": "decisionTables",   "entityName": "decisionTable",           "actionSet": ["view", "add", "edit", "delete"] }
+  ]
+}

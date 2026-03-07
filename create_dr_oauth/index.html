@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Genesys Cloud — CX as Code Setup</title>
+  <style>
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d2e;
+      --surface2:  #252840;
+      --border:    #3a3d5c;
+      --text:      #e2e8f0;
+      --muted:     #94a3b8;
+      --blue:      #60a5fa;
+      --green:     #34d399;
+      --yellow:    #fbbf24;
+      --red:       #f87171;
+      --purple:    #a78bfa;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .container { width: 100%; max-width: 660px; }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 2rem; }
+    header h1 { font-size: 1.5rem; font-weight: 700; color: var(--blue); }
+    header p  { color: var(--muted); font-size: 0.875rem; margin-top: 0.3rem; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── Form ── */
+    .field { margin-bottom: 1.25rem; }
+    .field:last-child { margin-bottom: 0; }
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.45rem;
+    }
+    select, input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 0.6rem 0.875rem;
+      font-size: 0.9375rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    select:focus, input:focus { border-color: var(--blue); }
+    select option { background: var(--surface); }
+
+    /* Token field with eye toggle */
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 2.75rem; font-family: monospace; font-size: 0.85rem; }
+    .eye-btn {
+      position: absolute; right: 0.625rem; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 1rem; line-height: 1; padding: 0.2rem;
+    }
+    .eye-btn:hover { color: var(--text); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.6rem 1.25rem; border-radius: 8px;
+      font-size: 0.9375rem; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:hover:not(:disabled) { opacity: 0.85; }
+    .btn:active:not(:disabled) { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.38; cursor: not-allowed; }
+    .btn-primary { background: var(--blue);   color: #0f1117; }
+    .btn-success { background: var(--green);  color: #0f1117; }
+    .btn-ghost   { background: var(--surface2); color: var(--text); }
+    .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.8125rem; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+
+    /* ── Alerts ── */
+    .alert {
+      display: flex; align-items: flex-start; gap: 0.625rem;
+      padding: 0.8rem 1rem; border-radius: 8px;
+      font-size: 0.875rem; line-height: 1.5;
+    }
+    .alert-warn  { background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.3);  color: var(--yellow); }
+    .alert-error { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.3); color: var(--red);    }
+    .alert-ok    { background: rgba(52,211,153,0.08);  border: 1px solid rgba(52,211,153,0.3);  color: var(--green);  }
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+
+    /* ── Identity grid ── */
+    .id-grid { display: grid; grid-template-columns: 7rem 1fr; gap: 0.45rem 0.75rem; margin-bottom: 1.5rem; }
+    .id-grid dt { color: var(--muted); font-size: 0.875rem; font-weight: 600; }
+    .id-grid dd { color: var(--yellow); font-size: 0.875rem; font-weight: 500; overflow-wrap: anywhere; }
+
+    /* ── Steps ── */
+    .steps { display: flex; flex-direction: column; gap: 0.75rem; }
+    .step {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.875rem 1rem;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    }
+    .step-icon {
+      width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.875rem; font-weight: 700;
+    }
+    .icon-pending { background: var(--surface); color: var(--muted); border: 2px solid var(--border); }
+    .icon-running { background: var(--surface); border: 2px solid var(--blue); }
+    .icon-done    { background: var(--green);   color: #0f1117; }
+    .icon-error   { background: var(--red);     color: #0f1117; }
+    .step-text .step-label  { font-weight: 600; font-size: 0.9375rem; }
+    .step-text .step-detail { font-size: 0.8125rem; color: var(--muted); margin-top: 0.1rem; }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 1rem; height: 1rem;
+      border: 2px solid var(--border); border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+
+    /* ── Credential rows ── */
+    .cred-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-bottom: 0.875rem;
+    }
+    .cred-lbl {
+      font-size: 0.75rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      min-width: 7.5rem;
+    }
+    .cred-val {
+      flex: 1; min-width: 0;
+      font-family: 'Consolas', 'Courier New', monospace; font-size: 0.85rem;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.4rem 0.75rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .cred-val.id-color     { color: var(--blue);   }
+    .cred-val.secret-color { color: var(--purple); }
+
+    /* ── Collapsible code blocks ── */
+    details { margin-top: 0.75rem; }
+    summary {
+      cursor: pointer; font-size: 0.875rem; font-weight: 600; color: var(--muted);
+      padding: 0.5rem 0; user-select: none; list-style: none;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    summary::marker, summary::-webkit-details-marker { display: none; }
+    summary::before { content: '▶'; font-size: 0.6rem; transition: transform 0.15s; }
+    details[open] summary::before { transform: rotate(90deg); }
+    details pre {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1rem; font-size: 0.8125rem; overflow-x: auto; margin-top: 0.5rem;
+      color: var(--muted); white-space: pre;
+    }
+
+    /* ── Utilities ── */
+    .hidden { display: none !important; }
+    @keyframes flash { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .flash { animation: flash 0.4s ease; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>⚡ Genesys Cloud — CX as Code Setup</h1>
+    <p>Creates Role &rarr; Assigns to user &rarr; Creates OAuth Client</p>
+  </header>
+
+  <!-- ═══ VIEW: Credentials ═══ -->
+  <div id="v-creds">
+    <div class="card">
+      <div class="card-title">🔑 Credentials</div>
+
+      <div class="field">
+        <label for="sel-region">Region</label>
+        <select id="sel-region">
+          <option value="mypurecloud.ie">Ireland — mypurecloud.ie</option>
+          <option value="mypurecloud.de">Germany — mypurecloud.de</option>
+          <option value="mec1.pure.cloud">UAE — mec1.pure.cloud</option>
+          <option value="mypurecloud.com">US East — mypurecloud.com</option>
+          <option value="usw2.pure.cloud">US West — usw2.pure.cloud</option>
+          <option value="mypurecloud.com.au">Australia — mypurecloud.com.au</option>
+          <option value="cac1.pure.cloud">Canada — cac1.pure.cloud</option>
+          <option value="apne2.pure.cloud">Japan — apne2.pure.cloud</option>
+          <option value="aps1.pure.cloud">Seoul — aps1.pure.cloud</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="inp-token">Bearer Token</label>
+        <div class="pw-wrap">
+          <input type="password" id="inp-token"
+                 placeholder="Paste your Genesys Cloud bearer token…"
+                 autocomplete="off" spellcheck="false">
+          <button class="eye-btn" id="eye-btn" title="Toggle visibility">👁</button>
+        </div>
+      </div>
+
+      <div id="creds-err" class="alert alert-error hidden mt-1"></div>
+
+      <div class="btn-row" style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="submitCredentials()">Verify Identity →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: Confirm identity ═══ -->
+  <div id="v-confirm" class="hidden">
+    <div class="card">
+      <div class="card-title">✅ Confirm Identity</div>
+
+      <div id="conf-loading" class="alert alert-warn">
+        <div class="spinner" style="flex-shrink:0;margin-top:0.1rem"></div>
+        <span>Verifying credentials with Genesys Cloud…</span>
+      </div>
+
+      <div id="conf-details" class="hidden">
+        <dl class="id-grid" id="id-grid"></dl>
+        <div class="alert alert-warn">
+          ⚠&ensp;This will create a role, assign it to your account, and create an OAuth client in the organisation above.
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-success" onclick="runSetup()">✔&ensp;Confirm — Run Setup</button>
+          <button class="btn btn-ghost"   onclick="backToCreds()">✖&ensp;Use Different Credentials</button>
+        </div>
+      </div>
+
+      <div id="conf-err" class="alert alert-error hidden mt-1"></div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: Progress ═══ -->
+  <div id="v-progress" class="hidden">
+    <div class="card">
+      <div class="card-title">⚙ Running Setup</div>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-icon icon-pending" id="s1-icon">1</div>
+          <div class="step-text">
+            <div class="step-label">Creating role</div>
+            <div class="step-detail" id="s1-detail">Pending…</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-icon icon-pending" id="s2-icon">2</div>
+          <div class="step-text">
+            <div class="step-label">Assigning role to user (all divisions)</div>
+            <div class="step-detail" id="s2-detail">Pending…</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-icon icon-pending" id="s3-icon">3</div>
+          <div class="step-text">
+            <div class="step-label">Creating OAuth client</div>
+            <div class="step-detail" id="s3-detail">Pending…</div>
+          </div>
+        </div>
+
+      </div>
+      <div id="prog-err" class="alert alert-error hidden mt-2"></div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: Results ═══ -->
+  <div id="v-results" class="hidden">
+    <div class="alert alert-ok mb" style="margin-bottom:1rem">
+      ✔&ensp;Setup complete! OAuth client created successfully.
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔐 OAuth Credentials</div>
+
+      <div class="cred-row">
+        <span class="cred-lbl">Client ID</span>
+        <span class="cred-val id-color" id="r-id"></span>
+        <button class="btn btn-ghost btn-sm" onclick="copyVal('r-id', this)">Copy</button>
+      </div>
+
+      <div class="cred-row">
+        <span class="cred-lbl">Client Secret</span>
+        <span class="cred-val secret-color" id="r-secret"></span>
+        <button class="btn btn-ghost btn-sm" id="btn-reveal" onclick="toggleSecret()">Show</button>
+        <button class="btn btn-ghost btn-sm" onclick="copySecret(this)">Copy</button>
+      </div>
+
+      <div class="alert alert-warn mt-2">
+        ⚠&ensp;Store these credentials securely. The client secret <strong>cannot be retrieved again</strong> from Genesys Cloud.
+      </div>
+
+      <details>
+        <summary>Terraform provider block</summary>
+        <pre id="r-terraform"></pre>
+      </details>
+
+      <details>
+        <summary>Archy / environment variables</summary>
+        <pre id="r-env"></pre>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="font-size:0.875rem;color:var(--muted)">Next steps</div>
+      <ol style="padding-left:1.25rem;color:var(--muted);font-size:0.875rem;line-height:2">
+        <li>Copy the credentials into your Terraform provider block or export as environment variables.</li>
+        <li>Set <code style="color:var(--blue)">GENESYSCLOUD_REGION=<span id="r-region"></span></code></li>
+        <li>Run: <code style="color:var(--blue)">terraform init &amp;&amp; terraform apply</code></li>
+      </ol>
+    </div>
+  </div>
+
+</div><!-- /.container -->
+<script src="app.js"></script>
+</body>
+</html>
