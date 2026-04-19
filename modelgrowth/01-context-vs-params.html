@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SOTA Models · Context × Parameters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #f4eedd; }
+  * { box-sizing: border-box; }
+  #root { width: 100%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- React, ReactDOM, Babel from CDN -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react" data-type="module">
+const { useState, useMemo, useEffect, useRef } = React;
+
+// ============================================================================
+// DATA: SOTA models with context length, parameters, and release date.
+// ============================================================================
+const MODELS = [
+  // --- 2023 ---
+  { name: "GPT-4",            provider: "OpenAI",    params: 1760, context: 8,       date: "2023-03-14", estimated: true },
+  { name: "Claude 2",         provider: "Anthropic", params: 130,  context: 100,     date: "2023-07-11", estimated: true },
+  { name: "Llama 2 70B",      provider: "Meta",      params: 70,   context: 4,       date: "2023-07-18", estimated: false },
+  { name: "GPT-4 Turbo",      provider: "OpenAI",    params: 1760, context: 128,     date: "2023-11-06", estimated: true },
+  { name: "Gemini 1.0 Pro",   provider: "Google",    params: 540,  context: 32,      date: "2023-12-06", estimated: true },
+
+  // --- 2024 ---
+  { name: "Claude 3 Opus",    provider: "Anthropic", params: 2000, context: 200,     date: "2024-03-04", estimated: true },
+  { name: "Gemini 1.5 Pro",   provider: "Google",    params: 1500, context: 2000,    date: "2024-02-15", estimated: true },
+  { name: "Llama 3 70B",      provider: "Meta",      params: 70,   context: 8,       date: "2024-04-18", estimated: false },
+  { name: "GPT-4o",           provider: "OpenAI",    params: 200,  context: 128,     date: "2024-05-13", estimated: true },
+  { name: "Claude 3.5 Sonnet",provider: "Anthropic", params: 400,  context: 200,     date: "2024-06-20", estimated: true },
+  { name: "Llama 3.1 405B",   provider: "Meta",      params: 405,  context: 128,     date: "2024-07-23", estimated: false },
+  { name: "Gemini 2.0 Flash", provider: "Google",    params: 200,  context: 1000,    date: "2024-12-11", estimated: true },
+
+  // --- 2025 ---
+  { name: "DeepSeek V3",      provider: "DeepSeek",  params: 671,  context: 128,     date: "2024-12-26", estimated: false },
+  { name: "DeepSeek R1",      provider: "DeepSeek",  params: 671,  context: 128,     date: "2025-01-20", estimated: false },
+  { name: "Claude 3.7 Sonnet",provider: "Anthropic", params: 500,  context: 200,     date: "2025-02-24", estimated: true },
+  { name: "GPT-4.5",          provider: "OpenAI",    params: 3000, context: 128,     date: "2025-02-27", estimated: true },
+  { name: "Gemini 2.5 Pro",   provider: "Google",    params: 1800, context: 1000,    date: "2025-03-25", estimated: true },
+  { name: "Llama 4 Scout",    provider: "Meta",      params: 109,  context: 10000,   date: "2025-04-05", estimated: false },
+  { name: "Llama 4 Maverick", provider: "Meta",      params: 400,  context: 1000,    date: "2025-04-05", estimated: false },
+  { name: "GPT-4.1",          provider: "OpenAI",    params: 1500, context: 1000,    date: "2025-04-14", estimated: true },
+  { name: "Claude Opus 4",    provider: "Anthropic", params: 2000, context: 200,     date: "2025-05-22", estimated: true },
+  { name: "Qwen3-Coder 480B", provider: "Alibaba",   params: 480,  context: 256,     date: "2025-07-22", estimated: false },
+  { name: "GPT-5",            provider: "OpenAI",    params: 2500, context: 400,     date: "2025-08-07", estimated: true },
+  { name: "Claude Opus 4.5",  provider: "Anthropic", params: 2000, context: 200,     date: "2025-11-24", estimated: true },
+
+  // --- 2026 ---
+  { name: "Gemini 3 Pro",      provider: "Google",    params: 2200, context: 1000,    date: "2026-01-15", estimated: true },
+  { name: "Kimi K2.5",         provider: "Moonshot",  params: 1000, context: 256,     date: "2026-01-27", estimated: false },
+  { name: "GPT-5.2",           provider: "OpenAI",    params: 2800, context: 400,     date: "2026-02-10", estimated: true },
+  { name: "Claude Opus 4.6",   provider: "Anthropic", params: 2000, context: 1000,    date: "2026-03-13", estimated: true },
+  { name: "Claude Sonnet 4.6", provider: "Anthropic", params: 600,  context: 1000,    date: "2026-03-13", estimated: true },
+  { name: "GPT-5.4",           provider: "OpenAI",    params: 3000, context: 1000,    date: "2026-03-05", estimated: true },
+  { name: "Gemini 3.1 Pro",    provider: "Google",    params: 2400, context: 1000,    date: "2026-03-20", estimated: true },
+  { name: "Gemma 4 31B",       provider: "Google",    params: 31,   context: 256,     date: "2026-04-02", estimated: false },
+  { name: "GLM-5.1",           provider: "Zhipu",     params: 744,  context: 200,     date: "2026-04-07", estimated: false },
+  { name: "Claude Mythos",     provider: "Anthropic", params: 2500, context: 1000,    date: "2026-04-07", estimated: true },
+  { name: "Qwen 3.6-Plus",     provider: "Alibaba",   params: 600,  context: 1000,    date: "2026-04-08", estimated: true },
+  { name: "GPT-6",             provider: "OpenAI",    params: 3500, context: 2000,    date: "2026-04-14", estimated: true },
+  { name: "Claude Opus 4.7",   provider: "Anthropic", params: 2100, context: 1000,    date: "2026-04-15", estimated: true },
+];
+
+const PROVIDER_COLORS = {
+  OpenAI:    "#10a37f",
+  Anthropic: "#cc7d5c",
+  Google:    "#4285f4",
+  Meta:      "#7c5fd3",
+  DeepSeek:  "#e8b84a",
+  Alibaba:   "#d94e4e",
+  Moonshot:  "#2d6cdf",
+  Zhipu:     "#b84d8a",
+};
+
+const parseDate = (s) => new Date(s + "T00:00:00Z").getTime();
+const MIN_DATE = Math.min(...MODELS.map((m) => parseDate(m.date)));
+const MAX_DATE = Math.max(...MODELS.map((m) => parseDate(m.date)));
+const DATE_RANGE = MAX_DATE - MIN_DATE;
+const dateProgress = (d) => (parseDate(d) - MIN_DATE) / DATE_RANGE;
+
+const formatDate = (ms) => {
+  const d = new Date(ms);
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+};
+const formatContext = (k) => {
+  if (k >= 1000) return `${(k / 1000).toFixed(k >= 10000 ? 0 : 1)}M`;
+  return `${k}K`;
+};
+const formatParams = (p) => {
+  if (p >= 1000) return `${(p / 1000).toFixed(1)}T`;
+  return `${p}B`;
+};
+
+function Chart() {
+  const [cutoffProgress, setCutoffProgress] = useState(1);
+  const [playing, setPlaying] = useState(false);
+  const [hovered, setHovered] = useState(null);
+  const [activeProviders, setActiveProviders] = useState(
+    new Set(Object.keys(PROVIDER_COLORS))
+  );
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    if (!playing) return;
+    let last = performance.now();
+    const tick = (now) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      setCutoffProgress((p) => {
+        const next = p + dt / 18;
+        if (next >= 1) { setPlaying(false); return 1; }
+        return next;
+      });
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [playing]);
+
+  const cutoffMs = MIN_DATE + cutoffProgress * DATE_RANGE;
+
+  const W = 900, H = 560;
+  const M = { t: 40, r: 40, b: 80, l: 80 };
+  const plotW = W - M.l - M.r;
+  const plotH = H - M.t - M.b;
+
+  const xMin = Math.log10(50);
+  const xMax = Math.log10(5000);
+  const yMin = Math.log10(4);
+  const yMax = Math.log10(15000);
+
+  const xScale = (p) => M.l + ((Math.log10(p) - xMin) / (xMax - xMin)) * plotW;
+  const yScale = (c) => M.t + plotH - ((Math.log10(c) - yMin) / (yMax - yMin)) * plotH;
+
+  const xTicks = [50, 100, 200, 500, 1000, 2000, 5000];
+  const yTicks = [4, 8, 32, 128, 200, 1000, 2000, 10000];
+
+  const toggleProvider = (p) => {
+    setActiveProviders((prev) => {
+      const next = new Set(prev);
+      if (next.has(p)) next.delete(p); else next.add(p);
+      return next;
+    });
+  };
+
+  const visible = useMemo(
+    () => MODELS.filter((m) => activeProviders.has(m.provider) && parseDate(m.date) <= cutoffMs + 1),
+    [activeProviders, cutoffMs]
+  );
+
+  const frontierLine = useMemo(() => {
+    const sorted = [...MODELS]
+      .filter((m) => activeProviders.has(m.provider) && parseDate(m.date) <= cutoffMs + 1)
+      .sort((a, b) => parseDate(a.date) - parseDate(b.date));
+    const pts = [];
+    let best = 0;
+    for (const m of sorted) {
+      if (m.context > best) { best = m.context; pts.push({ date: m.date, context: best, name: m.name }); }
+    }
+    return pts;
+  }, [activeProviders, cutoffMs]);
+
+  return (
+    <div style={styles.root}>
+      <div style={styles.header}>
+        <div style={styles.kicker}>FIGURE 01 · STATE OF THE ART</div>
+        <h1 style={styles.title}>
+          Context length <span style={styles.titleDivider}>×</span> parameter count
+        </h1>
+        <p style={styles.subtitle}>
+          Frontier language models, Mar 2023 – Apr 2026. Both axes logarithmic. Time is
+          encoded in color saturation and revealed via the timeline scrubber below.
+        </p>
+      </div>
+
+      <div style={styles.chartWrap}>
+        <svg viewBox={`0 0 ${W} ${H}`} style={styles.svg}>
+          <rect x={M.l} y={M.t} width={plotW} height={plotH} fill="#faf6ec" stroke="#2a2a2a" strokeWidth="1.2" />
+
+          {xTicks.map((t) => (
+            <line key={`xg-${t}`} x1={xScale(t)} x2={xScale(t)} y1={M.t} y2={M.t + plotH} stroke="#e0d9c6" strokeWidth="0.5" strokeDasharray="2 3" />
+          ))}
+          {yTicks.map((t) => (
+            <line key={`yg-${t}`} y1={yScale(t)} y2={yScale(t)} x1={M.l} x2={M.l + plotW} stroke="#e0d9c6" strokeWidth="0.5" strokeDasharray="2 3" />
+          ))}
+
+          {xTicks.map((t) => (
+            <g key={`xt-${t}`}>
+              <line x1={xScale(t)} x2={xScale(t)} y1={M.t + plotH} y2={M.t + plotH + 5} stroke="#2a2a2a" />
+              <text x={xScale(t)} y={M.t + plotH + 20} fontSize="11" textAnchor="middle" fill="#2a2a2a" fontFamily="'IBM Plex Mono', monospace">
+                {formatParams(t)}
+              </text>
+            </g>
+          ))}
+
+          {yTicks.map((t) => (
+            <g key={`yt-${t}`}>
+              <line x1={M.l - 5} x2={M.l} y1={yScale(t)} y2={yScale(t)} stroke="#2a2a2a" />
+              <text x={M.l - 10} y={yScale(t) + 4} fontSize="11" textAnchor="end" fill="#2a2a2a" fontFamily="'IBM Plex Mono', monospace">
+                {formatContext(t)}
+              </text>
+            </g>
+          ))}
+
+          <text x={M.l + plotW / 2} y={H - 30} fontSize="12" textAnchor="middle" fill="#2a2a2a" fontFamily="'IBM Plex Mono', monospace" letterSpacing="1">
+            PARAMETERS (log scale) →
+          </text>
+          <text x={-H / 2 + 20} y={20} fontSize="12" textAnchor="middle" fill="#2a2a2a" fontFamily="'IBM Plex Mono', monospace" letterSpacing="1" transform="rotate(-90)">
+            ← CONTEXT WINDOW, TOKENS (log scale)
+          </text>
+
+          {frontierLine.length > 1 && (
+            <polyline
+              points={frontierLine.map((m) => {
+                const model = MODELS.find((x) => x.name === m.name);
+                return `${xScale(model.params)},${yScale(model.context)}`;
+              }).join(" ")}
+              fill="none" stroke="#2a2a2a" strokeWidth="1" strokeDasharray="4 3" opacity="0.35"
+            />
+          )}
+
+          {visible.map((m) => {
+            const prog = dateProgress(m.date);
+            const color = PROVIDER_COLORS[m.provider];
+            const isHovered = hovered === m.name;
+            const isCurrent = Math.abs(parseDate(m.date) - cutoffMs) < 1000 * 60 * 60 * 24 * 30;
+            const opacity = 0.35 + prog * 0.65;
+            const radius = 5 + prog * 6;
+            return (
+              <g key={m.name} onMouseEnter={() => setHovered(m.name)} onMouseLeave={() => setHovered(null)} style={{ cursor: "pointer" }}>
+                {isCurrent && (
+                  <circle cx={xScale(m.params)} cy={yScale(m.context)} r={radius + 8} fill="none" stroke={color} strokeWidth="1" opacity="0.5">
+                    <animate attributeName="r" from={radius + 4} to={radius + 16} dur="1.8s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" from="0.6" to="0" dur="1.8s" repeatCount="indefinite" />
+                  </circle>
+                )}
+                <circle
+                  cx={xScale(m.params)} cy={yScale(m.context)}
+                  r={isHovered ? radius + 3 : radius}
+                  fill={color} opacity={opacity} stroke="#2a2a2a" strokeWidth={isHovered ? 1.5 : 0.8}
+                  style={{ transition: "r 0.15s ease" }}
+                />
+                {isHovered && (
+                  <g>
+                    <rect x={xScale(m.params) + 12} y={yScale(m.context) - 38} width="180" height="66" fill="#fffdf7" stroke="#2a2a2a" strokeWidth="1" />
+                    <text x={xScale(m.params) + 22} y={yScale(m.context) - 22} fontSize="12" fontWeight="600" fill="#2a2a2a" fontFamily="'Playfair Display', Georgia, serif">
+                      {m.name}
+                    </text>
+                    <text x={xScale(m.params) + 22} y={yScale(m.context) - 7} fontSize="10" fill="#555" fontFamily="'IBM Plex Mono', monospace">
+                      {m.provider} · {formatDate(parseDate(m.date))}
+                    </text>
+                    <text x={xScale(m.params) + 22} y={yScale(m.context) + 8} fontSize="10" fill="#2a2a2a" fontFamily="'IBM Plex Mono', monospace">
+                      {formatParams(m.params)} params {m.estimated ? "(est.)" : ""}
+                    </text>
+                    <text x={xScale(m.params) + 22} y={yScale(m.context) + 22} fontSize="10" fill="#2a2a2a" fontFamily="'IBM Plex Mono', monospace">
+                      {formatContext(m.context)} context
+                    </text>
+                  </g>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      <div style={styles.timeline}>
+        <div style={styles.timelineHeader}>
+          <span style={styles.timelineLabel}>TIMELINE</span>
+          <span style={styles.timelineDate}>{formatDate(cutoffMs)}</span>
+          <button
+            onClick={() => {
+              if (cutoffProgress >= 1) setCutoffProgress(0);
+              setPlaying((p) => !p);
+            }}
+            style={styles.playBtn}
+          >
+            {playing ? "⏸ PAUSE" : "▶ PLAY"}
+          </button>
+        </div>
+        <input
+          type="range" min={0} max={1000} value={cutoffProgress * 1000}
+          onChange={(e) => { setPlaying(false); setCutoffProgress(Number(e.target.value) / 1000); }}
+          style={styles.slider}
+        />
+        <div style={styles.timelineTicks}>
+          {["2023", "2024", "2025", "2026"].map((y) => {
+            const ms = new Date(`${y}-01-01T00:00:00Z`).getTime();
+            const pos = ((ms - MIN_DATE) / DATE_RANGE) * 100;
+            if (pos < 0 || pos > 100) return null;
+            return (
+              <div key={y} style={{ ...styles.timelineTick, left: `${pos}%` }}>
+                <div style={styles.timelineTickMark} />
+                <div style={styles.timelineTickLabel}>{y}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={styles.legend}>
+        {Object.entries(PROVIDER_COLORS).map(([p, c]) => {
+          const active = activeProviders.has(p);
+          return (
+            <button key={p} onClick={() => toggleProvider(p)} style={{ ...styles.legendItem, opacity: active ? 1 : 0.35 }}>
+              <span style={{ ...styles.legendDot, background: c }} />
+              <span style={styles.legendLabel}>{p}</span>
+            </button>
+          );
+        })}
+        <div style={styles.legendNote}>
+          <span style={{ fontWeight: 600 }}>Time encoding:</span> dot size & opacity scale with recency · pulsing ring = model released within the scrubber's current month
+        </div>
+      </div>
+
+      <div style={styles.footer}>
+        Params shown are total (MoE models include inactive experts). Closed-model figures marked "est." use published analyses and aren't officially disclosed.
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  root: { minHeight: "100vh", background: "#f4eedd", padding: "32px 24px", fontFamily: "'Inter', system-ui, sans-serif", color: "#2a2a2a", maxWidth: 1100, margin: "0 auto" },
+  header: { marginBottom: 24, borderBottom: "2px solid #2a2a2a", paddingBottom: 16 },
+  kicker: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 3, color: "#8a6f3d", marginBottom: 8 },
+  title: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 400, margin: 0, lineHeight: 1.1, color: "#1a1a1a" },
+  titleDivider: { fontStyle: "italic", color: "#cc7d5c", margin: "0 8px" },
+  subtitle: { marginTop: 12, fontSize: 14, lineHeight: 1.5, color: "#555", maxWidth: 680 },
+  chartWrap: { background: "#fffdf7", border: "1.5px solid #2a2a2a", padding: 12, boxShadow: "6px 6px 0 rgba(42,42,42,0.08)" },
+  svg: { width: "100%", height: "auto", display: "block" },
+  timeline: { marginTop: 20 },
+  timelineHeader: { display: "flex", alignItems: "center", gap: 16, marginBottom: 10 },
+  timelineLabel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 3, color: "#8a6f3d" },
+  timelineDate: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: 22, fontStyle: "italic", color: "#1a1a1a", flex: 1 },
+  playBtn: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 2, padding: "8px 16px", background: "#2a2a2a", color: "#f4eedd", border: "none", cursor: "pointer" },
+  slider: { width: "100%", accentColor: "#cc7d5c", height: 4 },
+  timelineTicks: { position: "relative", height: 24, marginTop: 4 },
+  timelineTick: { position: "absolute", transform: "translateX(-50%)" },
+  timelineTickMark: { width: 1, height: 6, background: "#2a2a2a", margin: "0 auto" },
+  timelineTickLabel: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#555", marginTop: 2 },
+  legend: { marginTop: 24, display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", padding: "16px 0", borderTop: "1px solid #d6cfba", borderBottom: "1px solid #d6cfba" },
+  legendItem: { display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", padding: "4px 8px", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1, color: "#2a2a2a", transition: "opacity 0.15s ease" },
+  legendDot: { width: 10, height: 10, borderRadius: "50%", border: "1px solid #2a2a2a" },
+  legendLabel: { fontWeight: 500 },
+  legendNote: { fontSize: 11, color: "#666", marginLeft: "auto", fontStyle: "italic", maxWidth: 360, lineHeight: 1.4 },
+  footer: { marginTop: 16, fontSize: 11, color: "#777", fontStyle: "italic", lineHeight: 1.5 },
+};
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<Chart />);
+</script>
+
+</body>
+</html>
