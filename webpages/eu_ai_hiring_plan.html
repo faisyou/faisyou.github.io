@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EU AI Consultant Hiring Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#f5f4f0;color:#1a1a18;font-size:14px;line-height:1.6;}
+.container{max-width:1100px;margin:0 auto;padding:32px 24px;}
+.page-header{margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid #e0dfd8;}
+.page-title{font-size:22px;font-weight:600;color:#1a1a18;margin-bottom:6px;}
+.page-sub{font-size:13px;color:#6b6b65;line-height:1.5;}
+.method-note{background:#fff;border:1px solid #e0dfd8;border-left:3px solid #378ADD;border-radius:8px;padding:12px 16px;margin-bottom:28px;font-size:12px;color:#5a5a55;line-height:1.6;}
+.method-note strong{color:#1a1a18;font-weight:500;}
+.lang-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;}
+.ltab{padding:8px 18px;border:1px solid #d0cfc8;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;background:#fff;color:#6b6b65;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.ltab:hover{background:#f0efe8;color:#1a1a18;}
+.ltab.active{color:#fff;}
+.overview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.ocard{background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:14px 16px;}
+.olabel{font-size:11px;color:#8b8b85;margin-bottom:4px;letter-spacing:0.02em;}
+.oval{font-size:20px;font-weight:600;color:#1a1a18;}
+.osub{font-size:10px;color:#ababA5;margin-top:2px;}
+.section-label{font-size:11px;font-weight:600;color:#8b8b85;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;}
+.country-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+.ccard{background:#fff;border:1px solid #e0dfd8;border-radius:12px;padding:16px;transition:box-shadow 0.15s;}
+.ccard:hover{box-shadow:0 2px 12px rgba(0,0,0,0.07);}
+.ccard-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.ccode{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#f0efe8;font-size:10px;font-weight:600;color:#6b6b65;margin-right:8px;flex-shrink:0;}
+.cname{font-size:13px;font-weight:600;color:#1a1a18;}
+.cscore{text-align:right;flex-shrink:0;}
+.cscore-num{font-size:24px;font-weight:600;line-height:1;}
+.cscore-denom{font-size:9px;color:#ababA5;margin-top:1px;}
+.profile-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;margin-top:5px;}
+.metric-row{margin-bottom:8px;}
+.metric-top{display:flex;justify-content:space-between;margin-bottom:3px;}
+.metric-label{font-size:10px;color:#8b8b85;}
+.metric-val{font-size:10px;font-weight:600;color:#1a1a18;}
+.bar-track{height:3px;background:#e8e7e0;border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;transition:width 0.3s ease;}
+.salary-box{padding:8px 10px;background:#f8f7f3;border-radius:8px;margin:12px 0 10px;}
+.salary-label{font-size:9px;color:#ababA5;margin-bottom:2px;}
+.salary-val{font-size:12px;font-weight:600;color:#1a1a18;font-family:'DM Mono',monospace;}
+.hi-item{font-size:11px;color:#6b6b65;padding:3px 0;border-bottom:1px solid #f0efe8;display:flex;align-items:flex-start;gap:6px;}
+.hi-item:last-child{border-bottom:none;}
+.hi-dot{width:4px;height:4px;border-radius:50%;background:#d0cfc8;flex-shrink:0;margin-top:6px;}
+.lang-rank-badge{font-size:9px;background:#f0efe8;color:#8b8b85;padding:2px 6px;border-radius:4px;margin-right:6px;font-weight:500;}
+.buying-power-bar{height:6px;background:#e8e7e0;border-radius:3px;overflow:hidden;margin-top:8px;}
+.bp-fill{height:100%;border-radius:3px;}
+@media(max-width:640px){.overview-grid{grid-template-columns:repeat(2,1fr);}.lang-tabs{gap:4px;}.ltab{padding:6px 12px;font-size:11px;}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="page-header">
+    <div class="page-title">European AI consultant hiring plan</div>
+    <div class="page-sub">Top 5 languages by population × buying power — with optimal hiring markets for each language group</div>
+  </div>
+
+  <div class="method-note">
+    <strong>Scoring methodology —</strong> Languages ranked by native European speaker population × avg GDP/capita of primary countries (buying power index). Countries scored across three dimensions weighted for a consultant profile: <strong>technical talent pool (35%)</strong> — depth of relevant AI/tech workforce; <strong>cost of resource (25%)</strong> — salary competitiveness (10 = most affordable); <strong>consultant capability (40%)</strong> — blend of technical depth and client-facing credibility, consulting culture maturity, and enterprise soft skills. Composite score is out of 100.
+  </div>
+
+  <div class="lang-tabs" id="lang-tabs"></div>
+  <div class="overview-grid" id="overview"></div>
+  <div class="section-label" id="section-label"></div>
+  <div class="country-grid" id="country-grid"></div>
+</div>
+
+<script>
+const DATA = [
+  {
+    name:'German', spk:100, gdp:57000, bp:5.7, rank:1,
+    mkt:'Germany, Austria, Switzerland',
+    lc:'#185FA5', activeText:'#E6F1FB',
+    desc:'Largest EU economy + Austria + high-GDP Swiss German speakers. Highest absolute buying power in Europe.',
+    c:[
+      {n:'Germany',c:'DE',t:9,s:4,r:9,p:'core market',pc:'#185FA5',pb:'#E6F1FB',sal:'€75–95k',h:['Berlin, Munich & Frankfurt tech hubs','Strong engineering + consulting culture','180k+ active ICT professionals']},
+      {n:'Austria',c:'AT',t:7,s:6,r:8,p:'secondary market',pc:'#5F5E5A',pb:'#F1EFE8',sal:'€60–75k',h:['Vienna growing AI & fintech scene','Slightly lower cost vs Germany','Strong EU regulatory fluency']},
+      {n:'Netherlands',c:'NL',t:8,s:5,r:9,p:'strategic hub',pc:'#0F6E56',pb:'#E1F5EE',sal:'€70–85k',h:['Amsterdam EMEA enterprise hub','High German bilingualism rate','Dense multinational client base']},
+      {n:'Switzerland',c:'CH',t:8,s:2,r:10,p:'premium',pc:'#854F0B',pb:'#FAEEDA',sal:'€100–140k',h:['World-class talent quality','Zurich–Basel finance nexus','Premium market prestige & access']},
+      {n:'Poland',c:'PL',t:7,s:9,r:7,p:'cost-efficient',pc:'#3B6D11',pb:'#EAF3DE',sal:'€35–50k',h:['Warsaw & Kraków tech pools','Strong German language adoption','Best cost–quality ratio in region']}
+    ]
+  },
+  {
+    name:'English', spk:72, gdp:51000, bp:3.7, rank:2,
+    mkt:'UK, Ireland + lingua franca across EU',
+    lc:'#1D9E75', activeText:'#E1F5EE',
+    desc:'UK + Ireland as native base, with English as the business lingua franca giving reach across all of Europe. Ireland\'s GDP skews the average higher.',
+    c:[
+      {n:'United Kingdom',c:'UK',t:10,s:3,r:10,p:'core market',pc:'#185FA5',pb:'#E6F1FB',sal:'£70–100k',h:['London – global consulting capital','Deepest AI consultant talent pool in Europe','Big 4, boutique & hyperscaler ecosystems']},
+      {n:'Ireland',c:'IE',t:8,s:4,r:9,p:'strategic hub',pc:'#0F6E56',pb:'#E1F5EE',sal:'€65–85k',h:['EMEA HQ: Google, Meta, Salesforce','Strong CX & SaaS consulting culture','EU market access from English base']},
+      {n:'Netherlands',c:'NL',t:8,s:5,r:9,p:'strategic hub',pc:'#0F6E56',pb:'#E1F5EE',sal:'€70–85k',h:['~95% English proficiency rate','Amsterdam as EU enterprise tech hub','Highly international multilingual workforce']},
+      {n:'Sweden',c:'SE',t:8,s:4,r:8,p:'nordic expansion',pc:'#0F6E56',pb:'#E1F5EE',sal:'€62–80k',h:['Stockholm startup ecosystem','Top English fluency in EU','Strong engineering + design thinking']},
+      {n:'Denmark',c:'DK',t:7,s:4,r:8,p:'nordic expansion',pc:'#0F6E56',pb:'#E1F5EE',sal:'€87–114k',h:['Copenhagen growing tech scene','Highest English fluency index in Europe','Premium consulting market culture']}
+    ]
+  },
+  {
+    name:'French', spk:74, gdp:46000, bp:3.4, rank:3,
+    mkt:'France, Belgium, Switzerland',
+    lc:'#D85A30', activeText:'#FAECE7',
+    desc:'France\'s large population drives volume; Belgian and Swiss French speakers add quality diversity. Belgium anchors the EU institutions market.',
+    c:[
+      {n:'France',c:'FR',t:9,s:5,r:8,p:'core market',pc:'#185FA5',pb:'#E6F1FB',sal:'€55–75k',h:['La French Tech startup density','Grandes ecoles engineering pedigree','Station F – largest global startup campus']},
+      {n:'Belgium',c:'BE',t:7,s:5,r:9,p:'EU gateway',pc:'#185FA5',pb:'#E6F1FB',sal:'€55–72k',h:['Brussels – EU institutions hub','Dense multinational HQ presence','Trilingual talent (FR/NL/EN)']},
+      {n:'Switzerland',c:'CH',t:7,s:2,r:10,p:'premium',pc:'#854F0B',pb:'#FAEEDA',sal:'€104–146k',h:['Geneva–Lausanne French corridor','EPFL world-class research talent','Global HQ decision-maker access']},
+      {n:'Luxembourg',c:'LU',t:5,s:3,r:8,p:'niche',pc:'#5F5E5A',pb:'#F1EFE8',sal:'€80–110k',h:['EU financial & legal hub','Trilingual (FR/DE/EN) profiles','High-value client density per capita']},
+      {n:'Morocco',c:'MA',t:6,s:9,r:6,p:'nearshore',pc:'#534AB7',pb:'#EEEDFE',sal:'€18–28k',h:['Casablanca nearshore tech hub','French higher education legacy','Significant EMEA cost advantage']}
+    ]
+  },
+  {
+    name:'Italian', spk:61, gdp:38000, bp:2.3, rank:4,
+    mkt:'Italy, Switzerland (Ticino)',
+    lc:'#BA7517', activeText:'#FAEEDA',
+    desc:'Italy\'s 3rd-largest EU economy provides a meaningful market. Milan is the clear tech hub; diaspora plays in Germany and UK add flexibility.',
+    c:[
+      {n:'Italy',c:'IT',t:8,s:6,r:7,p:'core market',pc:'#185FA5',pb:'#E6F1FB',sal:'€45–65k',h:['Milan – AI & fintech primary hub','Design-led consulting differentiation','Growing VC & startup ecosystem']},
+      {n:'Switzerland',c:'CH',t:6,s:2,r:10,p:'premium',pc:'#854F0B',pb:'#FAEEDA',sal:'€104–135k',h:['Italian-speaking Ticino region','Swiss enterprise client access','World-class talent, premium cost']},
+      {n:'Germany',c:'DE',t:7,s:4,r:9,p:'diaspora play',pc:'#993C1D',pb:'#FAECE7',sal:'€70–90k',h:['~700k Italian diaspora community','Bilingual IT/DE consulting profiles','Strong DACH enterprise market']},
+      {n:'United Kingdom',c:'UK',t:6,s:3,r:9,p:'diaspora play',pc:'#993C1D',pb:'#FAECE7',sal:'£65–90k',h:['~700k Italians in London','Trilingual consulting profiles','London premium consulting standards']},
+      {n:'Malta',c:'MT',t:5,s:7,r:6,p:'nearshore',pc:'#534AB7',pb:'#EEEDFE',sal:'€30–45k',h:['English + Italian bilingual by default','EU jurisdiction, lower cost base','Growing gaming & tech sector']}
+    ]
+  },
+  {
+    name:'Spanish', spk:47, gdp:32000, bp:1.5, rank:5,
+    mkt:'Spain (primary)',
+    lc:'#7F77DD', activeText:'#EEEDFE',
+    desc:'Spain is the only large Spanish-speaking market in Europe. Portuguese adjacency makes Lisbon a compelling cost-efficient complement. Diaspora talent in NL, UK, DE adds reach.',
+    c:[
+      {n:'Spain',c:'ES',t:8,s:6,r:7,p:'core market',pc:'#185FA5',pb:'#E6F1FB',sal:'€45–65k',h:['Madrid & Barcelona tech ecosystems','MWC Barcelona – global B2B tech stage','Strong consulting growth trajectory']},
+      {n:'Portugal',c:'PT',t:7,s:8,r:7,p:'cost-efficient',pc:'#3B6D11',pb:'#EAF3DE',sal:'€35–52k',h:['Lisbon tech boom (Web Summit HQ)','Spanish-adjacent culture & language','Best cost–quality in Western Europe']},
+      {n:'Netherlands',c:'NL',t:6,s:5,r:9,p:'strategic hub',pc:'#0F6E56',pb:'#E1F5EE',sal:'€68–82k',h:['Spanish diaspora tech talent','Gateway to DACH enterprise market','High multinational client density']},
+      {n:'United Kingdom',c:'UK',t:6,s:3,r:9,p:'diaspora play',pc:'#993C1D',pb:'#FAECE7',sal:'£65–85k',h:['Large Spanish tech community','London trilingual senior hiring','World-class consulting standards']},
+      {n:'Germany',c:'DE',t:5,s:4,r:9,p:'diaspora play',pc:'#993C1D',pb:'#FAECE7',sal:'€68–88k',h:['Spanish expat technical workforce','DACH enterprise client access','Central European market coverage']}
+    ]
+  }
+];
+
+function sc(c){return Math.round(c.t*3.5+c.s*2.5+c.r*4);}
+function bc(v){return v>=8?'#1D9E75':v>=6?'#378ADD':v>=4?'#BA7517':'#D85A30';}
+
+let ai=0;
+
+function renderTabs(){
+  document.getElementById('lang-tabs').innerHTML=DATA.map((l,i)=>`
+    <button class="ltab${i===ai?' active':''}" onclick="go(${i})"
+      style="${i===ai?`background:${l.lc};color:${l.activeText};border-color:${l.lc};`:''}">
+      <span class="lang-rank-badge">#${l.rank}</span>${l.name}
+    </button>`).join('');
+}
+
+function renderOverview(){
+  const l=DATA[ai];
+  const maxBP=5.7;
+  document.getElementById('overview').innerHTML=`
+    <div class="ocard">
+      <div class="olabel">Native speakers</div>
+      <div class="oval">${l.spk}M</div>
+      <div class="osub">in Europe</div>
+    </div>
+    <div class="ocard">
+      <div class="olabel">Avg GDP/capita</div>
+      <div class="oval">$${Math.round(l.gdp/1000)}k</div>
+      <div class="osub">primary markets</div>
+    </div>
+    <div class="ocard">
+      <div class="olabel">Buying power index</div>
+      <div class="oval">$${l.bp}T</div>
+      <div class="buying-power-bar"><div class="bp-fill" style="width:${(l.bp/maxBP*100).toFixed(0)}%;background:${l.lc};"></div></div>
+    </div>
+    <div class="ocard">
+      <div class="olabel">Primary markets</div>
+      <div style="font-size:12px;font-weight:500;color:#1a1a18;line-height:1.5;padding-top:4px;">${l.mkt}</div>
+    </div>`;
+}
+
+function renderCountries(){
+  const l=DATA[ai];
+  document.getElementById('section-label').textContent=`Top 5 hiring markets for ${l.name}-speaking AI consultants — sorted by composite score`;
+  const sorted=[...l.c].sort((a,b)=>sc(b)-sc(a));
+  document.getElementById('country-grid').innerHTML=sorted.map((c,i)=>{
+    const s=sc(c);
+    return `<div class="ccard">
+      <div class="ccard-header">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;margin-bottom:5px;">
+            <span class="ccode">${c.c}</span>
+            <span class="cname">${c.n}</span>
+          </div>
+          <span class="profile-badge" style="background:${c.pb};color:${c.pc};">${c.p}</span>
+        </div>
+        <div class="cscore">
+          <div class="cscore-num" style="color:${sc(c)>=78?'#1D9E75':sc(c)>=70?'#378ADD':'#BA7517'};">${s}</div>
+          <div class="cscore-denom">/100</div>
+        </div>
+      </div>
+      ${[{l:'Technical talent',v:c.t},{l:'Cost efficiency',v:c.s},{l:'Consultant rep',v:c.r}].map(m=>`
+        <div class="metric-row">
+          <div class="metric-top">
+            <span class="metric-label">${m.l}</span>
+            <span class="metric-val">${m.v}/10</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${m.v*10}%;background:${bc(m.v)};"></div></div>
+        </div>`).join('')}
+      <div class="salary-box">
+        <div class="salary-label">avg salary range</div>
+        <div class="salary-val">${c.sal}</div>
+      </div>
+      <div>${c.h.map(h=>`<div class="hi-item"><span class="hi-dot"></span>${h}</div>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function go(i){ai=i;renderTabs();renderOverview();renderCountries();}
+go(0);
+</script>
+</body>
+</html>
