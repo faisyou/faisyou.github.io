@@ -1,0 +1,345 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.container{padding:1.5rem 0}
+.section-label{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:.75rem}
+.tabs{display:flex;gap:4px;margin-bottom:1.5rem;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:0}
+.tab{font-size:13px;padding:6px 14px;cursor:pointer;border:none;background:none;color:var(--color-text-secondary);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;border-radius:0}
+.tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500}
+.tab:hover:not(.active){color:var(--color-text-primary)}
+.panel{display:none}.panel.active{display:block}
+
+/* Pipeline waterfall */
+.pipeline{display:flex;flex-direction:column;gap:6px;margin-bottom:1.25rem}
+.step{display:flex;align-items:center;gap:10px}
+.step-label{width:180px;min-width:180px;font-size:12px;color:var(--color-text-secondary);text-align:right}
+.step-label strong{display:block;font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.bar-area{flex:1;position:relative;height:34px;display:flex;align-items:center}
+.bar-spacer{background:transparent;height:20px;border-radius:4px}
+.bar-fill{height:20px;border-radius:4px;position:relative;display:flex;align-items:center;justify-content:flex-end;min-width:24px;transition:width .4s ease}
+.bar-val{font-size:11px;font-weight:500;white-space:nowrap;padding-right:6px}
+.total-line{border-top:1.5px dashed var(--color-border-secondary);margin:8px 0 4px}
+.total-row{display:flex;align-items:center;gap:10px;margin-top:4px}
+.total-label{width:180px;min-width:180px;font-size:13px;font-weight:500;text-align:right;color:var(--color-text-primary)}
+.total-bar{flex:1;height:24px;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:12px;font-weight:500}
+
+/* Human threshold bar */
+.threshold-section{margin-top:1.5rem}
+.threshold-bar-wrap{position:relative;height:48px;margin:8px 0 20px}
+.threshold-bar{height:14px;border-radius:7px;background:linear-gradient(90deg,#1D9E75 0%,#1D9E75 30%,#EF9F27 30%,#EF9F27 55%,#E24B4A 55%,#E24B4A 80%,#A32D2D 80%)}
+.th-labels{display:flex;justify-content:space-between;margin-top:4px}
+.th-label{font-size:11px;color:var(--color-text-secondary)}
+.marker{position:absolute;top:-6px;width:2px;border-radius:1px}
+.marker-label{position:absolute;font-size:11px;font-weight:500;white-space:nowrap;top:-22px;transform:translateX(-50%)}
+.zone-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.zone-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--color-text-secondary)}
+.zone-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* Mode compare */
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
+.mode-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem}
+.mode-card.featured{border-color:#1D9E75;border-width:1.5px}
+.mode-badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px;margin-bottom:6px}
+.mode-title{font-size:14px;font-weight:500;margin-bottom:4px}
+.mode-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:10px;line-height:1.5}
+.mode-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-top:0.5px solid var(--color-border-tertiary)}
+.mode-row:first-of-type{border-top:none;margin-top:0}
+.mode-total{display:flex;justify-content:space-between;font-size:13px;font-weight:500;padding:6px 0 0;border-top:0.5px solid var(--color-border-secondary);margin-top:4px}
+
+/* Improvements */
+.imp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.imp-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.875rem}
+.imp-icon{font-size:18px;margin-bottom:6px;color:var(--color-text-secondary)}
+.imp-title{font-size:13px;font-weight:500;margin-bottom:4px}
+.imp-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5}
+.imp-tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 6px;border-radius:3px;margin-top:6px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+
+/* NVIDIA section */
+.nvidia-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.nvidia-pill{font-size:11px;font-weight:500;padding:3px 10px;border-radius:12px;background:#e1f5ee;color:#0F6E56}
+.arch-compare{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start;margin:1rem 0}
+.arch-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.875rem}
+.arch-title{font-size:13px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.arch-steps{list-style:none;margin-bottom:8px}
+.arch-steps li{font-size:12px;color:var(--color-text-secondary);padding:2px 0;display:flex;align-items:center;gap:6px}
+.arch-steps li::before{content:"→";color:var(--color-text-tertiary);font-size:11px;flex-shrink:0}
+.arch-latency{font-size:13px;font-weight:500;padding:6px 0 0;border-top:0.5px solid var(--color-border-tertiary);margin-top:6px}
+.vs-badge{font-size:12px;font-weight:500;color:var(--color-text-tertiary);align-self:center;text-align:center}
+.challenge-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:1rem}
+.challenge-item{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.75rem}
+.challenge-icon{font-size:16px;margin-bottom:4px;color:var(--color-text-secondary)}
+.challenge-title{font-size:12px;font-weight:500;margin-bottom:3px}
+.challenge-desc{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.stat-row{display:flex;gap:12px;margin:1rem 0}
+.stat-box{flex:1;border-radius:var(--border-radius-md);padding:.75rem;text-align:center;background:var(--color-background-secondary)}
+.stat-num{font-size:20px;font-weight:500;line-height:1}
+.stat-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+</style>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('pipeline')">Latency pipeline</button>
+    <button class="tab" onclick="showTab('compare')">Mode comparison</button>
+    <button class="tab" onclick="showTab('improve')">Optimisations</button>
+    <button class="tab" onclick="showTab('nvidia')">NVIDIA PersonaPlex</button>
+  </div>
+
+  <!-- TAB 1: PIPELINE -->
+  <div id="tab-pipeline" class="panel active">
+    <p class="section-label">Cascaded pipeline — end-to-end latency components</p>
+    <div class="pipeline" id="pipeline-bars"></div>
+
+    <div class="threshold-section">
+      <p class="section-label">Human conversation tolerance</p>
+      <div class="threshold-bar-wrap">
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:4px">0 ms → 1500 ms</div>
+        <div class="threshold-bar" style="width:100%;height:14px;border-radius:7px"></div>
+        <div style="position:relative;height:32px">
+          <div class="marker" style="left:30%;height:30px;background:#1D9E75">
+            <div class="marker-label" style="color:#1D9E75">450 ms</div>
+          </div>
+          <div class="marker" style="left:53%;height:30px;background:#EF9F27">
+            <div class="marker-label" style="color:#EF9F27">800 ms</div>
+          </div>
+          <div class="marker" style="left:80%;height:30px;background:#E24B4A">
+            <div class="marker-label" style="color:#E24B4A">1200 ms</div>
+          </div>
+        </div>
+      </div>
+      <div class="zone-legend">
+        <div class="zone-item"><div class="zone-dot" style="background:#1D9E75"></div>Excellent (< 450 ms)</div>
+        <div class="zone-item"><div class="zone-dot" style="background:#EF9F27"></div>Acceptable (450–800 ms)</div>
+        <div class="zone-item"><div class="zone-dot" style="background:#E24B4A"></div>Noticeable lag (800–1200 ms)</div>
+        <div class="zone-item"><div class="zone-dot" style="background:#A32D2D"></div>Broken feel (> 1200 ms)</div>
+      </div>
+      <p style="font-size:12px;color:var(--color-text-secondary);margin-top:10px;line-height:1.6">Human turn-taking in natural conversation averages <strong style="color:var(--color-text-primary)">200 – 400 ms</strong> gap between speakers. Cognitive science research places the "uncomfortable silence" threshold at around 500 ms, and anything beyond 800 ms begins to feel like a broken call.</p>
+    </div>
+  </div>
+
+  <!-- TAB 2: MODE COMPARE -->
+  <div id="tab-compare" class="panel">
+    <p class="section-label">Streaming vs non-streaming vs end-to-end speech</p>
+    <div class="mode-cards">
+      <div class="mode-card">
+        <div class="mode-badge" style="background:#e6f1fb;color:#185FA5">Non-streaming</div>
+        <div class="mode-title">Batch pipeline</div>
+        <div class="mode-sub">Full STT → LLM response → TTS. Simple to build, highest latency.</div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">Network (in)</span><span>30 – 60 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">VAD endpoint</span><span>150 – 300 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">STT (batch)</span><span>300 – 600 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">LLM full response</span><span>800 – 2500 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">TTS synthesis</span><span>200 – 400 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">Network (out)</span><span>30 – 60 ms</span></div>
+        <div class="mode-total"><span>Total P50</span><span style="color:#E24B4A">1.5 – 4.0 s</span></div>
+      </div>
+      <div class="mode-card featured">
+        <div class="mode-badge" style="background:#e1f5ee;color:#0F6E56">Streaming ✓ Recommended</div>
+        <div class="mode-title">Streaming pipeline</div>
+        <div class="mode-sub">Streaming STT → LLM TTFT → streaming TTS. Best balance of quality and speed.</div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">Network (in)</span><span>20 – 40 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">VAD endpoint</span><span>50 – 150 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">STT (streaming)</span><span>100 – 200 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">LLM TTFT</span><span>150 – 500 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">TTS first chunk</span><span>50 – 150 ms</span></div>
+        <div class="mode-row"><span style="color:var(--color-text-secondary)">Network (out)</span><span>20 – 40 ms</span></div>
+        <div class="mode-total"><span>Total P50</span><span style="color:#1D9E75">400 – 900 ms</span></div>
+      </div>
+    </div>
+    <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem">
+      <div class="mode-badge" style="background:#EEEDFE;color:#534AB7">Speech-to-speech (E2E)</div>
+      <div class="mode-title" style="margin:6px 0 4px">End-to-end voice LLM (e.g. NVIDIA PersonaPlex / GPT-4o Audio)</div>
+      <div class="mode-sub">Single model ingests audio, outputs audio. Eliminates STT + TTS hop entirely. Full-duplex capable.</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">
+        <div class="stat-box"><div class="stat-num" style="color:#534AB7">20–40</div><div class="stat-lbl">ms network in</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:#534AB7">30–80</div><div class="stat-lbl">ms VAD / turn detect</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:#534AB7">100–250</div><div class="stat-lbl">ms model TTFT</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:#1D9E75">~200–400</div><div class="stat-lbl">ms total P50</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: IMPROVEMENTS -->
+  <div id="tab-improve" class="panel">
+    <p class="section-label">Engineering levers to reduce end-to-end latency</p>
+    <div class="imp-grid">
+      <div class="imp-card">
+        <div class="imp-icon"><i class="ti ti-activity" aria-hidden="true"></i></div>
+        <div class="imp-title">Streaming STT with early commit</div>
+        <div class="imp-desc">Use streaming ASR (e.g. NVIDIA Nemotron Speech, Deepgram) that emits partial transcripts. Fire LLM request on high-confidence partial, cancel if user continues. Saves 200–400 ms.</div>
+        <div class="imp-tag">STT</div>
+      </div>
+      <div class="imp-card">
+        <div class="imp-icon"><i class="ti ti-ear" aria-hidden="true"></i></div>
+        <div class="imp-title">Aggressive VAD tuning</div>
+        <div class="imp-desc">Reduce end-of-speech silence threshold from default 500 ms to 150–200 ms. Combine with semantic turn-detection (model predicts if utterance is complete) to avoid false cuts.</div>
+        <div class="imp-tag">VAD</div>
+      </div>
+      <div class="imp-card">
+        <div class="imp-icon"><i class="ti ti-bolt" aria-hidden="true"></i></div>
+        <div class="imp-title">LLM speculative decoding</div>
+        <div class="imp-desc">Use a small draft model to predict tokens, verified by main model in parallel. Achieves 2–4× throughput improvement. Reduces TTFT on large models like 70B+ from 600 ms to ~200 ms.</div>
+        <div class="imp-tag">LLM</div>
+      </div>
+      <div class="imp-card">
+        <div class="imp-icon"><i class="ti ti-server" aria-hidden="true"></i></div>
+        <div class="imp-title">Co-location & edge inference</div>
+        <div class="imp-desc">Deploy STT, LLM, and TTS in the same datacenter region. Use WebRTC or QUIC instead of HTTP/REST. Eliminates inter-service hops. Cuts network contribution from 80 ms to &lt;20 ms.</div>
+        <div class="imp-tag">Network</div>
+      </div>
+      <div class="imp-card">
+        <div class="imp-icon"><i class="ti ti-wavesaw-tool" aria-hidden="true"></i></div>
+        <div class="imp-title">Streaming TTS with first-chunk play</div>
+        <div class="imp-desc">Start audio playback on the very first TTS chunk (typically 1–2 sentences). Use low-latency TTS like NVIDIA MagpieTTS or ElevenLabs Turbo. Reduce perceived delay by 150–300 ms.</div>
+        <div class="imp-tag">TTS</div>
+      </div>
+      <div class="imp-card">
+        <div class="imp-icon"><i class="ti ti-cpu" aria-hidden="true"></i></div>
+        <div class="imp-title">KV-cache & prompt caching</div>
+        <div class="imp-desc">Pre-fill the LLM's KV-cache with the system prompt and conversation history. Subsequent turns only process the new user utterance. Can cut TTFT from 500 ms to 150 ms for long contexts.</div>
+        <div class="imp-tag">LLM</div>
+      </div>
+      <div class="imp-card">
+        <div class="imp-icon"><i class="ti ti-arrows-exchange" aria-hidden="true"></i></div>
+        <div class="imp-title">Barge-in / interrupt handling</div>
+        <div class="imp-desc">Detect mid-response speech with a fast VAD bypass. Immediately cancel TTS playback and LLM generation. Frees GPU sooner and makes the agent feel naturally interruptible rather than robotic.</div>
+        <div class="imp-tag">Architecture</div>
+      </div>
+      <div class="imp-card">
+        <div class="imp-icon"><i class="ti ti-chart-histogram" aria-hidden="true"></i></div>
+        <div class="imp-title">Smaller, quantised models</div>
+        <div class="imp-desc">For simple intents (FAQs, slot filling), route to a fine-tuned 7B–30B quantised model (INT4/INT8) instead of a frontier model. Achieves TTFT of &lt;100 ms. Reserve large models for complex turns.</div>
+        <div class="imp-tag">LLM</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: NVIDIA -->
+  <div id="tab-nvidia" class="panel">
+    <div class="nvidia-header">
+      <div>
+        <div class="nvidia-pill">NVIDIA Research · 2026</div>
+        <div style="font-size:16px;font-weight:500;margin-top:4px">PersonaPlex — full-duplex speech-to-speech LLM</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:3px">Built on Moshi + Helium backbone. Listens and speaks simultaneously. Persona-conditioned via text + voice prompt.</div>
+      </div>
+    </div>
+
+    <div class="arch-compare">
+      <div class="arch-card">
+        <div class="arch-title"><i class="ti ti-layout-list" aria-hidden="true" style="color:#185FA5;font-size:16px"></i> Cascaded pipeline</div>
+        <ul class="arch-steps">
+          <li>Audio → VAD endpoint</li>
+          <li>VAD → STT model</li>
+          <li>Transcript → LLM</li>
+          <li>Text → TTS model</li>
+          <li>TTS chunks → playback</li>
+        </ul>
+        <div class="arch-latency" style="color:#E24B4A">P50: 500 – 900 ms</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px">5 separate model hops, serialised</div>
+      </div>
+      <div class="vs-badge">vs</div>
+      <div class="arch-card" style="border-color:#5DCAA5">
+        <div class="arch-title"><i class="ti ti-brain" aria-hidden="true" style="color:#0F6E56;font-size:16px"></i> PersonaPlex (E2E)</div>
+        <ul class="arch-steps">
+          <li>Audio stream → single model</li>
+          <li>Dual-stream: listen + speak simultaneously</li>
+          <li>Audio tokens out → playback</li>
+        </ul>
+        <div class="arch-latency" style="color:#1D9E75">P50: 150 – 300 ms</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px">1 model, parallel I/O, full duplex</div>
+      </div>
+    </div>
+
+    <div style="border-radius:var(--border-radius-md);padding:.875rem;background:var(--color-background-secondary);margin-bottom:1rem">
+      <div style="font-size:13px;font-weight:500;margin-bottom:6px">What PersonaPlex does differently</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.5"><strong style="color:var(--color-text-primary);display:block;margin-bottom:2px">Full duplex</strong>Listens while it speaks — enables real interruptions, backchannels ("uh-huh"), overlaps</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.5"><strong style="color:var(--color-text-primary);display:block;margin-bottom:2px">Persona conditioning</strong>Voice identity set via audio prompt; role / scenario set via text prompt — no fixed voice</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.5"><strong style="color:var(--color-text-primary);display:block;margin-bottom:2px">Codec tokens</strong>Operates on neural audio codec tokens (not waveforms), enabling autoregressive generation of speech</div>
+      </div>
+    </div>
+
+    <p class="section-label">Challenges of end-to-end speech LLMs</p>
+    <div class="challenge-list">
+      <div class="challenge-item">
+        <div class="challenge-icon"><i class="ti ti-tool" aria-hidden="true"></i></div>
+        <div class="challenge-title">No tool-calling support</div>
+        <div class="challenge-desc">E2E models can't easily invoke external functions (CRM lookup, booking APIs). Cascaded pipelines intercept text tokens mid-generation to fire tools — audio models don't expose this hook cleanly.</div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
+        <div class="challenge-title">Guardrails & compliance</div>
+        <div class="challenge-desc">In CCaaS, every utterance may need PCI/GDPR screening, profanity filtering, or topic guardrails. Text-based pipelines intercept at the transcript layer; audio-out models lack equivalent interception points.</div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-icon"><i class="ti ti-flask" aria-hidden="true"></i></div>
+        <div class="challenge-title">Factual accuracy & hallucination</div>
+        <div class="challenge-desc">Cascaded systems use RAG on the text transcript to ground responses. E2E audio models have no native RAG path — grounding audio generation in retrieved knowledge remains unsolved at scale.</div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-icon"><i class="ti ti-language" aria-hidden="true"></i></div>
+        <div class="challenge-title">Multilingual & domain data scarcity</div>
+        <div class="challenge-desc">Training requires large volumes of unscripted, multi-speaker conversational audio. Fisher Corpus used by PersonaPlex is English-only. Enterprise domains (banking, aviation, telecom) have almost no equivalent data.</div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-icon"><i class="ti ti-adjustments" aria-hidden="true"></i></div>
+        <div class="challenge-title">Limited fine-tuning control</div>
+        <div class="challenge-desc">Cascaded pipelines allow independent fine-tuning of STT, LLM, and TTS per domain. Audio models entangle all three — changing business logic requires retraining the whole model.</div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-icon"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+        <div class="challenge-title">Eval & observability</div>
+        <div class="challenge-desc">Transcript-based systems enable word-level QA, intent classification, sentiment scoring. Audio-out models produce waveforms — evaluating response quality and auditing calls requires an extra ASR pass.</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-top:12px;line-height:1.6">For enterprise CCaaS today, the <strong style="color:var(--color-text-primary)">streaming cascade remains the pragmatic choice</strong> — PersonaPlex and similar models are production-ready for conversational AI companions and demos, but the missing tool-call / RAG / guardrail layer means they're not drop-in replacements for Genesys-style deployments yet.</p>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {label:"Network (client → server)", sub:"WebRTC / SIP / WebSocket", min:20,max:80,color:"#B5D4F4",textColor:"#0C447C"},
+  {label:"Voice Activity Detection", sub:"End-of-speech detection", min:50,max:300,color:"#CDD9F5",textColor:"#1A3A8F"},
+  {label:"STT / ASR", sub:"Streaming: 100–200 ms | Batch: 300–600 ms", min:100,max:500,color:"#9FE1CB",textColor:"#085041"},
+  {label:"LLM TTFT", sub:"Streaming: first token | Non-stream: full resp.", min:150,max:800,color:"#5DCAA5",textColor:"#04342C"},
+  {label:"TTS first chunk", sub:"Streaming synthesis to playback", min:50,max:200,color:"#FAC775",textColor:"#633806"},
+  {label:"Network (server → client)", sub:"Audio stream delivery", min:20,max:60,color:"#B5D4F4",textColor:"#0C447C"},
+];
+const SCALE=3;
+function renderPipeline(){
+  const c=document.getElementById('pipeline-bars');
+  c.innerHTML='';
+  let cum=0;
+  steps.forEach(s=>{
+    const row=document.createElement('div');row.className='step';
+    const lbl=document.createElement('div');lbl.className='step-label';
+    lbl.innerHTML=`<strong>${s.label}</strong>${s.sub}`;
+    const area=document.createElement('div');area.className='bar-area';
+    if(cum>0){const sp=document.createElement('div');sp.className='bar-spacer';sp.style.width=(cum*SCALE)+'px';sp.style.minWidth=(cum*SCALE)+'px';area.appendChild(sp);}
+    const fill=document.createElement('div');fill.className='bar-fill';
+    fill.style.background=s.color;
+    fill.style.width=((s.min+s.max)/2*SCALE)+'px';
+    const val=document.createElement('span');val.className='bar-val';val.style.color=s.textColor;
+    val.textContent=s.min+'–'+s.max+' ms';
+    fill.appendChild(val);area.appendChild(fill);
+    row.appendChild(lbl);row.appendChild(area);c.appendChild(row);
+    cum+=(s.min+s.max)/2;
+  });
+  const div=document.createElement('div');div.className='total-line';c.appendChild(div);
+  const tr=document.createElement('div');tr.className='total-row';
+  const tl=document.createElement('div');tl.className='total-label';tl.textContent='Total P50 (streaming)';
+  const tb=document.createElement('div');tb.className='total-bar';tb.style.background='#5DCAA5';tb.style.width=(cum*SCALE)+'px';tb.style.maxWidth='100%';
+  const minT=steps.reduce((a,s)=>a+s.min,0);const maxT=steps.reduce((a,s)=>a+s.max,0);
+  tb.innerHTML=`<span style="color:#04342C;font-size:12px">${minT}–${maxT} ms</span>`;
+  tr.appendChild(tl);tr.appendChild(tb);c.appendChild(tr);
+}
+function showTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const names=['pipeline','compare','improve','nvidia'];
+    t.classList.toggle('active',names[i]===name);
+  });
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+renderPipeline();
+</script>
