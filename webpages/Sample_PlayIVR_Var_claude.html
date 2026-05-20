@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IVR Prompt Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #171b26;
+    --surface2: #1e2330;
+    --border: #2a2f3d;
+    --accent: #00d4aa;
+    --accent2: #7c6aff;
+    --accent3: #ff6a6a;
+    --accent4: #ffc947;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 32px 20px;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(0,212,170,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(124,106,255,0.07) 0%, transparent 50%);
+  }
+
+  .wrapper { max-width: 820px; margin: 0 auto; }
+
+  /* HEADER */
+  header { margin-bottom: 36px; }
+  .header-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--text) 0%, #8b96b0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 8px;
+    font-family: var(--mono);
+  }
+
+  /* MAIN CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.5;
+  }
+
+  /* LANGUAGE PILLS */
+  .lang-group { margin-bottom: 24px; }
+  .group-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+  }
+  .lang-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .lang-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: 99px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .lang-pill:hover { border-color: var(--accent); color: var(--text); }
+  .lang-pill.active {
+    background: rgba(0,212,170,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .lang-pill .flag { font-size: 18px; line-height: 1; }
+
+  /* TYPE TOGGLE */
+  .type-group { margin-bottom: 24px; }
+  .type-toggle {
+    display: inline-flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .type-btn {
+    padding: 8px 24px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .type-btn.active {
+    background: var(--accent2);
+    color: #fff;
+  }
+  .type-btn:hover:not(.active) { color: var(--text); }
+
+  /* INPUT */
+  .input-group { margin-bottom: 24px; }
+  .input-row { display: flex; gap: 12px; align-items: flex-end; }
+  .value-wrap { flex: 1; }
+  .value-wrap input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.18s;
+  }
+  .value-wrap input:focus { border-color: var(--accent2); }
+  .value-wrap input::placeholder { color: var(--muted); }
+
+  .run-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, var(--accent) 0%, #00b894 100%);
+    color: #0a1a16;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.18s, transform 0.1s;
+    letter-spacing: 0.03em;
+  }
+  .run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .run-btn:active { transform: translateY(0); }
+
+  /* EXAMPLE BUTTONS */
+  .examples-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .eg-btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .eg-btn:hover { border-color: var(--accent4); color: var(--accent4); }
+
+  /* RESULTS */
+  .result-card { display: none; }
+  .result-card.show { display: block; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .result-title {
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--muted);
+  }
+  .result-title strong { color: var(--accent); }
+  .count-badge {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 99px;
+    background: rgba(124,106,255,0.15);
+    color: var(--accent2);
+    border: 1px solid rgba(124,106,255,0.3);
+  }
+
+  /* PROMPT CHIPS */
+  .prompt-sequence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .prompt-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px 7px 8px;
+    border-radius: 99px;
+    border: 1px solid;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    animation: chipIn 0.2s ease backwards;
+  }
+  .prompt-chip .num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  /* Color types */
+  .chip-word  { background: rgba(0,212,170,0.08);  border-color: rgba(0,212,170,0.3);  color: var(--accent);  }
+  .chip-word .num  { background: var(--accent);  color: #0a1a16; }
+  .chip-scale { background: rgba(255,106,106,0.08); border-color: rgba(255,106,106,0.3); color: var(--accent3); }
+  .chip-scale .num { background: var(--accent3); color: #fff; }
+  .chip-conn  { background: rgba(255,201,71,0.08);  border-color: rgba(255,201,71,0.3);  color: var(--accent4); }
+  .chip-conn .num  { background: var(--accent4);  color: #0a1a16; }
+  .chip-date  { background: rgba(124,106,255,0.08); border-color: rgba(124,106,255,0.3); color: var(--accent2); }
+  .chip-date .num  { background: var(--accent2);  color: #fff; }
+
+  /* ARRAY OUTPUT */
+  .array-section { border-top: 1px solid var(--border); padding-top: 20px; }
+  .array-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .array-box {
+    background: #0a0d14;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.8;
+    overflow-x: auto;
+    position: relative;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  .tok-bracket { color: #6b7280; }
+  .tok-str { color: #86efac; }
+  .tok-comma { color: #4b5563; }
+
+  /* STRATEGY LEGEND */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ERROR */
+  .error-box {
+    background: rgba(255,106,106,0.08);
+    border: 1px solid rgba(255,106,106,0.3);
+    color: var(--accent3);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 12px 16px;
+    border-radius: 10px;
+  }
+
+  /* STAGGER ANIMATION */
+  .prompt-chip:nth-child(1)  { animation-delay: 0.00s }
+  .prompt-chip:nth-child(2)  { animation-delay: 0.03s }
+  .prompt-chip:nth-child(3)  { animation-delay: 0.06s }
+  .prompt-chip:nth-child(4)  { animation-delay: 0.09s }
+  .prompt-chip:nth-child(5)  { animation-delay: 0.12s }
+  .prompt-chip:nth-child(6)  { animation-delay: 0.15s }
+  .prompt-chip:nth-child(7)  { animation-delay: 0.18s }
+  .prompt-chip:nth-child(8)  { animation-delay: 0.21s }
+  .prompt-chip:nth-child(9)  { animation-delay: 0.24s }
+  .prompt-chip:nth-child(n+10){ animation-delay: 0.27s }
+  @keyframes chipIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div class="header-eyebrow">// IVR Telephony System</div>
+    <h1>Prompt File Generator</h1>
+    <p>→ getPrompts(lang, value, type) — returns ordered .wav array</p>
+  </header>
+
+  <div class="card">
+    <!-- LANGUAGE -->
+    <div class="lang-group">
+      <div class="group-label">Language</div>
+      <div class="lang-pills">
+        <div class="lang-pill active" data-lang="english" onclick="setLang(this)">
+          <span class="flag">🇬🇧</span> English
+        </div>
+        <div class="lang-pill" data-lang="arabic" onclick="setLang(this)">
+          <span class="flag">🇦🇪</span> Arabic
+        </div>
+        <div class="lang-pill" data-lang="malayalam" onclick="setLang(this)">
+          <span class="flag">🇮🇳</span> Malayalam
+        </div>
+        <div class="lang-pill" data-lang="urdu" onclick="setLang(this)">
+          <span class="flag">🇵🇰</span> Urdu
+        </div>
+      </div>
+    </div>
+
+    <!-- TYPE -->
+    <div class="type-group">
+      <div class="group-label">Value Type</div>
+      <div class="type-toggle">
+        <button class="type-btn active" id="btnNumber" onclick="setType('number')">Number</button>
+        <button class="type-btn"         id="btnDate"   onclick="setType('date')">Date</button>
+      </div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="input-group">
+      <div class="group-label">Value</div>
+      <div class="input-row">
+        <div class="value-wrap">
+          <input id="valueInput" type="text" placeholder="e.g. 1234" value="123"/>
+        </div>
+        <button class="run-btn" onclick="generate()">Generate →</button>
+      </div>
+      <div class="examples-row" id="examplesRow">
+        <button class="eg-btn" onclick="setExample('1')">1</button>
+        <button class="eg-btn" onclick="setExample('19')">19</button>
+        <button class="eg-btn" onclick="setExample('123')">123</button>
+        <button class="eg-btn" onclick="setExample('1000')">1,000</button>
+        <button class="eg-btn" onclick="setExample('1500')">1,500</button>
+        <button class="eg-btn" onclick="setExample('25000')">25,000</button>
+        <button class="eg-btn" onclick="setExample('1000000')">1M</button>
+        <button class="eg-btn" onclick="setExample('-42')">−42</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card result-card" id="resultCard">
+    <div id="resultContent"></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  LANGUAGE CONFIGURATIONS
+// ═══════════════════════════════════════════════════════
+
+const CFG = {
+
+  english: {
+    code: 'en',
+    zero: 'zero',
+    ones: [null,'one','two','three','four','five','six','seven','eight','nine',
+           'ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen',
+           'seventeen','eighteen','nineteen'],
+    tens: [null,null,'twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'],
+    hundred:  'hundred',
+    thousand: 'thousand',
+    million:  'million',
+    billion:  'billion',
+    // Connectors
+    hundredConn:    'and',   // "one hundred AND twenty"
+    tensUnitConn:   null,    // "twenty three" (no connector)
+    scaleConn:      'and',   // "one thousand AND two hundred"
+    minus: 'minus',
+    // Date
+    ordinals: [null,
+      'first','second','third','fourth','fifth','sixth','seventh','eighth',
+      'ninth','tenth','eleventh','twelfth','thirteenth','fourteenth','fifteenth',
+      'sixteenth','seventeenth','eighteenth','nineteenth','twentieth',
+      'twenty_first','twenty_second','twenty_third','twenty_fourth','twenty_fifth',
+      'twenty_sixth','twenty_seventh','twenty_eighth','twenty_ninth',
+      'thirtieth','thirty_first'],
+    months: ['january','february','march','april','may','june',
+             'july','august','september','october','november','december'],
+    dateArticle:    'the',
+    dateMonthConn:  'of',
+  },
+
+  arabic: {
+    code: 'ar',
+    zero: 'sifr',
+    ones: [null,'wahid','ithnan','thalatha','arba','khamsa','sitta','saba',
+           'thamania','tisa','ashra','ahad_ashar','ithna_ashar','thalath_ashar',
+           'arba_ashar','khams_ashar','sitt_ashar','sab_ashar','thaman_ashar','tis_ashar'],
+    tens: [null,null,'ishrun','thalathin','arbain','khamseen','sitteen','sabeen','thamaneen','tiseen'],
+    // Arabic hundreds: special compound forms
+    // 100=mi'a, 200=mi'atan (dual), 300-900 = ordinal+mi'a
+    hundreds: ['mia','miatan','thuluth_mia','rub_mia','khums_mia','suds_mia','sub_mia','thumn_mia','tus_mia'],
+    // Thousands: 1=alf, 2=alfan (dual), 3-10 = num+alaf (plural), 11+=num+alf
+    thousand1: 'alf',
+    thousand2: 'alfan',
+    thousandPlural: 'alaf',   // 3–10 thousand
+    thousandSingular: 'alf',  // 11+ thousand
+    million: 'milyun',
+    billion: 'milyar',
+    hundredConn:  'wa',
+    tensUnitConn: 'wa',
+    scaleConn:    'wa',
+    minus: 'salb',
+    months: ['yanayir','fibrayir','maris','abril','mayu','yunyu',
+             'yulyu','aghistus','sibtambir','uktubir','nufambir','disambir'],
+    dateArticle:   null,
+    dateMonthConn: null,
+  },
+
+  malayalam: {
+    code: 'ml',
+    zero: 'pujyam',
+    ones: [null,'onnu','randu','moonnu','naalu','anchu','aaru','ezhu',
+           'ettu','onpathu','pathu','pathinonnu','pannendu','pathinmoonu',
+           'pathinnaalu','pathinanchu','pathinaaru','pathinezhu','pathinettu','patthombathu'],
+    tens: [null,null,'iruppathu','muppathu','nalppathu','anppathu','arapathu','ezhuppathu','enpathu','thonnuru'],
+    // Malayalam hundreds: unique compound words
+    hundreds: ['nooru','irannooru','munnooru','nalooru','anjooru','aarooru','ezhnooru','ettooru','onbathooru'],
+    // Malayalam thousands: unique compound words (1-9)
+    thousandForms: ['aayiram','randaayiram','moonnayiram','naalaayiram',
+                    'anchayiram','aaraayiram','ezhaayiram','ettaayiram','onbathaayiram'],
+    thousandBase: 'aayiram',   // for 10,000+ : number + aayiram
+    million: 'dashah_laksham',
+    billion: 'nooru_koodi',
+    hundredConn:  null,
+    tensUnitConn: null,
+    scaleConn:    null,
+    minus: 'minus',
+    months: ['januavari','februvari','march','april','may','june',
+             'july','august','september','october','november','december'],
+    dateArticle:   null,
+    dateMonthConn: null,
+  },
+
+  urdu: {
+    code: 'ur',
+    zero: 'sifar',
+    ones: [null,'ek','do','teen','chaar','paanch','chhe','saat','aath','nau',
+           'das','gyarah','barah','terah','chaudah','pandrah','solah','satrah','atharah','unnis'],
+    tens: [null,null,'bees','tees','chaalees','pachaas','saath','sattar','assee','nabbe'],
+    hundred:  'sau',
+    thousand: 'hazaar',
+    million:  'million',
+    billion:  'billion',
+    hundredConn:  'aur',
+    tensUnitConn: null,
+    scaleConn:    'aur',
+    minus: 'minus',
+    months: ['january','february','march','april','may','june',
+             'july','august','september','october','november','december'],
+    dateArticle:   null,
+    dateMonthConn: null,
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  CORE ENGINE
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Main exported function.
+ * @param {string} lang   - 'english' | 'arabic' | 'malayalam' | 'urdu'
+ * @param {string|number} value - the number or date string
+ * @param {string} type   - 'number' | 'date'
+ * @returns {string[]}    - ordered array of .wav filenames
+ */
+function getPrompts(lang, value, type) {
+  const key = lang.toLowerCase();
+  const cfg = CFG[key];
+  if (!cfg) throw new Error('Unsupported language: ' + lang);
+
+  if (type === 'number') {
+    const n = Number(String(value).replace(/,/g, ''));
+    if (isNaN(n)) throw new Error('Invalid number value: ' + value);
+    return buildNumberPrompts(n, cfg);
+  }
+  if (type === 'date') {
+    const d = new Date(value);
+    if (isNaN(d.getTime())) throw new Error('Invalid date: ' + value);
+    return buildDatePrompts(d, cfg);
+  }
+  throw new Error('Unknown type: ' + type);
+}
+
+// ─── File name helper ───────────────────────────────────
+function p(cfg, word) {
+  return `${cfg.code}_${word}.wav`;
+}
+
+// ─── Number → prompts ───────────────────────────────────
+function buildNumberPrompts(n, cfg) {
+  const result = [];
+  if (n < 0) { result.push(p(cfg, cfg.minus)); n = Math.abs(n); }
+  if (n === 0) return [p(cfg, cfg.zero)];
+  result.push(...numParts(Math.floor(n), cfg));
+  return result;
+}
+
+function numParts(n, cfg) {
+  if (n === 0) return [];
+  const out = [];
+
+  // Billions
+  if (n >= 1_000_000_000) {
+    const b = Math.floor(n / 1_000_000_000);
+    out.push(...numParts(b, cfg));
+    out.push(p(cfg, cfg.billion || 'billion'));
+    n %= 1_000_000_000;
+    if (n > 0 && cfg.scaleConn) out.push(p(cfg, cfg.scaleConn));
+  }
+
+  // Millions
+  if (n >= 1_000_000) {
+    const m = Math.floor(n / 1_000_000);
+    out.push(...numParts(m, cfg));
+    out.push(p(cfg, cfg.million || 'million'));
+    n %= 1_000_000;
+    if (n > 0 && cfg.scaleConn) out.push(p(cfg, cfg.scaleConn));
+  }
+
+  // Thousands
+  if (n >= 1000) {
+    const t = Math.floor(n / 1000);
+    out.push(...getThousandPart(t, cfg));
+    n %= 1000;
+    if (n > 0 && cfg.scaleConn) out.push(p(cfg, cfg.scaleConn));
+  }
+
+  // Hundreds
+  if (n >= 100) {
+    const h = Math.floor(n / 100);
+    out.push(...getHundredPart(h, cfg));
+    n %= 100;
+    if (n > 0 && cfg.hundredConn) out.push(p(cfg, cfg.hundredConn));
+  }
+
+  // Sub-100
+  if (n >= 20) {
+    out.push(p(cfg, cfg.tens[Math.floor(n / 10)]));
+    const u = n % 10;
+    if (u > 0) {
+      if (cfg.tensUnitConn) out.push(p(cfg, cfg.tensUnitConn));
+      out.push(p(cfg, cfg.ones[u]));
+    }
+  } else if (n > 0) {
+    out.push(p(cfg, cfg.ones[n]));
+  }
+
+  return out;
+}
+
+function getHundredPart(h, cfg) {
+  // Languages with pre-composed hundred words (Arabic, Malayalam)
+  if (cfg.hundreds) return [p(cfg, cfg.hundreds[h - 1])];
+  // English / Urdu: number + "hundred"
+  return [...numParts(h, cfg), p(cfg, cfg.hundred)];
+}
+
+function getThousandPart(t, cfg) {
+  // ── Malayalam: special compound words for 1–9; generic for 10+
+  if (cfg.thousandForms) {
+    if (t >= 1 && t <= cfg.thousandForms.length) return [p(cfg, cfg.thousandForms[t - 1])];
+    return [...numParts(t, cfg), p(cfg, cfg.thousandBase)];
+  }
+  // ── Arabic: 1=alf, 2=alfan, 3-10=num+alaf, 11+=num+alf
+  if (cfg.thousand1) {
+    if (t === 1) return [p(cfg, cfg.thousand1)];
+    if (t === 2) return [p(cfg, cfg.thousand2)];
+    if (t <= 10) return [...numParts(t, cfg), p(cfg, cfg.thousandPlural)];
+    return [...numParts(t, cfg), p(cfg, cfg.thousandSingular)];
+  }
+  // ── English / Urdu: number + thousand
+  return [...numParts(t, cfg), p(cfg, cfg.thousand)];
+}
+
+// ─── Date → prompts ─────────────────────────────────────
+function buildDatePrompts(d, cfg) {
+  const day   = d.getDate();
+  const month = d.getMonth(); // 0-indexed
+  const year  = d.getFullYear();
+  const out   = [];
+
+  // Optional article (English: "the")
+  if (cfg.dateArticle) out.push(p(cfg, cfg.dateArticle));
+
+  // Day: English uses ordinals, others use cardinals
+  if (cfg.ordinals) {
+    out.push(p(cfg, cfg.ordinals[day]));
+  } else {
+    out.push(...numParts(day, cfg));
+  }
+
+  // Optional connector (English: "of")
+  if (cfg.dateMonthConn) out.push(p(cfg, cfg.dateMonthConn));
+
+  // Month name
+  out.push(p(cfg, cfg.months[month]));
+
+  // Year — read as a full number
+  out.push(...numParts(year, cfg));
+
+  return out;
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  UI STATE
+// ═══════════════════════════════════════════════════════
+let currentLang = 'english';
+let currentType = 'number';
+
+const DATE_EXAMPLES = ['2026-05-20','1999-01-01','2000-12-25','2024-03-15'];
+const NUM_EXAMPLES  = ['1','19','123','1000','1500','25000','1000000','-42'];
+
+function setLang(el) {
+  document.querySelectorAll('.lang-pill').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  currentLang = el.dataset.lang;
+}
+
+function setType(t) {
+  currentType = t;
+  document.getElementById('btnNumber').classList.toggle('active', t === 'number');
+  document.getElementById('btnDate').classList.toggle('active', t === 'date');
+  const input = document.getElementById('valueInput');
+  const exRow = document.getElementById('examplesRow');
+  if (t === 'date') {
+    input.placeholder = 'e.g. 2026-05-20';
+    input.value = '2026-05-20';
+    exRow.innerHTML = DATE_EXAMPLES.map(e =>
+      `<button class="eg-btn" onclick="setExample('${e}')">${e}</button>`).join('');
+  } else {
+    input.placeholder = 'e.g. 1234';
+    input.value = '123';
+    exRow.innerHTML = NUM_EXAMPLES.map(e =>
+      `<button class="eg-btn" onclick="setExample('${e.replace(/,/g,'')}')">
+        ${e.replace('-','−')}</button>`).join('');
+  }
+}
+
+function setExample(v) {
+  document.getElementById('valueInput').value = v;
+  generate();
+}
+
+// ═══════════════════════════════════════════════════════
+//  CHIP CLASSIFICATION
+// ═══════════════════════════════════════════════════════
+
+const CONN_WORDS = new Set([
+  'and','wa','aur','of','the','minus','salb',
+  'mia','miatan','alf','alfan','alaf','aayiram'
+]);
+const SCALE_WORDS = new Set([
+  'hundred','thousand','million','billion',
+  'sau','hazaar','nooru','irannooru','munnooru','nalooru','anjooru',
+  'aarooru','ezhnooru','ettooru','onbathooru',
+  'aayiram','randaayiram','moonnayiram','naalaayiram','anchayiram',
+  'aaraayiram','ezhaayiram','ettaayiram','onbathaayiram',
+  'mia','miatan','thuluth_mia','rub_mia','khums_mia','suds_mia',
+  'sub_mia','thumn_mia','tus_mia',
+  'alf','alfan','alaf','milyun','milyar',
+  'dashah_laksham','nooru_koodi'
+]);
+const DATE_WORDS = new Set([
+  'january','february','march','april','may','june',
+  'july','august','september','october','november','december',
+  'yanayir','fibrayir','maris','abril','mayu','yunyu',
+  'yulyu','aghistus','sibtambir','uktubir','nufambir','disambir',
+  'januavari','februvari',
+  'first','second','third','fourth','fifth','sixth','seventh','eighth',
+  'ninth','tenth','eleventh','twelfth','thirteenth','fourteenth','fifteenth',
+  'sixteenth','seventeenth','eighteenth','nineteenth','twentieth',
+  'twenty_first','twenty_second','twenty_third','twenty_fourth','twenty_fifth',
+  'twenty_sixth','twenty_seventh','twenty_eighth','twenty_ninth',
+  'thirtieth','thirty_first',
+  'the','of'
+]);
+
+function classifyChip(filename) {
+  const stem = filename.replace(/^[a-z]+_/, '').replace(/\.wav$/, '');
+  if (DATE_WORDS.has(stem)) return 'chip-date';
+  if (SCALE_WORDS.has(stem)) return 'chip-scale';
+  if (CONN_WORDS.has(stem)) return 'chip-conn';
+  return 'chip-word';
+}
+
+// ═══════════════════════════════════════════════════════
+//  GENERATE & RENDER
+// ═══════════════════════════════════════════════════════
+function generate() {
+  const rawValue = document.getElementById('valueInput').value.trim();
+  const card     = document.getElementById('resultCard');
+  const content  = document.getElementById('resultContent');
+
+  card.classList.remove('show');
+  void card.offsetWidth; // reflow to restart animation
+
+  try {
+    const prompts = getPrompts(currentLang, rawValue, currentType);
+    content.innerHTML = renderResult(prompts, rawValue);
+    card.classList.add('show');
+  } catch (e) {
+    content.innerHTML = `<div class="error-box">⚠ ${e.message}</div>`;
+    card.classList.add('show');
+  }
+}
+
+function renderResult(prompts, rawValue) {
+  const langLabel = currentLang.charAt(0).toUpperCase() + currentLang.slice(1);
+  const chips = prompts.map((f, i) => {
+    const cls = classifyChip(f);
+    return `<div class="prompt-chip ${cls}">
+      <span class="num">${i + 1}</span>
+      ${f}
+    </div>`;
+  }).join('');
+
+  const arrayStr = prompts.map(f => `<span class="tok-str">"${f}"</span>`).join(
+    `<span class="tok-comma">,\n  </span>`
+  );
+
+  return `
+    <div class="result-meta">
+      <span class="result-title">
+        <strong>getPrompts</strong>(<em>"${langLabel}"</em>, <em>"${rawValue}"</em>, <em>"${currentType}"</em>)
+      </span>
+      <span class="count-badge">${prompts.length} files</span>
+    </div>
+
+    <div class="prompt-sequence">${chips}</div>
+
+    <div class="array-section">
+      <div class="array-label">Raw Array Output</div>
+      <div class="array-box">
+        <button class="copy-btn" onclick="copyArray()">copy</button>
+        <span class="tok-bracket">[</span><br/>
+        <span style="margin-left:16px">${arrayStr}</span><br/>
+        <span class="tok-bracket">]</span>
+        <div id="arraySrc" style="display:none">${JSON.stringify(prompts)}</div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Number word</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div> Scale / hundred / thousand</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent4)"></div> Connector (and / wa / aur)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div> Date word (month / ordinal)</div>
+    </div>
+  `;
+}
+
+function copyArray() {
+  const src = document.getElementById('arraySrc');
+  if (!src) return;
+  navigator.clipboard.writeText(src.textContent).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    if (btn) { btn.textContent = 'copied!'; setTimeout(() => btn.textContent = 'copy', 1500); }
+  });
+}
+
+// Initial run
+generate();
+</script>
+</body>
+</html>
