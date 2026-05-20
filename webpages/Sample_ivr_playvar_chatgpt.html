@@ -1,0 +1,310 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompt Sequence Tester</title>
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#38bdf8; --border:#334155; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Arial, Helvetica, sans-serif; background: linear-gradient(180deg, #020617, #0f172a 55%, #111827);
+      color: var(--text); min-height: 100vh; padding: 24px;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    p { color: var(--muted); margin-top: 0; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card {
+      background: rgba(17,24,39,.92); border: 1px solid var(--border); border-radius: 18px; padding: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+    label { display: block; margin: 12px 0 6px; color: #cbd5e1; font-size: 14px; }
+    select, input, textarea, button {
+      width: 100%; border-radius: 12px; border: 1px solid var(--border); background: #0b1220; color: var(--text);
+      padding: 12px 14px; font-size: 15px; outline: none;
+    }
+    textarea { min-height: 220px; resize: vertical; line-height: 1.5; }
+    button {
+      cursor: pointer; margin-top: 14px; background: linear-gradient(135deg, #0ea5e9, #8b5cf6); border: none; font-weight: 700;
+    }
+    button:hover { filter: brightness(1.05); }
+    .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    pre {
+      white-space: pre-wrap; word-break: break-word; background: #020617; border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; min-height: 220px; margin: 0; overflow: auto;
+    }
+    .small { font-size: 12px; color: var(--muted); }
+    .pill { display:inline-block; padding:6px 10px; border:1px solid var(--border); border-radius:999px; margin:6px 6px 0 0; color:#cbd5e1; font-size:12px; }
+    code { color: #7dd3fc; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Prompt Sequence Tester</h1>
+    <p>Generate the array of prompt filenames for a number or date. The example uses a simple, scalable strategy with per-language token maps.</p><div class="grid">
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="lang">Language</label>
+        <select id="lang">
+          <option>English</option>
+          <option>Arabic</option>
+          <option>Malayalam</option>
+          <option>Urdu</option>
+        </select>
+      </div>
+      <div>
+        <label for="type">Value type</label>
+        <select id="type">
+          <option value="number">number</option>
+          <option value="date">date</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="value">Value</label>
+    <input id="value" value="123" placeholder="123 or 2026-05-20" />
+    <div class="hint">For <b>number</b>, enter an integer like <code>123</code>. For <b>date</b>, use <code>YYYY-MM-DD</code>.</div>
+
+    <button id="generateBtn">Generate prompts</button>
+
+    <div style="margin-top:14px">
+      <span class="pill">English</span>
+      <span class="pill">Arabic</span>
+      <span class="pill">Malayalam</span>
+      <span class="pill">Urdu</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Result</label>
+    <pre id="output">Click “Generate prompts” to see the output here.</pre>
+    <div class="small" style="margin-top:10px">
+      The function returns a plain array of filenames such as <code>["en/one.wav", "en/hundred.wav"]</code>.
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:20px">
+  <label>Core function</label>
+  <pre id="functionView"></pre>
+</div>
+
+  </div>  <script>
+    // ------------------------------
+    // Prompt generation strategy
+    // ------------------------------
+    // The main idea:
+    // 1) Convert the input into a token stream.
+    // 2) Map each token to a prompt filename for the selected language.
+    // 3) Return an ordered array that a TTS/IVR player can play in sequence.
+    //
+    // You can rename the audio files to match your own asset library.
+
+    const PROMPT_MAP = {
+      English: {
+        prefix: "en",
+        zero: "zero.wav",
+        ones: {
+          0: "zero.wav", 1: "one.wav", 2: "two.wav", 3: "three.wav", 4: "four.wav", 5: "five.wav",
+          6: "six.wav", 7: "seven.wav", 8: "eight.wav", 9: "nine.wav", 10: "ten.wav",
+          11: "eleven.wav", 12: "twelve.wav", 13: "thirteen.wav", 14: "fourteen.wav",
+          15: "fifteen.wav", 16: "sixteen.wav", 17: "seventeen.wav", 18: "eighteen.wav", 19: "nineteen.wav"
+        },
+        tens: {
+          20: "twenty.wav", 30: "thirty.wav", 40: "forty.wav", 50: "fifty.wav",
+          60: "sixty.wav", 70: "seventy.wav", 80: "eighty.wav", 90: "ninety.wav"
+        },
+        scales: [
+          { value: 1000000000, file: "billion.wav" },
+          { value: 1000000, file: "million.wav" },
+          { value: 1000, file: "thousand.wav" },
+          { value: 100, file: "hundred.wav" }
+        ],
+        andWord: "and.wav",
+        dateWords: { day: "day.wav", month: "month.wav", year: "year.wav", date: "date.wav", dash: "dash.wav" }
+      },
+      Arabic: {
+        prefix: "ar",
+        zero: "sifr.wav",
+        ones: {
+          0: "sifr.wav", 1: "wahid.wav", 2: "ithnan.wav", 3: "thalatha.wav", 4: "arba'a.wav", 5: "khamsa.wav",
+          6: "sitta.wav", 7: "sab'a.wav", 8: "thamaniya.wav", 9: "tisa'a.wav", 10: "ashara.wav",
+          11: "ahad_ashar.wav", 12: "ithna_ashar.wav", 13: "thalatha_ashar.wav", 14: "arba'a_ashar.wav",
+          15: "khamsa_ashar.wav", 16: "sitta_ashar.wav", 17: "sab'a_ashar.wav", 18: "thamaniya_ashar.wav", 19: "tisa'a_ashar.wav"
+        },
+        tens: {
+          20: "ishrun.wav", 30: "thalathun.wav", 40: "arba'un.wav", 50: "khamsun.wav",
+          60: "sittun.wav", 70: "sab'un.wav", 80: "thamanun.wav", 90: "tis'un.wav"
+        },
+        scales: [
+          { value: 1000000000, file: "milyar.wav" },
+          { value: 1000000, file: "milyon.wav" },
+          { value: 1000, file: "alf.wav" },
+          { value: 100, file: "mi'a.wav" }
+        ],
+        andWord: "wa.wav",
+        dateWords: { day: "yawm.wav", month: "shahr.wav", year: "sanah.wav", date: "tarikh.wav", dash: "fasila.wav" }
+      },
+      Malayalam: {
+        prefix: "ml",
+        zero: "patt.wav",
+        ones: {
+          0: "patt.wav", 1: "onnu.wav", 2: "randu.wav", 3: "moonnu.wav", 4: "naalu.wav", 5: "anju.wav",
+          6: "aaru.wav", 7: "ezhu.wav", 8: "ettu.wav", 9: "onpathu.wav", 10: "pathu.wav",
+          11: "pathinonnu.wav", 12: "pathinrandu.wav", 13: "pathimoonnu.wav", 14: "pathinaalu.wav",
+          15: "pathinanju.wav", 16: "pathinaaru.wav", 17: "pathinezhu.wav", 18: "pathinettu.wav", 19: "pathonpathu.wav"
+        },
+        tens: {
+          20: "irupathu.wav", 30: "muppathu.wav", 40: "nalpathu.wav", 50: "anchpathu.wav",
+          60: "arupathu.wav", 70: "ezhupathu.wav", 80: "enpathu.wav", 90: "thonnooru.wav"
+        },
+        scales: [
+          { value: 10000000, file: "crore.wav" },
+          { value: 100000, file: "lakh.wav" },
+          { value: 1000, file: "aayiram.wav" },
+          { value: 100, file: "nooru.wav" }
+        ],
+        andWord: "um.wav",
+        dateWords: { day: "divasam.wav", month: "masam.wav", year: "varsham.wav", date: "thiyathi.wav", dash: "dash.wav" }
+      },
+      Urdu: {
+        prefix: "ur",
+        zero: "sifar.wav",
+        ones: {
+          0: "sifar.wav", 1: "ek.wav", 2: "do.wav", 3: "teen.wav", 4: "char.wav", 5: "panch.wav",
+          6: "chay.wav", 7: "saat.wav", 8: "aath.wav", 9: "nau.wav", 10: "das.wav",
+          11: "gyarah.wav", 12: "barah.wav", 13: "terah.wav", 14: "chaudah.wav",
+          15: "pandrah.wav", 16: "solah.wav", 17: "satrah.wav", 18: "atharah.wav", 19: "unnis.wav"
+        },
+        tens: {
+          20: "bees.wav", 30: "tees.wav", 40: "chaalis.wav", 50: "pachaas.wav",
+          60: "saath.wav", 70: "sattar.wav", 80: "assi.wav", 90: "nabbe.wav"
+        },
+        scales: [
+          { value: 1000000000, file: "arab.wav" },
+          { value: 1000000, file: "million.wav" },
+          { value: 1000, file: "hazaar.wav" },
+          { value: 100, file: "sau.wav" }
+        ],
+        andWord: "aur.wav",
+        dateWords: { day: "din.wav", month: "maheena.wav", year: "saal.wav", date: "tareekh.wav", dash: "dash.wav" }
+      }
+    };
+
+    function getPromptSequence(lang, value, type) {
+      if (!PROMPT_MAP[lang]) throw new Error(`Unsupported language: ${lang}`);
+      if (type === 'number') return numberToPrompts(lang, value);
+      if (type === 'date') return dateToPrompts(lang, value);
+      throw new Error(`Unsupported type: ${type}`);
+    }
+
+    function numberToPrompts(lang, value) {
+      const cfg = PROMPT_MAP[lang];
+      let n = Number(value);
+      if (!Number.isFinite(n)) throw new Error('Value must be a valid number');
+      if (!Number.isInteger(n)) throw new Error('This sample handles integers only');
+      if (n < 0) return [cfg.prefix + '/minus.wav', ...numberToPrompts(lang, Math.abs(n))];
+      if (n === 0) return [cfg.prefix + '/' + cfg.zero];
+
+      const out = [];
+
+      function pushWord(file) {
+        if (file) out.push(cfg.prefix + '/' + file);
+      }
+
+      function under1000(num) {
+        if (num === 0) return;
+        if (num < 20) {
+          pushWord(cfg.ones[num]);
+          return;
+        }
+        if (num < 100) {
+          const tens = Math.floor(num / 10) * 10;
+          const ones = num % 10;
+          pushWord(cfg.tens[tens]);
+          if (ones) pushWord(cfg.ones[ones]);
+          return;
+        }
+
+        const hundreds = Math.floor(num / 100);
+        const rest = num % 100;
+        pushWord(cfg.ones[hundreds]);
+        pushWord(cfg.scales.find(s => s.value === 100).file);
+        if (rest) {
+          // English uses 'and' between hundreds and the remainder in common speech.
+          // For the other languages, this can be kept or removed based on your audio library.
+          if (lang === 'English') pushWord(cfg.andWord);
+          under100(rest);
+        }
+      }
+
+      let remaining = n;
+      for (const scale of cfg.scales.filter(s => s.value >= 1000).sort((a,b) => b.value - a.value)) {
+        if (remaining >= scale.value) {
+          const count = Math.floor(remaining / scale.value);
+          remaining = remaining % scale.value;
+          under1000(count);
+          pushWord(scale.file);
+          if (remaining && lang === 'English' && remaining < 100) {
+            pushWord(cfg.andWord);
+          }
+        }
+      }
+
+      if (remaining) under1000(remaining);
+      return out;
+    }
+
+    function dateToPrompts(lang, value) {
+      const cfg = PROMPT_MAP[lang];
+      const text = String(value).trim();
+      const m = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) throw new Error('Date must be in YYYY-MM-DD format');
+      const year = Number(m[1]);
+      const month = Number(m[2]);
+      const day = Number(m[3]);
+      const out = [];
+
+      // Simple strategy: play day, month, year as separate numeric chunks.
+      // Example: 2026-05-20 -> [20, month 5, 2026]
+      out.push(cfg.prefix + '/' + cfg.dateWords.date);
+      out.push(...numberToPrompts(lang, day));
+      out.push(cfg.prefix + '/' + cfg.dateWords.day);
+      out.push(...numberToPrompts(lang, month));
+      out.push(cfg.prefix + '/' + cfg.dateWords.month);
+      out.push(...numberToPrompts(lang, year));
+      out.push(cfg.prefix + '/' + cfg.dateWords.year);
+      return out;
+    }
+
+    // ------------------------------
+    // UI wiring
+    // ------------------------------
+    const langEl = document.getElementById('lang');
+    const typeEl = document.getElementById('type');
+    const valueEl = document.getElementById('value');
+    const outputEl = document.getElementById('output');
+    const functionView = document.getElementById('functionView');
+
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      try {
+        const result = getPromptSequence(langEl.value, valueEl.value, typeEl.value);
+        outputEl.textContent = JSON.stringify(result, null, 2);
+      } catch (err) {
+        outputEl.textContent = 'Error: ' + err.message;
+      }
+    });
+
+    functionView.textContent = `function getPromptSequence(lang, value, type) {
+  if (type === 'number') return numberToPrompts(lang, value);
+  if (type === 'date') return dateToPrompts(lang, value);
+  throw new Error('Unsupported type');
+}`;
+
+    // Show initial sample.
+    document.getElementById('generateBtn').click();
+  </script></body>
+</html>
