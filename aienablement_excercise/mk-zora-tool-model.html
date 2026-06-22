@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zora — Michael Kors Concierge | Tool Model | Genesys AVA Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E0C0A;
+    --panel:#1A1613;
+    --panel-2:#221C18;
+    --border:#3A322B;
+    --text:#F3EDE3;
+    --text-dim:#B8A99A;
+    --text-faint:#7C7164;
+
+    --delivery:#C9A86A;   /* delivery track */
+    --returns:#A47551;    /* returns track */
+    --resolution:#B5544A; /* complaint / resolution */
+    --knowledge:#6E9088;  /* knowledge base — deliberately cool/odd one out */
+
+    --edge:#8A7B68;
+    --edge-dim:#4A4137;
+
+    --mono:'IBM Plex Mono', monospace;
+    --sans:'IBM Plex Sans', sans-serif;
+    --display:'Playfair Display', serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  body{
+    background-image:radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size:22px 22px;
+  }
+
+  .wrap{max-width:1260px;margin:0 auto;padding:56px 28px 80px;}
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--delivery);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:8px;height:8px;
+    background:var(--delivery);
+    display:inline-block;
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+
+  h1{
+    font-family:var(--display);
+    font-weight:600;
+    font-style:italic;
+    font-size:clamp(34px,5vw,52px);
+    letter-spacing:.01em;
+    margin:0 0 18px;
+    color:var(--text);
+  }
+  h1 span{color:var(--delivery);font-style:normal;}
+
+  .lede{
+    max-width:780px;
+    color:var(--text-dim);
+    font-size:16px;
+    margin:0 0 26px;
+  }
+
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:64px;
+  }
+  .chip{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.03em;
+    color:var(--text-dim);
+    border:1px solid var(--border);
+    background:var(--panel);
+    padding:6px 12px;
+    border-radius:100px;
+  }
+  .chip b{color:var(--text);font-weight:600;}
+
+  section{margin-bottom:72px;}
+
+  .section-head{margin-bottom:24px;max-width:800px;}
+  .section-tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin:0 0 8px;
+  }
+  h2{
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:24px;
+    margin:0 0 8px;
+    color:var(--text);
+  }
+  .section-sub{color:var(--text-dim);font-size:15px;margin:0;}
+
+  /* ---------- mission / goals ---------- */
+  .goal-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:14px;
+  }
+  .goal-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:3px solid var(--accent,var(--delivery));
+    border-radius:8px;
+    padding:16px 18px;
+  }
+  .goal-tag{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--accent,var(--delivery));
+    margin-bottom:8px;
+  }
+  .goal-text{font-size:14.5px;color:var(--text);margin:0;}
+
+  .tracks{margin-top:28px;display:flex;flex-direction:column;gap:10px;}
+  .track-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .track-row .step{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.04em;
+    padding:6px 12px;
+    border-radius:100px;
+    border:1px solid var(--border);
+    color:var(--text);
+    background:var(--panel-2);
+  }
+  .track-row .step::before{
+    content:'';
+    display:inline-block;
+    width:7px;height:7px;
+    border-radius:50%;
+    background:var(--dot,var(--delivery));
+    margin-right:8px;
+    vertical-align:middle;
+  }
+  .track-row .arrow{color:var(--text-faint);font-size:13px;}
+  .track-row .track-label{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    min-width:108px;
+  }
+
+  /* ---------- tool model diagram ---------- */
+  .diagram-shell{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px 18px 14px;
+    overflow-x:auto;
+  }
+  .diagram-shell svg{
+    display:block;
+    width:100%;
+    min-width:1080px;
+    height:auto;
+  }
+  .hint-line{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--text-faint);
+    margin:14px 2px 0;
+  }
+
+  .stage-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;}
+  .edge-label{font-family:var(--mono);font-size:10.5px;fill:var(--text-dim);paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round;}
+
+  .tool-box{cursor:pointer;}
+  .tool-box rect.box{
+    fill:var(--panel-2);
+    stroke:var(--accent);
+    stroke-width:1.4;
+    transition:filter .15s ease, stroke-width .15s ease;
+  }
+  .tool-box.kb rect.box{stroke-dasharray:6 4;}
+  .tool-box rect.accentbar{fill:var(--accent);}
+  .tool-box .toolname{font-family:var(--mono);font-weight:600;font-size:13px;fill:var(--text);}
+  .tool-box .tooltype{font-family:var(--mono);font-size:10.5px;fill:var(--text-faint);letter-spacing:.04em;}
+  .tool-box .terminaltag{font-family:var(--mono);font-size:9px;letter-spacing:.05em;}
+
+  .tool-box:hover rect.box, .tool-box:focus-visible rect.box{
+    filter:drop-shadow(0 0 6px var(--accent));
+  }
+  .tool-box.active rect.box{
+    stroke-width:2.6;
+    filter:drop-shadow(0 0 10px var(--accent));
+  }
+  .tool-box:focus-visible{outline:none;}
+  .tool-box:focus-visible rect.box{stroke-width:2.6;}
+
+  .legend-row{display:flex;gap:22px;flex-wrap:wrap;margin-top:4px;}
+  .legend-item{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11.5px;color:var(--text-dim);}
+  .legend-swatch{width:22px;height:0;border-top:2px solid var(--edge);}
+  .legend-swatch.dashed{border-top:2px dashed var(--edge-dim);}
+  .legend-dot{width:9px;height:9px;border-radius:2px;transform:rotate(45deg);display:inline-block;}
+  .legend-dot.kb{border-radius:50%;transform:none;}
+
+  /* ---------- tool inspector ---------- */
+  .inspector{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:28px 30px 30px;
+  }
+  .inspector-key{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--text-faint);
+    border-bottom:1px dashed var(--border);
+    padding-bottom:18px;
+    margin-bottom:22px;
+  }
+  .inspector-key b{color:var(--text-dim);}
+
+  .insp-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-bottom:6px;
+  }
+  .insp-name{
+    font-family:var(--mono);
+    font-size:20px;
+    font-weight:600;
+    color:var(--text);
+    margin:0;
+  }
+  .badge-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .badge{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:5px 10px;
+    border-radius:100px;
+    border:1px solid var(--border);
+    color:var(--bg);
+    font-weight:600;
+  }
+  .badge.outline{
+    background:transparent;
+    color:var(--text-dim);
+  }
+  .insp-desc{color:var(--text-dim);font-size:15px;max-width:780px;margin:14px 0 0;}
+
+  .insp-dataaction{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text-faint);
+    margin:10px 0 0;
+  }
+  .insp-dataaction strong{
+    color:var(--delivery);
+    font-weight:600;
+  }
+
+  .io-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px;
+  }
+  @media (max-width:760px){.io-grid{grid-template-columns:1fr;}}
+
+  .io-col h3{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin:0 0 4px;
+  }
+  .io-out-var{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--accent2,var(--delivery));
+    margin:0 0 12px;
+  }
+  .io-noschema{
+    font-size:13.5px;
+    color:var(--text-dim);
+    background:var(--panel-2);
+    border:1px dashed var(--border);
+    border-radius:8px;
+    padding:12px 14px;
+    margin:0;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    border-bottom:1px solid var(--border);
+    padding:0 8px 8px 0;
+  }
+  td{
+    padding:9px 8px 9px 0;
+    border-bottom:1px solid rgba(58,50,43,0.6);
+    vertical-align:top;
+    color:var(--text);
+  }
+  td.fname{font-family:var(--mono);font-weight:500;}
+  td.note{color:var(--text-dim);font-size:12.5px;}
+  .req-yes{color:var(--delivery);font-family:var(--mono);font-size:12px;}
+  .req-no{color:var(--text-faint);font-family:var(--mono);font-size:12px;}
+
+  .flow-note{
+    margin-top:18px;
+    padding:12px 14px;
+    background:var(--panel-2);
+    border-left:3px solid var(--accent,var(--delivery));
+    border-radius:6px;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+
+  /* ---------- assignment / footer ---------- */
+  .assignment{
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:26px 28px;
+  }
+  .assignment p{color:var(--text-dim);font-size:14.5px;margin:0;max-width:840px;}
+  .assignment strong{color:var(--text);}
+
+  footer{
+    margin-top:60px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--text-faint);
+    text-align:center;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <p class="eyebrow">Genesys AVA Workshop — Assignment Spec</p>
+  <h1>Zora <span>·</span> Michael Kors Concierge</h1>
+  <p class="lede">
+    A Genesys Agentic Virtual Agent (AVA) for Michael Kors retail customer service. It tracks delivery
+    status, initiates and tracks returns, checks refund progress, and answers product and policy
+    questions — stepping in with a complaint whenever something has gone wrong on either side.
+  </p>
+  <div class="meta-row">
+    <span class="chip">Build target: <b>AVA Definition</b></span>
+    <span class="chip">Tool types: <b>Data Action + Knowledge Base</b></span>
+    <span class="chip">Tools: <b>7</b></span>
+    <span class="chip">Conversation tracks: <b>2</b></span>
+    <span class="chip">Terminal actions: <b>2</b></span>
+    <span class="chip">Custom guardrails: <b>6</b></span>
+  </div>
+
+  <!-- ================= MISSION ================= -->
+  <section>
+    <div class="section-head">
+      <p class="section-tag">01 · Mission</p>
+      <h2>What this agent is responsible for</h2>
+      <p class="section-sub">Internalize these before writing a single tool instruction — every instruction you write should serve one of them.</p>
+    </div>
+
+    <div class="goal-grid">
+      <div class="goal-card" style="--accent:var(--delivery)">
+        <span class="goal-tag">Grounding</span>
+        <p class="goal-text">Never state an order, return, or refund fact from memory — every customer-specific detail must come from a tool response in this session.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--returns)">
+        <span class="goal-tag">Ownership</span>
+        <p class="goal-text">Resolve things directly — never redirect the customer to "contact customer service." Zora is that channel.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--delivery)">
+        <span class="goal-tag">Eligibility</span>
+        <p class="goal-text">Only offer a return once isReturnable is confirmed true from GetActiveOrderDetails — never override or guess it.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--resolution)">
+        <span class="goal-tag">Proactivity</span>
+        <p class="goal-text">Surface a delivery delay or an overdue return the moment a payload reveals it — before the customer has to ask.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--returns)">
+        <span class="goal-tag">Tone</span>
+        <p class="goal-text">Warm, concise, luxury-concierge prose — no lists, no bullets, no markdown, one idea per sentence.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--knowledge)">
+        <span class="goal-tag">Scope</span>
+        <p class="goal-text">Stay inside order, return, refund, and product/policy FAQ support — hand off anything else warmly.</p>
+      </div>
+    </div>
+
+    <div class="tracks" aria-hidden="true">
+      <div class="track-row">
+        <span class="track-label">Delivery track</span>
+        <span class="step" style="--dot:var(--delivery)">GetActiveDeliveryOrders</span>
+        <span class="arrow">→</span>
+        <span class="step" style="--dot:var(--delivery)">GetActiveOrderDetails</span>
+        <span class="arrow">→</span>
+        <span class="step" style="--dot:var(--delivery)">CreateReturn / CreateComplaint</span>
+      </div>
+      <div class="track-row">
+        <span class="track-label">Returns track</span>
+        <span class="step" style="--dot:var(--returns)">GetActiveReturnItems</span>
+        <span class="arrow">→</span>
+        <span class="step" style="--dot:var(--returns)">GetItemReturnStatus</span>
+        <span class="arrow">→</span>
+        <span class="step" style="--dot:var(--returns)">CreateComplaint</span>
+      </div>
+      <div class="track-row">
+        <span class="track-label">Knowledge</span>
+        <span class="step" style="--dot:var(--knowledge)">Knowledge Base — available throughout, tied to neither track</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TOOL MODEL ================= -->
+  <section>
+    <div class="section-head">
+      <p class="section-tag">02 · Tool Model</p>
+      <h2>Two tracks, one shared resolution path</h2>
+      <p class="section-sub">
+        Delivery and Returns are separate entry points that almost never call each other directly — both
+        feed into CreateComplaint whenever something's gone wrong. The Knowledge Base sits outside both
+        tracks entirely. Each box is backed by a predefined Genesys tool — click any box to inspect its
+        interface and mapping below.
+      </p>
+    </div>
+
+    <div class="diagram-shell">
+      <svg viewBox="0 0 1300 600" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Tool dependency diagram">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="var(--edge)"></path>
+          </marker>
+          <marker id="arrow-dim" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="var(--edge-dim)"></path>
+          </marker>
+        </defs>
+
+        <!-- corner registration marks -->
+        <g stroke="var(--border)" stroke-width="1.5" fill="none">
+          <path d="M4,18 L4,4 L18,4"></path>
+          <path d="M1282,18 L1282,4 L1268,4"></path>
+          <path d="M4,582 L4,596 L18,596"></path>
+          <path d="M1282,582 L1282,596 L1268,596"></path>
+        </g>
+
+        <!-- stage labels -->
+        <g class="stage-label">
+          <text x="520" y="32" text-anchor="middle" fill="var(--delivery)">Delivery Track</text>
+          <rect x="40" y="42" width="960" height="3" fill="var(--delivery)" opacity="0.7"></rect>
+
+          <text x="350" y="202" text-anchor="middle" fill="var(--returns)">Returns Track</text>
+          <rect x="40" y="212" width="620" height="3" fill="var(--returns)" opacity="0.7"></rect>
+
+          <text x="530" y="392" text-anchor="middle" fill="var(--resolution)">Resolution</text>
+          <rect x="400" y="402" width="260" height="3" fill="var(--resolution)" opacity="0.7"></rect>
+        </g>
+
+        <!-- ===== edges (drawn before boxes) ===== -->
+        <g fill="none">
+          <!-- E1 GetActiveDeliveryOrders -> GetActiveOrderDetails -->
+          <path d="M300,105 L400,105" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="304" y="98">orderId (confirmed)</text>
+
+          <!-- E2 GetActiveOrderDetails -> CreateReturn -->
+          <path d="M660,105 L760,105" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="664" y="98">orderId + itemId</text>
+
+          <!-- E3 GetActiveReturnItems -> GetItemReturnStatus -->
+          <path d="M300,275 L400,275" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="304" y="268">orderId + itemId</text>
+
+          <!-- E4 GetActiveOrderDetails -> CreateComplaint (dashed, routed right of Returns track) -->
+          <path d="M640,150 L685,150 L685,455 L660,455" stroke="var(--edge-dim)" stroke-width="1.6" stroke-dasharray="4 5" marker-end="url(#arrow-dim)"></path>
+          <text class="edge-label" x="690" y="300" transform="rotate(90 690 300)">delivery delay / ineligible return</text>
+
+          <!-- E5 GetActiveReturnItems -> CreateComplaint (dashed) -->
+          <path d="M170,320 L170,455 L400,455" stroke="var(--edge-dim)" stroke-width="1.6" stroke-dasharray="4 5" marker-end="url(#arrow-dim)"></path>
+          <text class="edge-label" x="178" y="448">return overdue</text>
+
+          <!-- E6 GetItemReturnStatus -> CreateComplaint (dashed) -->
+          <path d="M530,320 L530,410" stroke="var(--edge-dim)" stroke-width="1.6" stroke-dasharray="4 5" marker-end="url(#arrow-dim)"></path>
+          <text class="edge-label" x="538" y="368">dispute / stalled</text>
+        </g>
+
+        <!-- ===== tool boxes ===== -->
+        <!-- ROW 1 — DELIVERY TRACK -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_active_delivery_orders" style="--accent:var(--delivery)">
+          <rect class="box" x="40" y="60" width="260" height="90" rx="9"></rect>
+          <rect class="accentbar" x="40" y="60" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="56" y="98">GetActiveDeliveryOrders</text>
+          <text class="tooltype" x="56" y="118">DataAction</text>
+        </g>
+
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_active_order_details" style="--accent:var(--delivery)">
+          <rect class="box" x="400" y="60" width="260" height="90" rx="9"></rect>
+          <rect class="accentbar" x="400" y="60" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="416" y="98">GetActiveOrderDetails</text>
+          <text class="tooltype" x="416" y="118">DataAction</text>
+        </g>
+
+        <g class="tool-box" tabindex="0" role="button" data-tool="create_return" style="--accent:var(--delivery)">
+          <rect class="box" x="760" y="60" width="240" height="90" rx="9"></rect>
+          <rect class="accentbar" x="760" y="60" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="776" y="98">CreateReturn</text>
+          <text class="tooltype" x="776" y="118">DataAction</text>
+          <text class="terminaltag" x="776" y="136" fill="var(--delivery)">⊘ TERMINAL · RETURN FILED</text>
+        </g>
+
+        <!-- KNOWLEDGE BASE — standalone, dashed, schema-less -->
+        <g class="tool-box kb" tabindex="0" role="button" data-tool="knowledge_base" style="--accent:var(--knowledge)">
+          <rect class="box" x="1060" y="145" width="200" height="90" rx="9"></rect>
+          <rect class="accentbar" x="1060" y="145" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="1076" y="178">Knowledge</text>
+          <text class="toolname" x="1076" y="194">Base</text>
+          <text class="terminaltag" x="1076" y="214" fill="var(--knowledge)">↺ ALWAYS AVAILABLE</text>
+        </g>
+
+        <!-- ROW 2 — RETURNS TRACK -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_active_return_items" style="--accent:var(--returns)">
+          <rect class="box" x="40" y="230" width="260" height="90" rx="9"></rect>
+          <rect class="accentbar" x="40" y="230" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="56" y="268">GetActiveReturnItems</text>
+          <text class="tooltype" x="56" y="288">DataAction</text>
+        </g>
+
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_item_return_status" style="--accent:var(--returns)">
+          <rect class="box" x="400" y="230" width="260" height="90" rx="9"></rect>
+          <rect class="accentbar" x="400" y="230" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="416" y="268">GetItemReturnStatus</text>
+          <text class="tooltype" x="416" y="288">DataAction</text>
+        </g>
+
+        <!-- ROW 3 — RESOLUTION -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="create_complaint" style="--accent:var(--resolution)">
+          <rect class="box" x="400" y="410" width="260" height="90" rx="9"></rect>
+          <rect class="accentbar" x="400" y="410" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="416" y="448">CreateComplaint</text>
+          <text class="tooltype" x="416" y="468">DataAction</text>
+          <text class="terminaltag" x="416" y="486" fill="var(--resolution)">⊘ TERMINAL · COMPLAINT FILED</text>
+        </g>
+      </svg>
+
+      <div class="legend-row" style="margin-top:14px;">
+        <span class="legend-item"><span class="legend-swatch"></span> primary data dependency</span>
+        <span class="legend-item"><span class="legend-swatch dashed"></span> conditional path to resolution</span>
+        <span class="legend-item"><span class="legend-dot kb" style="background:var(--knowledge)"></span> Knowledge Base — schema-less, not wired into either track</span>
+      </div>
+      <div class="legend-row" style="margin-top:10px;">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--delivery)"></span>Delivery Track</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--returns)"></span>Returns Track</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--resolution)"></span>Resolution</span>
+      </div>
+    </div>
+    <p class="hint-line">↳ click a tool above — its interface appears in the inspector below</p>
+  </section>
+
+  <!-- ================= INSPECTOR ================= -->
+  <section>
+    <div class="section-head">
+      <p class="section-tag">03 · Tool Inspector</p>
+      <h2>Interface detail</h2>
+    </div>
+
+    <div class="inspector">
+      <p class="inspector-key">
+        <b>Source key —</b> User: filled in from the conversation, but in this AVA that usually means
+        "pulled from an earlier tool's response," not asked of the customer. External: pulled
+        automatically from system/session context (like the customer's mobile number) — never asked of
+        the customer, under any circumstances.
+      </p>
+      <div id="inspector-body"><!-- rendered by JS --></div>
+    </div>
+  </section>
+
+  <!-- ================= ASSIGNMENT ================= -->
+  <section style="margin-bottom:20px;">
+    <div class="assignment">
+      <p>
+        <strong>Your assignment:</strong> build a complete, working Genesys Agentic Virtual Agent (AVA)
+        Definition for Zora — the <strong>role definition</strong>, the <strong>instructions</strong>
+        (silent intent classification across the two tracks and the Knowledge Base, tone, proactive
+        delay detection, date formatting), the <strong>pre-instructions</strong> for each tool (when to
+        call it, what must already be confirmed first), the <strong>outcome instructions</strong> for
+        each tool (how Zora reacts to every possible result), and the <strong>guardrails</strong> that
+        keep customer data, return eligibility, and scope honest. The tool schema, Data Actions, and the
+        Knowledge Base shown above are predefined — use them exactly as they are; do not modify the
+        tooling structure. Your job is the AVA definition that wires these seven tools together into a
+        complete, functioning concierge.
+      </p>
+    </div>
+  </section>
+
+  <footer>Genesys AVA Workshop · Tool Model Assignment</footer>
+</div>
+
+<script>
+const TOOLS = {
+  get_active_delivery_orders: {
+    trackLabel: "Delivery Track", color: "var(--delivery)",
+    name: "GetActiveDeliveryOrders",
+    type: "DataAction",
+    dataAction: "MK_GetActiveDeliveryOrders",
+    description: "Looks up every order on the customer's account that's still active — placed, shipped, in transit, or delivered but still inside the return window. It's the entry point for both delivery questions and return requests: Zora calls it the moment intent classification detects either one, before any order-specific detail can be discussed.",
+    inputs: [
+      { name:"mobileNumber", type:"string", source:"External", required:true, note:"Pulled automatically from session context — never requested from the customer" }
+    ],
+    outputVar: "ActiveOrders",
+    outputs: [
+      { name:"orders", type:"array<OrderSummary>", note:"Each item: orderId, orderDate, orderTotal, orderStatus, hasReturnableItems" }
+    ],
+    flowNote:"orderId from the order the customer confirms is what GetActiveOrderDetails needs next — this tool only returns a summary list, not enough detail to answer a specific question."
+  },
+  get_active_order_details: {
+    trackLabel: "Delivery Track", color: "var(--delivery)",
+    name: "GetActiveOrderDetails",
+    type: "DataAction",
+    dataAction: "MK_GetOrderDetails_V2",
+    description: "Pulls full item-level delivery detail for one confirmed order — including isReturnable, a flag the server computes per item that decides whether a return can even be offered. This is the gatekeeper for the whole Delivery track: every return and every delivery-related complaint downstream traces back to a flag in this one response.",
+    inputs: [
+      { name:"orderId", type:"string", source:"User", required:true, note:"From GetActiveDeliveryOrders, once the customer has confirmed the order — never asked of the customer directly" }
+    ],
+    outputVar: "ItemsInTheOrder",
+    outputs: [
+      { name:"orderStatus", type:"string", note:"" },
+      { name:"items", type:"array<Item>", note:"Each item: itemId, itemName, qty, price, fulfillmentStatus, expectedDeliveryDate, deliveryDate, isReturnable, returnWindowExpiry" }
+    ],
+    flowNote:"isReturnable is what gates CreateReturn; a missed expectedDeliveryDate or a false isReturnable is what routes to CreateComplaint instead."
+  },
+  create_return: {
+    trackLabel: "Delivery Track", color: "var(--delivery)",
+    name: "CreateReturn",
+    type: "DataAction",
+    terminal: true,
+    dataAction: "MK_Create Return",
+    description: "Files the actual return request for one item — but only once GetActiveOrderDetails has confirmed isReturnable is true. The tool itself carries no eligibility logic; it trusts that flag completely. It's the one happy-path action on the Delivery side — once it succeeds, that item's journey moves into the separate Returns track on a later visit.",
+    inputs: [
+      { name:"OrderID", type:"string", source:"User", required:false, note:"From GetActiveOrderDetails — never collected from the customer directly, despite the schema marking it optional" },
+      { name:"ItemID", type:"string", source:"User", required:false, note:"From GetActiveOrderDetails — same sourcing rule as OrderID" }
+    ],
+    outputVar: "ReturnItemStatus",
+    outputs: [
+      { name:"status", type:"string", note:"" }
+    ],
+    flowNote:"Nothing downstream depends on this tool's output — once it succeeds, the item will later appear in GetActiveReturnItems, not in this same tool chain."
+  },
+  get_active_return_items: {
+    trackLabel: "Returns Track", color: "var(--returns)",
+    name: "GetActiveReturnItems",
+    type: "DataAction",
+    dataAction: "MK_GetActiveReturnItems_V2",
+    description: "Looks up every item currently somewhere in a return or refund workflow, across all the customer's orders — organized by item, not by order, because that's how customers actually think about a return (\"my bag\", not \"order 4471\"). It's the entry point for the entire Returns track, parallel to how GetActiveDeliveryOrders anchors the Delivery track.",
+    inputs: [
+      { name:"mobileNumber", type:"string", source:"External", required:true, note:"Pulled automatically from session context — never requested from the customer" }
+    ],
+    outputVar: "ActiveReturnItems",
+    outputs: [
+      { name:"items", type:"array<ReturnItem>", note:"Each item: itemId, itemName, returnInitiatedDate, returnStatus, nextExpectedDate, refundAmount, refundMethod, carrierReturnReference, orderId" },
+      { name:"tool_status", type:"boolean", note:"" }
+    ],
+    flowNote:"Answers most return/refund questions on its own; orderId and itemId from a confirmed item here are what GetItemReturnStatus needs if more than a status snapshot is required."
+  },
+  get_item_return_status: {
+    trackLabel: "Returns Track", color: "var(--returns)",
+    name: "GetItemReturnStatus",
+    type: "DataAction",
+    dataAction: "MK_GetItemReturnStatus",
+    description: "Returns the full chronological event log for one return — carrier scans, warehouse receipt, inspection outcome, refund reference — for when a status snapshot from GetActiveReturnItems isn't enough, typically because the customer is disputing what happened or asking for the detailed story. It only runs after a specific item has already been confirmed from that earlier call.",
+    inputs: [
+      { name:"orderId", type:"string", source:"User", required:true, note:"From the confirmed item in GetActiveReturnItems — never collected from the customer" },
+      { name:"itemId", type:"string", source:"User", required:true, note:"From the confirmed item in GetActiveReturnItems — never collected from the customer" }
+    ],
+    outputVar: "ItemReturnDetails",
+    outputs: [
+      { name:"returnStatus", type:"string", note:"" },
+      { name:"refundAmount", type:"number", note:"" },
+      { name:"events", type:"array<Event>", note:"Each item: eventType, eventDate, description" }
+    ],
+    flowNote:"A stalled or disputed event log is what routes the conversation into CreateComplaint."
+  },
+  create_complaint: {
+    trackLabel: "Resolution", color: "var(--resolution)",
+    name: "CreateComplaint",
+    type: "DataAction",
+    terminal: true,
+    dataAction: "MK_CreateComplaint",
+    description: "Opens a formal complaint record — the shared landing point for three unrelated problem types: an order that's overdue, a return that's overdue, or a return journey the customer disputes. It doesn't sit downstream of one tool; it's reachable from GetActiveOrderDetails, GetActiveReturnItems, and GetItemReturnStatus, whichever one surfaced the problem.",
+    inputs: [
+      { name:"orderId", type:"string", source:"User", required:true, note:"" },
+      { name:"itemId", type:"string", source:"User", required:false, note:"" },
+      { name:"complainType", type:"string", source:"User", required:true, note:"" },
+      { name:"description", type:"string", source:"User", required:true, note:"" }
+    ],
+    outputVar: "ComplainIdentified",
+    outputs: [
+      { name:"complaintID", type:"string", note:"Given to the customer as their reference" }
+    ],
+    flowNote:"This is the catch-all resolution path on both tracks — once it returns a complaintID, there's nothing further to call; the conversation moves toward closing."
+  },
+  knowledge_base: {
+    trackLabel: "Knowledge", color: "var(--knowledge)",
+    name: "Michael Kors Customer Service Knowledge Base",
+    type: "KnowledgeBase",
+    dataAction: "Michael Kors",
+    noSchema: true,
+    description: "A different kind of tool from the other six — instead of a fixed input/output schema, it semantically searches FAQ and policy content (shipping, returns, refund timelines, store locations, promotions) and returns a synthesized answer in plain language. It isn't wired into either track; it's the answer to any policy or \"how does X work\" question that comes up at any point in the conversation.",
+    inputsNote: "No fixed schema. The customer's question itself is the query — matched semantically against FAQ and policy articles rather than passed as named parameters.",
+    outputsNote: "No fixed schema. A natural-language answer synthesized from whichever articles match, or an empty result if nothing in the knowledge base addresses the question.",
+    flowNote:"Always tried before telling a customer something can't be answered, and before offering to escalate to a human agent — escalation is a last resort, not a first response."
+  }
+};
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderInputsTable(inputs){
+  const rows = inputs.map(i => `
+    <tr>
+      <td class="fname">${esc(i.name)}</td>
+      <td>${esc(i.type)}</td>
+      <td>${esc(i.source)}</td>
+      <td>${i.required ? '<span class="req-yes">required</span>' : '<span class="req-no">optional</span>'}</td>
+      <td class="note">${esc(i.note||'')}</td>
+    </tr>`).join('');
+  return `
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Source</th><th>Required</th><th>Notes</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderOutputsTable(outputs){
+  const rows = outputs.map(o => `
+    <tr>
+      <td class="fname">${esc(o.name)}</td>
+      <td>${esc(o.type)}</td>
+      <td class="note">${esc(o.note||'')}</td>
+    </tr>`).join('');
+  return `
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderTool(id){
+  const t = TOOLS[id];
+  if(!t) return;
+
+  const ioBlock = t.noSchema ? `
+    <div class="io-grid" style="margin-top:22px;">
+      <div class="io-col">
+        <h3>Inputs</h3>
+        <p class="io-noschema">${esc(t.inputsNote)}</p>
+      </div>
+      <div class="io-col">
+        <h3>Outputs</h3>
+        <p class="io-noschema">${esc(t.outputsNote)}</p>
+      </div>
+    </div>
+  ` : `
+    <div class="io-grid" style="margin-top:22px;">
+      <div class="io-col">
+        <h3>Inputs</h3>
+        ${renderInputsTable(t.inputs)}
+      </div>
+      <div class="io-col">
+        <h3>Outputs</h3>
+        <p class="io-out-var">→ stored as <strong>${esc(t.outputVar)}</strong></p>
+        ${renderOutputsTable(t.outputs)}
+      </div>
+    </div>
+  `;
+
+  const dataActionLabel = t.type === "KnowledgeBase" ? "Genesys Knowledge Base" : "Genesys Data Action";
+
+  const html = `
+    <div class="insp-head">
+      <h3 class="insp-name">${esc(t.name)}</h3>
+      <div class="badge-row">
+        <span class="badge" style="background:${t.color}">${esc(t.trackLabel)}</span>
+        <span class="badge outline">${esc(t.type)}</span>
+        ${t.terminal ? `<span class="badge outline" style="color:${t.color};border-color:${t.color}">terminal</span>` : ''}
+      </div>
+    </div>
+    <p class="insp-desc">${esc(t.description)}</p>
+    <p class="insp-dataaction">${dataActionLabel} → <strong>${esc(t.dataAction)}</strong></p>
+    ${ioBlock}
+    ${t.flowNote ? `<div class="flow-note" style="border-left-color:${t.color}">${esc(t.flowNote)}</div>` : ''}
+  `;
+  document.getElementById('inspector-body').innerHTML = html;
+
+  document.querySelectorAll('.tool-box').forEach(box => {
+    box.classList.toggle('active', box.getAttribute('data-tool') === id);
+    box.setAttribute('aria-pressed', box.getAttribute('data-tool') === id ? 'true' : 'false');
+  });
+}
+
+document.querySelectorAll('.tool-box').forEach(box => {
+  const id = box.getAttribute('data-tool');
+  box.addEventListener('click', () => renderTool(id));
+  box.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      renderTool(id);
+    }
+  });
+});
+
+renderTool('get_active_delivery_orders');
+</script>
+
+</body>
+</html>
