@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hotel Reservation Agent — Tool Model | Genesys AVA Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220;
+    --panel:#121B2E;
+    --panel-2:#172238;
+    --border:#27344c;
+    --text:#E7ECF5;
+    --text-dim:#8E9DB8;
+    --text-faint:#5E6E8C;
+    --stage1:#F2B544; /* authenticate */
+    --stage2:#46D9C7; /* retrieve */
+    --stage3:#A98CF0; /* decide */
+    --stage4:#F0667A; /* act / terminal */
+    --edge:#5B7AA0;
+    --edge-dim:#3E4F6B;
+    --mono:'IBM Plex Mono', monospace;
+    --sans:'IBM Plex Sans', sans-serif;
+    --radius:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* subtle blueprint dot grid behind everything */
+  body{
+    background-image:radial-gradient(rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size:22px 22px;
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:56px 28px 80px;}
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--stage2);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:8px;height:8px;
+    background:var(--stage2);
+    display:inline-block;
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+
+  h1{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:clamp(28px,4vw,42px);
+    letter-spacing:-.01em;
+    margin:0 0 18px;
+  }
+
+  .lede{
+    max-width:760px;
+    color:var(--text-dim);
+    font-size:16px;
+    margin:0 0 26px;
+  }
+
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:64px;
+  }
+  .chip{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.03em;
+    color:var(--text-dim);
+    border:1px solid var(--border);
+    background:var(--panel);
+    padding:6px 12px;
+    border-radius:100px;
+  }
+  .chip b{color:var(--text);font-weight:600;}
+
+  section{margin-bottom:72px;}
+
+  .section-head{margin-bottom:24px;max-width:780px;}
+  .section-tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin:0 0 8px;
+  }
+  h2{
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:24px;
+    margin:0 0 8px;
+    color:var(--text);
+  }
+  .section-sub{color:var(--text-dim);font-size:15px;margin:0;}
+
+  /* ---------- mission / goals ---------- */
+  .goal-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:14px;
+  }
+  .goal-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:3px solid var(--accent,var(--stage2));
+    border-radius:8px;
+    padding:16px 18px;
+  }
+  .goal-tag{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--accent,var(--stage2));
+    margin-bottom:8px;
+  }
+  .goal-text{font-size:14.5px;color:var(--text);margin:0;}
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:28px;
+    flex-wrap:wrap;
+  }
+  .stepper .step{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:7px 14px;
+    border-radius:100px;
+    border:1px solid var(--border);
+    color:var(--text);
+    background:var(--panel-2);
+  }
+  .stepper .step::before{
+    content:'';
+    display:inline-block;
+    width:7px;height:7px;
+    border-radius:50%;
+    background:var(--dot,var(--stage2));
+    margin-right:8px;
+    vertical-align:middle;
+  }
+  .stepper .arrow{color:var(--text-faint);font-size:14px;}
+
+  /* ---------- tool model diagram ---------- */
+  .diagram-shell{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px 18px 14px;
+    overflow-x:auto;
+  }
+  .diagram-shell svg{
+    display:block;
+    width:100%;
+    min-width:900px;
+    height:auto;
+  }
+  .hint-line{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--text-faint);
+    margin:14px 2px 0;
+  }
+
+  .stage-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;}
+  .edge-label{font-family:var(--mono);font-size:11px;fill:var(--text-dim);paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round;}
+
+  .tool-box{cursor:pointer;}
+  .tool-box rect.box{
+    fill:var(--panel-2);
+    stroke:var(--accent);
+    stroke-width:1.4;
+    transition:filter .15s ease, stroke-width .15s ease, transform .15s ease;
+  }
+  .tool-box rect.accentbar{fill:var(--accent);}
+  .tool-box .toolname{font-family:var(--mono);font-weight:600;font-size:13.5px;fill:var(--text);}
+  .tool-box .tooltype{font-family:var(--mono);font-size:10.5px;fill:var(--text-faint);letter-spacing:.04em;}
+  .tool-box .terminaltag{font-family:var(--mono);font-size:9.5px;fill:var(--stage4);letter-spacing:.06em;}
+
+  .tool-box:hover rect.box, .tool-box:focus-visible rect.box{
+    filter:drop-shadow(0 0 6px var(--accent));
+  }
+  .tool-box.active rect.box{
+    stroke-width:2.6;
+    filter:drop-shadow(0 0 10px var(--accent));
+  }
+  .tool-box:focus-visible{outline:none;}
+  .tool-box:focus-visible rect.box{stroke-width:2.6;}
+
+  .legend-row{display:flex;gap:22px;flex-wrap:wrap;margin-top:4px;}
+  .legend-item{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11.5px;color:var(--text-dim);}
+  .legend-swatch{width:22px;height:0;border-top:2px solid var(--edge);}
+  .legend-swatch.dashed{border-top:2px dashed var(--edge-dim);}
+  .legend-dot{width:9px;height:9px;border-radius:2px;transform:rotate(45deg);display:inline-block;}
+
+  /* ---------- tool inspector ---------- */
+  .inspector{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:28px 30px 30px;
+  }
+  .inspector-key{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--text-faint);
+    border-bottom:1px dashed var(--border);
+    padding-bottom:18px;
+    margin-bottom:22px;
+  }
+  .inspector-key b{color:var(--text-dim);}
+
+  .insp-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-bottom:6px;
+  }
+  .insp-name{
+    font-family:var(--mono);
+    font-size:21px;
+    font-weight:600;
+    color:var(--text);
+    margin:0;
+  }
+  .badge-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .badge{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:5px 10px;
+    border-radius:100px;
+    border:1px solid var(--border);
+    color:var(--bg);
+    font-weight:600;
+  }
+  .badge.outline{
+    background:transparent;
+    color:var(--text-dim);
+  }
+  .insp-desc{color:var(--text-dim);font-size:15px;max-width:760px;margin:14px 0 0;}
+
+  .insp-dataaction{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text-faint);
+    margin:10px 0 0;
+  }
+  .insp-dataaction strong{
+    color:var(--stage2);
+    font-weight:600;
+  }
+
+  .io-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px;
+  }
+  @media (max-width:760px){.io-grid{grid-template-columns:1fr;}}
+
+  .io-col h3{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin:0 0 4px;
+  }
+  .io-out-var{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--accent2,var(--stage2));
+    margin:0 0 12px;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    border-bottom:1px solid var(--border);
+    padding:0 8px 8px 0;
+  }
+  td{
+    padding:9px 8px 9px 0;
+    border-bottom:1px solid rgba(39,52,76,0.55);
+    vertical-align:top;
+    color:var(--text);
+  }
+  td.fname{font-family:var(--mono);font-weight:500;}
+  td.note{color:var(--text-dim);font-size:12.5px;}
+  .req-yes{color:var(--stage2);font-family:var(--mono);font-size:12px;}
+  .req-no{color:var(--text-faint);font-family:var(--mono);font-size:12px;}
+
+  .flow-note{
+    margin-top:18px;
+    padding:12px 14px;
+    background:var(--panel-2);
+    border-left:3px solid var(--accent,var(--stage2));
+    border-radius:6px;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+
+  /* ---------- assignment / footer ---------- */
+  .assignment{
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:26px 28px;
+  }
+  .assignment p{color:var(--text-dim);font-size:14.5px;margin:0 0 0;max-width:820px;}
+  .assignment strong{color:var(--text);}
+
+  footer{
+    margin-top:60px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--text-faint);
+    text-align:center;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <p class="eyebrow">Genesys AVA Workshop — Assignment Spec</p>
+  <h1>Hotel Reservation Support Agent</h1>
+  <p class="lede">
+    A Genesys Agentic Virtual Agent (AVA) for a premium hotel brand. It verifies a guest's identity,
+    looks up their bookings, explains cancellation policy and fees in plain language, and — only after
+    the guest explicitly confirms — cancels the booking and hands back a confirmation code.
+  </p>
+  <div class="meta-row">
+    <span class="chip">Build target: <b>AVA Definition</b></span>
+    <span class="chip">Tool type: <b>Data Action</b></span>
+    <span class="chip">Tools: <b>6</b></span>
+    <span class="chip">Stages: <b>4</b></span>
+    <span class="chip">Terminal actions: <b>1</b></span>
+  </div>
+
+  <!-- ================= MISSION ================= -->
+  <section>
+    <div class="section-head">
+      <p class="section-tag">01 · Mission</p>
+      <h2>What this agent is responsible for</h2>
+      <p class="section-sub">Internalize these before writing a single tool instruction — every instruction you write should serve one of them.</p>
+    </div>
+
+    <div class="goal-grid">
+      <div class="goal-card" style="--accent:var(--stage1)">
+        <span class="goal-tag">Security</span>
+        <p class="goal-text">Authenticate every guest with an OTP before any booking detail is revealed or touched.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--stage2)">
+        <span class="goal-tag">Clarity</span>
+        <p class="goal-text">Present bookings in a clean, scannable format the moment a guest is verified.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--stage3)">
+        <span class="goal-tag">Transparency</span>
+        <p class="goal-text">Always calculate the cancellation fee and explain the reasoning before acting on it.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--stage3)">
+        <span class="goal-tag">Consent</span>
+        <p class="goal-text">Get explicit, unambiguous confirmation before any irreversible action.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--stage4)">
+        <span class="goal-tag">Closure</span>
+        <p class="goal-text">Hand back a cancellation code and clear next steps once the action is complete.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--stage4)">
+        <span class="goal-tag">Integrity</span>
+        <p class="goal-text">Never invent policy, pricing, or booking details — surface errors honestly and offer a retry.</p>
+      </div>
+    </div>
+
+    <div class="stepper" aria-hidden="true">
+      <span class="step" style="--dot:var(--stage1)">Authenticate</span>
+      <span class="arrow">→</span>
+      <span class="step" style="--dot:var(--stage2)">Retrieve</span>
+      <span class="arrow">→</span>
+      <span class="step" style="--dot:var(--stage3)">Decide</span>
+      <span class="arrow">→</span>
+      <span class="step" style="--dot:var(--stage4)">Act</span>
+    </div>
+  </section>
+
+  <!-- ================= TOOL MODEL ================= -->
+  <section>
+    <div class="section-head">
+      <p class="section-tag">02 · Tool Model</p>
+      <h2>Six tools, wired by data</h2>
+      <p class="section-sub">Each box is one tool, backed by a predefined Genesys Data Action. Lines show how one tool's output becomes the next tool's input. Click any box to inspect its interface and Data Action mapping below.</p>
+    </div>
+
+    <div class="diagram-shell">
+      <svg viewBox="0 0 1180 540" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Tool dependency diagram">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="var(--edge)"></path>
+          </marker>
+          <marker id="arrow-dim" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="var(--edge-dim)"></path>
+          </marker>
+        </defs>
+
+        <!-- corner registration marks -->
+        <g stroke="var(--border)" stroke-width="1.5" fill="none">
+          <path d="M4,18 L4,4 L18,4"></path>
+          <path d="M1162,18 L1162,4 L1148,4"></path>
+          <path d="M4,522 L4,536 L18,536"></path>
+          <path d="M1162,522 L1162,536 L1148,536"></path>
+        </g>
+
+        <!-- stage labels -->
+        <g class="stage-label">
+          <text x="140" y="32" text-anchor="middle" fill="var(--stage1)">01 · Authenticate</text>
+          <rect x="40" y="42" width="200" height="3" fill="var(--stage1)" opacity="0.7"></rect>
+
+          <text x="420" y="32" text-anchor="middle" fill="var(--stage2)">02 · Retrieve</text>
+          <rect x="320" y="42" width="200" height="3" fill="var(--stage2)" opacity="0.7"></rect>
+
+          <text x="700" y="32" text-anchor="middle" fill="var(--stage3)">03 · Decide</text>
+          <rect x="600" y="42" width="200" height="3" fill="var(--stage3)" opacity="0.7"></rect>
+
+          <text x="1010" y="32" text-anchor="middle" fill="var(--stage4)">04 · Act</text>
+          <rect x="900" y="42" width="220" height="3" fill="var(--stage4)" opacity="0.7"></rect>
+        </g>
+
+        <!-- ===== edges (drawn before boxes) ===== -->
+        <g fill="none">
+          <!-- E1 send_otp -> verify_pin -->
+          <path d="M140,150 L140,230" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="148" y="194">expireEpoch</text>
+
+          <!-- E2 verify_pin -> get_reservations -->
+          <path d="M240,270 L280,270 L280,190 L320,190" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="246" y="262">customer_id</text>
+
+          <!-- E3 get_reservations -> get_policy -->
+          <path d="M520,190 L560,190 L560,110 L600,110" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="528" y="142">bookingId</text>
+
+          <!-- E4 get_reservations -> calc_fees -->
+          <path d="M520,190 L560,190 L560,270 L600,270" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="528" y="246">bookingId</text>
+
+          <!-- E5 get_policy -> calc_fees (contextual, dashed) -->
+          <path d="M700,150 L700,230" stroke="var(--edge-dim)" stroke-width="1.6" stroke-dasharray="4 5" marker-end="url(#arrow-dim)"></path>
+          <text class="edge-label" x="706" y="194">policy context</text>
+
+          <!-- E6 calc_fees -> process_cancellation -->
+          <path d="M800,270 L840,270 L840,190 L900,190" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="806" y="246">fee confirmed</text>
+        </g>
+
+        <!-- ===== tool boxes ===== -->
+        <!-- 1: SendOTPToAuthenticate -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="send_otp" style="--accent:var(--stage1)">
+          <rect class="box" x="40" y="70" width="200" height="80" rx="9"></rect>
+          <rect class="accentbar" x="40" y="70" width="4" height="80" rx="1"></rect>
+          <text class="toolname" x="56" y="100">SendOTPTo</text>
+          <text class="toolname" x="56" y="116">Authenticate</text>
+          <text class="tooltype" x="56" y="136">DataAction</text>
+        </g>
+
+        <!-- 2: Verify Customer PIN -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="verify_pin" style="--accent:var(--stage1)">
+          <rect class="box" x="40" y="230" width="200" height="80" rx="9"></rect>
+          <rect class="accentbar" x="40" y="230" width="4" height="80" rx="1"></rect>
+          <text class="toolname" x="56" y="260">Verify Customer</text>
+          <text class="toolname" x="56" y="276">PIN</text>
+          <text class="tooltype" x="56" y="296">DataAction</text>
+        </g>
+
+        <!-- 3: Get Hotel Reservations -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_reservations" style="--accent:var(--stage2)">
+          <rect class="box" x="320" y="150" width="200" height="80" rx="9"></rect>
+          <rect class="accentbar" x="320" y="150" width="4" height="80" rx="1"></rect>
+          <text class="toolname" x="336" y="180">Get Hotel</text>
+          <text class="toolname" x="336" y="196">Reservations</text>
+          <text class="tooltype" x="336" y="216">DataAction</text>
+        </g>
+
+        <!-- 4: Get Cancellation Policy -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_policy" style="--accent:var(--stage3)">
+          <rect class="box" x="600" y="70" width="200" height="80" rx="9"></rect>
+          <rect class="accentbar" x="600" y="70" width="4" height="80" rx="1"></rect>
+          <text class="toolname" x="616" y="100">Get Cancellation</text>
+          <text class="toolname" x="616" y="116">Policy</text>
+          <text class="tooltype" x="616" y="136">DataAction</text>
+        </g>
+
+        <!-- 5: Calculate Cancellation Fees -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="calc_fees" style="--accent:var(--stage3)">
+          <rect class="box" x="600" y="230" width="200" height="80" rx="9"></rect>
+          <rect class="accentbar" x="600" y="230" width="4" height="80" rx="1"></rect>
+          <text class="toolname" x="616" y="260">Calculate</text>
+          <text class="toolname" x="616" y="276">Cancellation Fees</text>
+          <text class="tooltype" x="616" y="296">DataAction</text>
+        </g>
+
+        <!-- 6: Process Booking Cancellation -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="process_cancellation" style="--accent:var(--stage4)">
+          <rect class="box" x="900" y="145" width="220" height="90" rx="9"></rect>
+          <rect class="accentbar" x="900" y="145" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="916" y="174">Process Booking</text>
+          <text class="toolname" x="916" y="190">Cancellation</text>
+          <text class="tooltype" x="916" y="210">DataAction</text>
+          <text class="terminaltag" x="916" y="226">⊘ TERMINAL · IRREVERSIBLE</text>
+        </g>
+      </svg>
+
+      <div class="legend-row" style="margin-top:14px;">
+        <span class="legend-item"><span class="legend-swatch"></span> output feeds the next tool's required input</span>
+        <span class="legend-item"><span class="legend-swatch dashed"></span> contextual — informs the decision, not a strict input</span>
+      </div>
+      <div class="legend-row" style="margin-top:10px;">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--stage1)"></span>Authenticate</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--stage2)"></span>Retrieve</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--stage3)"></span>Decide</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--stage4)"></span>Act</span>
+      </div>
+    </div>
+    <p class="hint-line">↳ click a tool above — its interface appears in the inspector below</p>
+  </section>
+
+  <!-- ================= INSPECTOR ================= -->
+  <section>
+    <div class="section-head">
+      <p class="section-tag">03 · Tool Inspector</p>
+      <h2>Interface detail</h2>
+    </div>
+
+    <div class="inspector">
+      <p class="inspector-key">
+        <b>Source key —</b> User: filled in from the conversation. ToolInput: passed automatically from a tool that ran earlier in the session.
+      </p>
+      <div id="inspector-body"><!-- rendered by JS --></div>
+    </div>
+  </section>
+
+  <!-- ================= ASSIGNMENT ================= -->
+  <section style="margin-bottom:20px;">
+    <div class="assignment">
+      <p>
+        <strong>Your assignment:</strong> build a complete, working Genesys Agentic Virtual Agent (AVA)
+        Definition for this hotel reservation flow — the <strong>role definition</strong>, the
+        <strong>instructions</strong>, the <strong>pre-instructions</strong> for each tool (when and how
+        to call it, what to confirm with the guest first), the <strong>outcome instructions</strong> for
+        each tool (how the agent reacts to every possible result), and any <strong>guardrails</strong>
+        the agent needs. The tool schema and their Data Actions shown above are predefined — use them
+        exactly as they are; do not modify the tooling structure. Your job is the AVA definition that
+        wires these six tools together into a complete, functioning agent.
+      </p>
+    </div>
+  </section>
+
+  <footer>Genesys AVA Workshop · Tool Model Assignment</footer>
+</div>
+
+<script>
+const TOOLS = {
+  send_otp: {
+    stage: 1, stageLabel: "Authenticate", color: "var(--stage1)",
+    name: "SendOTPToAuthenticate",
+    type: "DataAction",
+    dataAction: "AVA_HotelBookingDemo_SendOTP",
+    description: "Sends a one-time password (OTP) to the guest's email or WhatsApp number so their identity can be confirmed before any booking is discussed or changed.",
+    inputs: [
+      { name:"customer_contact_address", type:"string", source:"User", required:true, note:"Email address or phone number" },
+      { name:"contact_type", type:"string (email | whatsapp)", source:"User", required:false, note:"Which channel to send the OTP on" }
+    ],
+    outputVar: "OTP_SESSION",
+    outputs: [
+      { name:"success", type:"boolean", note:"Whether the OTP was sent" },
+      { name:"reason", type:"string", note:"Populated only when success = false" },
+      { name:"expireEpoch", type:"integer", note:"OTP expiry timestamp — needed by Verify Customer PIN" },
+      { name:"message", type:"string", note:"Delivery confirmation text" }
+    ],
+    flowNote:"Feeds expireEpoch into Verify Customer PIN."
+  },
+  verify_pin: {
+    stage: 1, stageLabel: "Authenticate", color: "var(--stage1)",
+    name: "Verify Customer PIN",
+    type: "DataAction",
+    dataAction: "AVA_HotelBookingDemo_VerifyCustomerPIN",
+    description: "Validates the OTP/PIN the guest provides against the active OTP session. On success, returns the guest's customer ID for use by every later tool.",
+    inputs: [
+      { name:"customer_contact_address", type:"string", source:"ToolInput", required:true, note:"Carried over from the OTP step" },
+      { name:"expireEpoch", type:"integer", source:"User", required:true, note:"From OTP_SESSION.expireEpoch" },
+      { name:"pin", type:"string", source:"User", required:false, note:"4-digit code the guest read out" }
+    ],
+    outputVar: "AUTH_RESULT",
+    outputs: [
+      { name:"success", type:"boolean", note:"Whether the tool executed" },
+      { name:"reason", type:"string", note:"Error reason if success = false" },
+      { name:"auth", type:"boolean", note:"True only if the PIN matched and hasn't expired" },
+      { name:"authFailReason", type:"string", note:"None | OTPExpired | WrongPIN | InvalidCustomer" },
+      { name:"customer_id", type:"string", note:"Set only when auth = true — required downstream" }
+    ],
+    flowNote:"Feeds customer_id into Get Hotel Reservations, and gates every tool after it."
+  },
+  get_reservations: {
+    stage: 2, stageLabel: "Retrieve", color: "var(--stage2)",
+    name: "Get Hotel Reservations",
+    type: "DataAction",
+    dataAction: "AVA_HotelBookingDemo_GetHotelReservations",
+    description: "Looks up every active reservation tied to the now-authenticated guest's account.",
+    inputs: [
+      { name:"customerId", type:"string", source:"User", required:true, note:"AUTH_RESULT.customer_id" }
+    ],
+    outputVar: "CUSTOMER_BOOKINGS",
+    outputs: [
+      { name:"success", type:"boolean", note:"" },
+      { name:"reason", type:"string", note:"Error reason if success = false" },
+      { name:"bookings", type:"array<BookingInfo>", note:"Each item: bookingId, hotel_name, check_in, check_out, firstNightPrice, totalPrice. Empty array = no active bookings." }
+    ],
+    flowNote:"Every bookingId used by the three tools to the right comes from this array."
+  },
+  get_policy: {
+    stage: 3, stageLabel: "Decide", color: "var(--stage3)",
+    name: "Get Cancellation Policy",
+    type: "DataAction",
+    dataAction: "AVA_HotelBookingDemo_GetCancellationPolicyV2",
+    description: "Returns the cancellation terms for one specific booking — free-cancellation deadline and any penalty tiers that follow it.",
+    inputs: [
+      { name:"bookingId", type:"string", source:"User", required:true, note:"From CUSTOMER_BOOKINGS.bookings[].bookingId" }
+    ],
+    outputVar: "CANCELLATION_POLICY",
+    outputs: [
+      { name:"fullyNonRefundable", type:"boolean", note:"No refund at any time if true" },
+      { name:"fullyCancellable", type:"boolean", note:"No penalty at any time if true" },
+      { name:"noPenaltyTill", type:"string (date)", note:"Free-cancellation deadline" },
+      { name:"firstNightPenaltyFrom", type:"string (date)", note:"Date the first-night charge kicks in" },
+      { name:"fullPricePenaltyFrom", type:"string (date)", note:"Date the full booking price is charged" }
+    ],
+    flowNote:"Provides context for Calculate Cancellation Fees, but isn't a required input to it."
+  },
+  calc_fees: {
+    stage: 3, stageLabel: "Decide", color: "var(--stage3)",
+    name: "Calculate Cancellation Fees",
+    type: "DataAction",
+    dataAction: "AVA_HotelBookingDemo_CalculateCancellationFeesV2",
+    description: "Computes the exact fee that would apply if this booking were cancelled right now, based on the cancellation policy and today's date.",
+    inputs: [
+      { name:"bookingId", type:"string", source:"ToolInput", required:true, note:"From CUSTOMER_BOOKINGS.bookings[].bookingId" }
+    ],
+    outputVar: "CANCELLATION_FEE_CALC",
+    outputs: [
+      { name:"success", type:"boolean", note:"" },
+      { name:"reason", type:"string", note:"Error reason if success = false" },
+      { name:"fee", type:"number", note:"0 = no penalty, >0 = penalty applies" },
+      { name:"description", type:"string", note:"Plain-language explanation of why this fee applies" }
+    ],
+    flowNote:"Its fee must be confirmed with the guest before Process Booking Cancellation can run."
+  },
+  process_cancellation: {
+    stage: 4, stageLabel: "Act", color: "var(--stage4)",
+    name: "Process Booking Cancellation",
+    type: "DataAction",
+    dataAction: "AVA_HotelBookingDemo_CancelBookingV2",
+    terminal: true,
+    description: "Cancels the booking and issues a cancellation confirmation code. This is a terminal, irreversible action — it permanently changes the booking's state.",
+    inputs: [
+      { name:"bookingId", type:"string", source:"ToolInput", required:false, note:"Carried over from earlier in the conversation" }
+    ],
+    outputVar: "CANCELLATION_RESULT",
+    outputs: [
+      { name:"success", type:"boolean", note:"" },
+      { name:"fee", type:"number", note:"Final fee actually charged" },
+      { name:"cancelCode", type:"string", note:"Confirmation code the guest must save" },
+      { name:"description", type:"string", note:"Explains how the fee was calculated" },
+      { name:"message", type:"string", note:"Confirmation message" }
+    ],
+    flowNote:"End of the chain — nothing downstream depends on this tool's output."
+  }
+};
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderInputsTable(inputs){
+  const rows = inputs.map(i => `
+    <tr>
+      <td class="fname">${esc(i.name)}</td>
+      <td>${esc(i.type)}</td>
+      <td>${esc(i.source)}</td>
+      <td>${i.required ? '<span class="req-yes">required</span>' : '<span class="req-no">optional</span>'}</td>
+      <td class="note">${esc(i.note||'')}</td>
+    </tr>`).join('');
+  return `
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Source</th><th>Required</th><th>Notes</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderOutputsTable(outputs){
+  const rows = outputs.map(o => `
+    <tr>
+      <td class="fname">${esc(o.name)}</td>
+      <td>${esc(o.type)}</td>
+      <td class="note">${esc(o.note||'')}</td>
+    </tr>`).join('');
+  return `
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderTool(id){
+  const t = TOOLS[id];
+  if(!t) return;
+  const html = `
+    <div class="insp-head">
+      <h3 class="insp-name">${esc(t.name)}</h3>
+      <div class="badge-row">
+        <span class="badge" style="background:${t.color}">${esc(t.stageLabel)}</span>
+        <span class="badge outline">${esc(t.type)}</span>
+        ${t.terminal ? '<span class="badge outline" style="color:var(--stage4);border-color:var(--stage4)">terminal</span>' : ''}
+      </div>
+    </div>
+    <p class="insp-desc">${esc(t.description)}</p>
+    <p class="insp-dataaction">Genesys Data Action → <strong>${esc(t.dataAction)}</strong></p>
+    <div class="io-grid" style="margin-top:22px;">
+      <div class="io-col">
+        <h3>Inputs</h3>
+        ${renderInputsTable(t.inputs)}
+      </div>
+      <div class="io-col">
+        <h3>Outputs</h3>
+        <p class="io-out-var">→ stored as <strong>${esc(t.outputVar)}</strong></p>
+        ${renderOutputsTable(t.outputs)}
+      </div>
+    </div>
+    ${t.flowNote ? `<div class="flow-note" style="border-left-color:${t.color}">${esc(t.flowNote)}</div>` : ''}
+  `;
+  document.getElementById('inspector-body').innerHTML = html;
+
+  document.querySelectorAll('.tool-box').forEach(box => {
+    box.classList.toggle('active', box.getAttribute('data-tool') === id);
+    box.setAttribute('aria-pressed', box.getAttribute('data-tool') === id ? 'true' : 'false');
+  });
+}
+
+document.querySelectorAll('.tool-box').forEach(box => {
+  const id = box.getAttribute('data-tool');
+  box.addEventListener('click', () => renderTool(id));
+  box.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      renderTool(id);
+    }
+  });
+});
+
+renderTool('send_otp');
+</script>
+
+</body>
+</html>
