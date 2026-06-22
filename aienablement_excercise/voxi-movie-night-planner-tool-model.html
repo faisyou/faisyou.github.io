@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voxi — Movie Night Planner | Tool Model | Genesys AVA Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#120A14;
+    --panel:#1C1220;
+    --panel-2:#241A2B;
+    --border:#3B2A42;
+    --text:#F3ECF2;
+    --text-dim:#B6A3BB;
+    --text-faint:#7C6B82;
+
+    --discover:#FFC857; /* marquee gold */
+    --cart:#4FD1C5;      /* ticket teal */
+    --checkout:#FF5C8A;  /* velvet pink */
+    --bus:#9C8CEC;       /* cart_id rail */
+
+    --edge:#7A6685;
+    --edge-dim:#4A3C52;
+
+    --mono:'IBM Plex Mono', monospace;
+    --sans:'IBM Plex Sans', sans-serif;
+    --marquee:'Bebas Neue', sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  body{
+    background-image:radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size:22px 22px;
+  }
+
+  .wrap{max-width:1220px;margin:0 auto;padding:56px 28px 80px;}
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--cart);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:8px;height:8px;
+    background:var(--cart);
+    display:inline-block;
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+
+  h1{
+    font-family:var(--marquee);
+    font-weight:400;
+    font-size:clamp(40px,6vw,64px);
+    letter-spacing:.02em;
+    margin:0 0 18px;
+    color:var(--text);
+    text-shadow:0 0 22px rgba(255,200,87,0.25);
+  }
+  h1 span{color:var(--discover);}
+
+  .lede{
+    max-width:760px;
+    color:var(--text-dim);
+    font-size:16px;
+    margin:0 0 26px;
+  }
+
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:64px;
+  }
+  .chip{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.03em;
+    color:var(--text-dim);
+    border:1px solid var(--border);
+    background:var(--panel);
+    padding:6px 12px;
+    border-radius:100px;
+  }
+  .chip b{color:var(--text);font-weight:600;}
+
+  section{margin-bottom:72px;}
+
+  .section-head{margin-bottom:24px;max-width:780px;}
+  .section-tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin:0 0 8px;
+  }
+  h2{
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:24px;
+    margin:0 0 8px;
+    color:var(--text);
+  }
+  .section-sub{color:var(--text-dim);font-size:15px;margin:0;}
+
+  /* ---------- mission / goals ---------- */
+  .goal-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:14px;
+  }
+  .goal-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:3px solid var(--accent,var(--cart));
+    border-radius:8px;
+    padding:16px 18px;
+  }
+  .goal-tag{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--accent,var(--cart));
+    margin-bottom:8px;
+  }
+  .goal-text{font-size:14.5px;color:var(--text);margin:0;}
+
+  .scope-out{
+    margin-top:18px;
+    padding:14px 16px;
+    background:var(--panel-2);
+    border:1px dashed var(--border);
+    border-radius:8px;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+  .scope-out b{color:var(--checkout);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:28px;
+    flex-wrap:wrap;
+  }
+  .stepper .step{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:7px 14px;
+    border-radius:100px;
+    border:1px solid var(--border);
+    color:var(--text);
+    background:var(--panel-2);
+  }
+  .stepper .step::before{
+    content:'';
+    display:inline-block;
+    width:7px;height:7px;
+    border-radius:50%;
+    background:var(--dot,var(--cart));
+    margin-right:8px;
+    vertical-align:middle;
+  }
+  .stepper .arrow{color:var(--text-faint);font-size:14px;}
+
+  /* ---------- tool model diagram ---------- */
+  .diagram-shell{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px 18px 14px;
+    overflow-x:auto;
+  }
+  .diagram-shell svg{
+    display:block;
+    width:100%;
+    min-width:980px;
+    height:auto;
+  }
+  .hint-line{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--text-faint);
+    margin:14px 2px 0;
+  }
+
+  .stage-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;}
+  .edge-label{font-family:var(--mono);font-size:10.5px;fill:var(--text-dim);paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round;}
+
+  .tool-box{cursor:pointer;}
+  .tool-box rect.box{
+    fill:var(--panel-2);
+    stroke:var(--accent);
+    stroke-width:1.4;
+    transition:filter .15s ease, stroke-width .15s ease;
+  }
+  .tool-box rect.accentbar{fill:var(--accent);}
+  .tool-box .toolname{font-family:var(--mono);font-weight:600;font-size:13px;fill:var(--text);}
+  .tool-box .tooltype{font-family:var(--mono);font-size:10.5px;fill:var(--text-faint);letter-spacing:.04em;}
+  .tool-box .terminaltag{font-family:var(--mono);font-size:9.5px;fill:var(--checkout);letter-spacing:.06em;}
+
+  .tool-box:hover rect.box, .tool-box:focus-visible rect.box{
+    filter:drop-shadow(0 0 6px var(--accent));
+  }
+  .tool-box.active rect.box{
+    stroke-width:2.6;
+    filter:drop-shadow(0 0 10px var(--accent));
+  }
+  .tool-box:focus-visible{outline:none;}
+  .tool-box:focus-visible rect.box{stroke-width:2.6;}
+
+  .legend-row{display:flex;gap:22px;flex-wrap:wrap;margin-top:4px;}
+  .legend-item{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11.5px;color:var(--text-dim);}
+  .legend-swatch{width:22px;height:0;border-top:2px solid var(--edge);}
+  .legend-swatch.dashed{border-top:2px dashed var(--edge-dim);}
+  .legend-swatch.bus{border-top:3px solid var(--bus);}
+  .legend-dot{width:9px;height:9px;border-radius:2px;transform:rotate(45deg);display:inline-block;}
+
+  /* ---------- tool inspector ---------- */
+  .inspector{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:28px 30px 30px;
+  }
+  .inspector-key{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--text-faint);
+    border-bottom:1px dashed var(--border);
+    padding-bottom:18px;
+    margin-bottom:22px;
+  }
+  .inspector-key b{color:var(--text-dim);}
+
+  .insp-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-bottom:6px;
+  }
+  .insp-name{
+    font-family:var(--mono);
+    font-size:21px;
+    font-weight:600;
+    color:var(--text);
+    margin:0;
+  }
+  .badge-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .badge{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:5px 10px;
+    border-radius:100px;
+    border:1px solid var(--border);
+    color:var(--bg);
+    font-weight:600;
+  }
+  .badge.outline{
+    background:transparent;
+    color:var(--text-dim);
+  }
+  .insp-desc{color:var(--text-dim);font-size:15px;max-width:760px;margin:14px 0 0;}
+
+  .insp-dataaction{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text-faint);
+    margin:10px 0 0;
+  }
+  .insp-dataaction strong{
+    color:var(--cart);
+    font-weight:600;
+  }
+
+  .io-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px;
+  }
+  @media (max-width:760px){.io-grid{grid-template-columns:1fr;}}
+
+  .io-col h3{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin:0 0 4px;
+  }
+  .io-out-var{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--accent2,var(--cart));
+    margin:0 0 12px;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    border-bottom:1px solid var(--border);
+    padding:0 8px 8px 0;
+  }
+  td{
+    padding:9px 8px 9px 0;
+    border-bottom:1px solid rgba(59,42,66,0.6);
+    vertical-align:top;
+    color:var(--text);
+  }
+  td.fname{font-family:var(--mono);font-weight:500;}
+  td.note{color:var(--text-dim);font-size:12.5px;}
+  .req-yes{color:var(--cart);font-family:var(--mono);font-size:12px;}
+  .req-no{color:var(--text-faint);font-family:var(--mono);font-size:12px;}
+
+  .flow-note{
+    margin-top:18px;
+    padding:12px 14px;
+    background:var(--panel-2);
+    border-left:3px solid var(--accent,var(--cart));
+    border-radius:6px;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+
+  /* ---------- assignment / footer ---------- */
+  .assignment{
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:26px 28px;
+  }
+  .assignment p{color:var(--text-dim);font-size:14.5px;margin:0 0 0;max-width:820px;}
+  .assignment strong{color:var(--text);}
+
+  footer{
+    margin-top:60px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--text-faint);
+    text-align:center;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <p class="eyebrow">Genesys AVA Workshop — Assignment Spec</p>
+  <h1>Voxi <span>·</span> Movie Night Planner</h1>
+  <p class="lede">
+    A Genesys Agentic Virtual Agent (AVA) for Vox Cinema Dubai. It takes a guest from "what's playing?"
+    through movie, showtime, and food selection, tracking spend against a budget the whole way,
+    and finishes with a checkout that hands back a payment code.
+  </p>
+  <div class="meta-row">
+    <span class="chip">Build target: <b>AVA Definition</b></span>
+    <span class="chip">Tool type: <b>Data Action</b></span>
+    <span class="chip">Tools: <b>8</b></span>
+    <span class="chip">Stages: <b>3</b></span>
+    <span class="chip">Terminal actions: <b>1</b></span>
+    <span class="chip">Custom guardrails: <b>4</b></span>
+  </div>
+
+  <!-- ================= MISSION ================= -->
+  <section>
+    <div class="section-head">
+      <p class="section-tag">01 · Mission</p>
+      <h2>What this agent is responsible for</h2>
+      <p class="section-sub">Internalize these before writing a single tool instruction — every instruction you write should serve one of them.</p>
+    </div>
+
+    <div class="goal-grid">
+      <div class="goal-card" style="--accent:var(--discover)">
+        <span class="goal-tag">Discovery</span>
+        <p class="goal-text">Help the guest find a movie and showtime that fits their taste and schedule.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--cart)">
+        <span class="goal-tag">Budget</span>
+        <p class="goal-text">The moment a budget is mentioned, open a cart and track spend after every addition.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--discover)">
+        <span class="goal-tag">Pace</span>
+        <p class="goal-text">Ask one question at a time, and never re-ask something already answered.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--cart)">
+        <span class="goal-tag">Transparency</span>
+        <p class="goal-text">Always mention prices, and warn before anything would push the guest over budget.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--checkout)">
+        <span class="goal-tag">Consent</span>
+        <p class="goal-text">Confirm before adding, removing, or checking out — never before just searching or looking something up.</p>
+      </div>
+      <div class="goal-card" style="--accent:var(--checkout)">
+        <span class="goal-tag">Scope</span>
+        <p class="goal-text">Stay inside movie-night planning. Politely decline anything outside it.</p>
+      </div>
+    </div>
+
+    <div class="scope-out">
+      <b>Out of scope</b> — existing booking changes/cancellations · group bookings &amp; special events ·
+      refunds &amp; payment disputes · facility issues or anything not booking-related.
+    </div>
+
+    <div class="stepper" aria-hidden="true">
+      <span class="step" style="--dot:var(--discover)">Discover</span>
+      <span class="arrow">→</span>
+      <span class="step" style="--dot:var(--cart)">Cart</span>
+      <span class="arrow">→</span>
+      <span class="step" style="--dot:var(--checkout)">Checkout</span>
+    </div>
+  </section>
+
+  <!-- ================= TOOL MODEL ================= -->
+  <section>
+    <div class="section-head">
+      <p class="section-tag">02 · Tool Model</p>
+      <h2>Eight tools, one shared cart</h2>
+      <p class="section-sub">
+        Discovery tools feed item IDs into the cart. Every cart-aware tool taps into the same
+        <strong>cart_id</strong> — drawn below as a shared rail, the way a real backend would pass
+        session context. Each box is backed by a predefined Genesys Data Action — click any box to
+        inspect its interface and Data Action mapping.
+      </p>
+    </div>
+
+    <div class="diagram-shell">
+      <svg viewBox="0 0 1240 660" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Tool dependency diagram">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="var(--edge)"></path>
+          </marker>
+          <marker id="arrow-dim" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="var(--edge-dim)"></path>
+          </marker>
+          <marker id="arrow-bus" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="var(--bus)"></path>
+          </marker>
+        </defs>
+
+        <!-- corner registration marks -->
+        <g stroke="var(--border)" stroke-width="1.5" fill="none">
+          <path d="M4,18 L4,4 L18,4"></path>
+          <path d="M1222,18 L1222,4 L1208,4"></path>
+          <path d="M4,642 L4,656 L18,656"></path>
+          <path d="M1222,642 L1222,656 L1208,656"></path>
+        </g>
+
+        <!-- stage labels -->
+        <g class="stage-label">
+          <text x="460" y="32" text-anchor="middle" fill="var(--discover)">01 · Discover</text>
+          <rect x="40" y="42" width="840" height="3" fill="var(--discover)" opacity="0.7"></rect>
+
+          <text x="610" y="202" text-anchor="middle" fill="var(--cart)">02 · Cart</text>
+          <rect x="40" y="212" width="1140" height="3" fill="var(--cart)" opacity="0.7"></rect>
+
+          <text x="910" y="432" text-anchor="middle" fill="var(--checkout)">03 · Checkout</text>
+          <rect x="770" y="442" width="280" height="3" fill="var(--checkout)" opacity="0.7"></rect>
+        </g>
+
+        <!-- ===== edges (drawn before boxes) ===== -->
+        <g fill="none">
+          <!-- E1 get_movies_by_genre -> get_showtimes -->
+          <path d="M280,105 L340,105" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="284" y="98">movie_id</text>
+
+          <!-- E2 get_showtimes -> add_item_to_cart -->
+          <path d="M460,150 L460,230" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="466" y="190">showtime_id</text>
+
+          <!-- E3 get_food_items -> add_item_to_cart -->
+          <path d="M760,150 L760,195 L560,195 L560,230" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="600" y="188">item_id</text>
+
+          <!-- BUS: horizontal cart_id rail -->
+          <path d="M160,365 L1060,365" stroke="var(--bus)" stroke-width="2.2"></path>
+          <!-- write tap: create_cart -->
+          <path d="M160,320 L160,365" stroke="var(--bus)" stroke-width="2.4" marker-end="url(#arrow-bus)"></path>
+          <text class="edge-label" x="168" y="345" fill="var(--bus)">cart_id (write)</text>
+          <!-- read taps -->
+          <path d="M460,365 L460,320" stroke="var(--bus)" stroke-width="1.6" marker-end="url(#arrow-bus)"></path>
+          <path d="M760,365 L760,320" stroke="var(--bus)" stroke-width="1.6" marker-end="url(#arrow-bus)"></path>
+          <path d="M1060,365 L1060,320" stroke="var(--bus)" stroke-width="1.6" marker-end="url(#arrow-bus)"></path>
+          <path d="M910,365 L910,460" stroke="var(--bus)" stroke-width="1.6" marker-end="url(#arrow-bus)"></path>
+
+          <!-- E4 add_item_to_cart -> remove_item_from_cart -->
+          <path d="M580,275 L640,275" stroke="var(--edge)" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="edge-label" x="586" y="268">cart_item_id</text>
+
+          <!-- E5 get_cart_details -> remove_item_from_cart (dashed fallback) -->
+          <path d="M1060,230 L1060,195 L760,195 L760,230" stroke="var(--edge-dim)" stroke-width="1.6" stroke-dasharray="4 5" marker-end="url(#arrow-dim)"></path>
+          <text class="edge-label" x="850" y="188">cart_item_id (fallback)</text>
+        </g>
+
+        <!-- ===== tool boxes ===== -->
+        <!-- ROW 1 — DISCOVER -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_movies_by_genre" style="--accent:var(--discover)">
+          <rect class="box" x="40" y="60" width="240" height="90" rx="9"></rect>
+          <rect class="accentbar" x="40" y="60" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="56" y="98">get_movies_by_genre</text>
+          <text class="tooltype" x="56" y="118">DataAction</text>
+        </g>
+
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_showtimes" style="--accent:var(--discover)">
+          <rect class="box" x="340" y="60" width="240" height="90" rx="9"></rect>
+          <rect class="accentbar" x="340" y="60" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="356" y="98">get_showtimes</text>
+          <text class="tooltype" x="356" y="118">DataAction</text>
+        </g>
+
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_food_items" style="--accent:var(--discover)">
+          <rect class="box" x="640" y="60" width="240" height="90" rx="9"></rect>
+          <rect class="accentbar" x="640" y="60" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="656" y="98">get_food_items</text>
+          <text class="tooltype" x="656" y="118">DataAction</text>
+        </g>
+
+        <!-- ROW 2 — CART -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="create_cart" style="--accent:var(--cart)">
+          <rect class="box" x="40" y="230" width="240" height="90" rx="9"></rect>
+          <rect class="accentbar" x="40" y="230" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="56" y="268">create_cart</text>
+          <text class="tooltype" x="56" y="288">DataAction</text>
+        </g>
+
+        <g class="tool-box" tabindex="0" role="button" data-tool="add_item_to_cart" style="--accent:var(--cart)">
+          <rect class="box" x="340" y="230" width="240" height="90" rx="9"></rect>
+          <rect class="accentbar" x="340" y="230" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="356" y="268">add_item_to_cart</text>
+          <text class="tooltype" x="356" y="288">DataAction</text>
+        </g>
+
+        <g class="tool-box" tabindex="0" role="button" data-tool="remove_item_from_cart" style="--accent:var(--cart)">
+          <rect class="box" x="640" y="230" width="240" height="90" rx="9"></rect>
+          <rect class="accentbar" x="640" y="230" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="656" y="268">remove_item_from_cart</text>
+          <text class="tooltype" x="656" y="288">DataAction</text>
+        </g>
+
+        <g class="tool-box" tabindex="0" role="button" data-tool="get_cart_details" style="--accent:var(--cart)">
+          <rect class="box" x="940" y="230" width="240" height="90" rx="9"></rect>
+          <rect class="accentbar" x="940" y="230" width="4" height="90" rx="1"></rect>
+          <text class="toolname" x="956" y="268">get_cart_details</text>
+          <text class="tooltype" x="956" y="288">DataAction</text>
+        </g>
+
+        <!-- ROW 3 — CHECKOUT -->
+        <g class="tool-box" tabindex="0" role="button" data-tool="checkout_cart" style="--accent:var(--checkout)">
+          <rect class="box" x="770" y="460" width="280" height="100" rx="9"></rect>
+          <rect class="accentbar" x="770" y="460" width="4" height="100" rx="1"></rect>
+          <text class="toolname" x="786" y="498">checkout_cart</text>
+          <text class="tooltype" x="786" y="518">DataAction</text>
+          <text class="terminaltag" x="786" y="536">⊘ TERMINAL · IRREVERSIBLE</text>
+        </g>
+      </svg>
+
+      <div class="legend-row" style="margin-top:14px;">
+        <span class="legend-item"><span class="legend-swatch"></span> output feeds the next tool's required input</span>
+        <span class="legend-item"><span class="legend-swatch dashed"></span> alternate / contextual path</span>
+        <span class="legend-item"><span class="legend-swatch bus"></span> cart_id rail — shared context every cart tool reads</span>
+      </div>
+      <div class="legend-row" style="margin-top:10px;">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--discover)"></span>Discover</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--cart)"></span>Cart</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--checkout)"></span>Checkout</span>
+      </div>
+    </div>
+    <p class="hint-line">↳ click a tool above — its interface appears in the inspector below</p>
+  </section>
+
+  <!-- ================= INSPECTOR ================= -->
+  <section>
+    <div class="section-head">
+      <p class="section-tag">03 · Tool Inspector</p>
+      <h2>Interface detail</h2>
+    </div>
+
+    <div class="inspector">
+      <p class="inspector-key">
+        <b>Source key —</b> User: filled in from the conversation. ToolInput: passed along from earlier
+        in the session. ToolOutput: automatically mapped from a specific field of an earlier tool's
+        output (see Notes for which one).
+      </p>
+      <div id="inspector-body"><!-- rendered by JS --></div>
+    </div>
+  </section>
+
+  <!-- ================= ASSIGNMENT ================= -->
+  <section style="margin-bottom:20px;">
+    <div class="assignment">
+      <p>
+        <strong>Your assignment:</strong> build a complete, working Genesys Agentic Virtual Agent (AVA)
+        Definition for this movie-night planning flow — the <strong>role definition</strong>, the
+        <strong>instructions</strong> (how to normalize loose language like "Friday" or "scary movies",
+        how to pace the conversation), the <strong>pre-instructions</strong> for each tool (when and how
+        to call it, what to confirm with the guest first), the <strong>outcome instructions</strong> for
+        each tool (how the agent reacts to every possible result — found, not found, over budget, error),
+        and any <strong>guardrails</strong> the agent needs. The tool schema and their Data Actions shown
+        above are predefined — use them exactly as they are; do not modify the tooling structure. Your
+        job is the AVA definition that wires these eight tools together into a complete, functioning
+        agent.
+      </p>
+      <div class="scope-out">
+        <b>Scope note</b> — checkout_cart returns a <strong>payment_code</strong> once the guest
+        confirms, and that's the finish line for this exercise. Whatever happens after that point
+        (redirecting to the payment platform, confirming the transaction, bringing the guest back to
+        the conversation) is intentionally left out of scope — it's included here as a challenge
+        exercise for discussion, not something you need to build. Implement just far enough to get a
+        payment code back from the AVA.
+      </div>
+    </div>
+  </section>
+
+  <footer>Genesys AVA Workshop · Tool Model Assignment</footer>
+</div>
+
+<script>
+const TOOLS = {
+  get_movies_by_genre: {
+    stageLabel: "Discover", color: "var(--discover)",
+    name: "get_movies_by_genre",
+    type: "DataAction",
+    dataAction: "AVA_MoviePlanner_GetMoviesByGenre",
+    description: "Searches the catalog of movies currently showing, one genre at a time. This is normally the very first tool in the conversation — it's what turns a vague \"I want something funny\" into a concrete shortlist of titles the guest can actually choose from.",
+    inputs: [
+      { name:"genre", type:"string (enum)", source:"User", required:true, note:"action, comedy, drama, horror, romance, thriller, sci-fi, animation, documentary" }
+    ],
+    outputVar: "MoviesByGenre",
+    outputs: [
+      { name:"status.success", type:"boolean", note:"" },
+      { name:"status.fail_reason", type:"string", note:"Populated only when success = false" },
+      { name:"movies", type:"array<Movie>", note:"Each item: movie_id, title, genre, duration_minutes, rating, description" }
+    ],
+    flowNote:"movie_id from this array is what get_showtimes needs next."
+  },
+  get_showtimes: {
+    stageLabel: "Discover", color: "var(--discover)",
+    name: "get_showtimes",
+    type: "DataAction",
+    dataAction: "AVA_MoviePlanner_GetShowTimes",
+    description: "Looks up the actual showtime slots for one specific movie the guest has already chosen — when it plays, what it costs, what screen type. It only makes sense once a movie_id exists, which is why it always comes right after get_movies_by_genre rather than being called on its own.",
+    inputs: [
+      { name:"movie_id", type:"string", source:"User", required:true, note:"From MoviesByGenre.movies[].movie_id" },
+      { name:"date", type:"string (YYYY-MM-DD)", source:"User", required:true, note:"" },
+      { name:"time_window_start", type:"string", source:"User", required:false, note:"" },
+      { name:"time_window_end", type:"string", source:"User", required:false, note:"" },
+      { name:"max_price_aed", type:"number", source:"User", required:false, note:"Typically the cart's remaining budget, when one exists" }
+    ],
+    outputVar: "ShowTimeInfo",
+    outputs: [
+      { name:"status.success", type:"boolean", note:"" },
+      { name:"status.fail_reason", type:"string", note:"" },
+      { name:"showtimes", type:"array<Showtime>", note:"Each item: showtime_id, movie_id, date, time, price_aed, screen_type, cinema_name" }
+    ],
+    flowNote:"showtime_id and price_aed are what add_item_to_cart needs to add a ticket."
+  },
+  get_food_items: {
+    stageLabel: "Discover", color: "var(--discover)",
+    name: "get_food_items",
+    type: "DataAction",
+    dataAction: "AVA_MoviePlanner_GetFoodItems",
+    description: "Browses one food or drink category at a time — snacks, mains, drinks, or desserts — rather than dumping the whole menu on the guest at once. It runs independently of the movie/showtime tools and typically gets called after a ticket's already in the cart, when Voxi proactively offers food.",
+    inputs: [
+      { name:"category", type:"string (enum)", source:"User", required:true, note:"snack, main-course, drinks, desserts" },
+      { name:"max_price_aed", type:"number", source:"User", required:false, note:"Typically the cart's remaining budget, when one exists" }
+    ],
+    outputVar: "FoodItemSearchResult",
+    outputs: [
+      { name:"status.success", type:"boolean", note:"" },
+      { name:"status.fail_reason", type:"string", note:"" },
+      { name:"foodItems", type:"array<FoodItem>", note:"Each item: item_id, name, price_aed, description, size" }
+    ],
+    flowNote:"item_id from this array is what add_item_to_cart needs to add a food item."
+  },
+  create_cart: {
+    stageLabel: "Cart", color: "var(--cart)",
+    name: "create_cart",
+    type: "DataAction",
+    dataAction: "AVA_MoviePlanner_CreateCart",
+    description: "Spins up the one cart this conversation will use and, if the guest mentioned a number, attaches it as a budget to check everything against. Every later cart action — adding a ticket, adding food, checking totals, checking out — depends on the cart_id this returns, so it has to run before any of them, and only once.",
+    inputs: [
+      { name:"budget_aed", type:"number", source:"User", required:false, note:"Omit entirely if no budget was mentioned" }
+    ],
+    outputVar: "CartCreationResult",
+    outputs: [
+      { name:"cartId", type:"string", note:"The shared context every other cart tool reads — see the cart_id rail below" },
+      { name:"status.success", type:"boolean", note:"" },
+      { name:"status.fail_reason", type:"string", note:"" }
+    ],
+    flowNote:"There is only ever one cart per conversation — this should run at most once."
+  },
+  add_item_to_cart: {
+    stageLabel: "Cart", color: "var(--cart)",
+    name: "add_item_to_cart",
+    type: "DataAction",
+    dataAction: "AVA_MoviePlanner_AddItemToCart",
+    description: "Takes one specific item the guest just chose — a showtime or a food item — and commits it to the cart, checking it against the budget in the same step. This is the bridge between browsing (get_showtimes / get_food_items) and actually having an order: nothing counts toward the cart until it passes through here.",
+    inputs: [
+      { name:"cart_id", type:"string", source:"ToolOutput", required:true, note:"Mapped from CartCreationResult.cartId" },
+      { name:"item_type", type:"string (\"ticket\" | \"food\")", source:"User", required:true, note:"" },
+      { name:"item_id", type:"string", source:"User", required:true, note:"From ShowTimeInfo.showtimes[].showtime_id or FoodItemSearchResult.foodItems[].item_id" },
+      { name:"quantity", type:"integer", source:"User", required:false, note:"Defaults to 1 — always 1 for tickets" }
+    ],
+    outputVar: "CartUpdatedAfterAddition",
+    outputs: [
+      { name:"status.success", type:"boolean", note:"" },
+      { name:"status.fail_reason", type:"string", note:"" },
+      { name:"cartStatus.cartTotal", type:"number", note:"" },
+      { name:"cartStatus.cartBudget", type:"number", note:"Present only if the cart has a budget" },
+      { name:"cartStatus.cartBudgetRemaining", type:"number", note:"Present only if the cart has a budget" },
+      { name:"cart_item_id", type:"string", note:"Needed if this item is later removed" }
+    ],
+    flowNote:"Only one ticket is allowed per cart — multiple food items are fine."
+  },
+  remove_item_from_cart: {
+    stageLabel: "Cart", color: "var(--cart)",
+    name: "remove_item_from_cart",
+    type: "DataAction",
+    dataAction: "AVA_MoviePlanner_RemoveItemFromCart",
+    description: "Takes one specific line item back out of the cart and recalculates the total and remaining budget. In the conversation, this is what lets Voxi swap in something cheaper when the guest is over budget, instead of having to scrap the whole cart and start over.",
+    inputs: [
+      { name:"cart_id", type:"string", source:"ToolOutput", required:true, note:"Mapped from CartCreationResult.cartId" },
+      { name:"cart_item_id", type:"string", source:"User", required:false, note:"From add_item_to_cart's response, or from get_cart_details if that's not available" }
+    ],
+    outputVar: "CartItemRemoveResponse",
+    outputs: [
+      { name:"status.success", type:"boolean", note:"" },
+      { name:"status.fail_reason", type:"string", note:"" },
+      { name:"cartStatus.cartTotal", type:"number", note:"" },
+      { name:"cartStatus.cartBudget", type:"number", note:"" },
+      { name:"cartStatus.cartBudgetRemaining", type:"number", note:"" }
+    ],
+    flowNote:"Used both for explicit removals and for swapping in a cheaper alternative when budget is exceeded."
+  },
+  get_cart_details: {
+    stageLabel: "Cart", color: "var(--cart)",
+    name: "get_cart_details",
+    type: "DataAction",
+    dataAction: "AVA_MoviePlanner_GetCartDetail",
+    description: "Reads back the full current state of the cart — every item, the running total, the budget picture — without changing anything. Voxi calls this whenever it needs to show the guest their order so far, or to double-check a ticket is actually in the cart before letting them check out.",
+    inputs: [
+      { name:"cart_id", type:"string", source:"ToolOutput", required:true, note:"Mapped from CartCreationResult.cartId" }
+    ],
+    outputVar: "CartDetailResponse",
+    outputs: [
+      { name:"status.success", type:"boolean", note:"" },
+      { name:"status.fail_reason", type:"string", note:"" },
+      { name:"cartStatus.cartTotal", type:"number", note:"" },
+      { name:"cartStatus.cartBudget", type:"number", note:"" },
+      { name:"cartStatus.cartBudgetRemaining", type:"number", note:"" },
+      { name:"items", type:"array<CartItem>", note:"Each item: cart_item_id, item_id, item_type, item_name, price, detail" }
+    ],
+    flowNote:"The standard way to confirm a ticket is in the cart before checkout, and to recover a cart_item_id for removal."
+  },
+  checkout_cart: {
+    stageLabel: "Checkout", color: "var(--checkout)",
+    name: "checkout_cart",
+    type: "DataAction",
+    dataAction: "AVA_MoviePlanner_CheckoutCart",
+    terminal: true,
+    description: "Locks the cart so nothing more can be added or removed, and exchanges it for a one-time payment_code with a 15-minute window to use it. It's the last tool in the guest's journey through Voxi — once it returns successfully, the booking conversation is functionally complete.",
+    inputs: [
+      { name:"cart_id", type:"string", source:"ToolOutput", required:true, note:"Mapped from CartCreationResult.cartId" }
+    ],
+    outputVar: "CartCheckOutResponse",
+    outputs: [
+      { name:"status.success", type:"boolean", note:"" },
+      { name:"status.fail_reason", type:"string", note:"Key reasons: NO_TICKET, CART_EMPTY, CART_NOT_ACTIVE, INVALID_TOTAL" },
+      { name:"payment_code", type:"string", note:"What the guest uses to pay" },
+      { name:"total", type:"number", note:"" },
+      { name:"expires_at", type:"string", note:"" }
+    ],
+    flowNote:"Only valid once the cart is confirmed to contain a ticket — typically checked with get_cart_details first. This is also the finish line for the exercise: once payment_code comes back, the AVA's job is done. What happens after the guest actually pays (payment platform redirect, transaction confirmation, returning to the conversation) is a challenge exercise for discussion, not something you need to implement."
+  }
+};
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderInputsTable(inputs){
+  const rows = inputs.map(i => `
+    <tr>
+      <td class="fname">${esc(i.name)}</td>
+      <td>${esc(i.type)}</td>
+      <td>${esc(i.source)}</td>
+      <td>${i.required ? '<span class="req-yes">required</span>' : '<span class="req-no">optional</span>'}</td>
+      <td class="note">${esc(i.note||'')}</td>
+    </tr>`).join('');
+  return `
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Source</th><th>Required</th><th>Notes</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderOutputsTable(outputs){
+  const rows = outputs.map(o => `
+    <tr>
+      <td class="fname">${esc(o.name)}</td>
+      <td>${esc(o.type)}</td>
+      <td class="note">${esc(o.note||'')}</td>
+    </tr>`).join('');
+  return `
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderTool(id){
+  const t = TOOLS[id];
+  if(!t) return;
+  const html = `
+    <div class="insp-head">
+      <h3 class="insp-name">${esc(t.name)}</h3>
+      <div class="badge-row">
+        <span class="badge" style="background:${t.color}">${esc(t.stageLabel)}</span>
+        <span class="badge outline">${esc(t.type)}</span>
+        ${t.terminal ? '<span class="badge outline" style="color:var(--checkout);border-color:var(--checkout)">terminal</span>' : ''}
+      </div>
+    </div>
+    <p class="insp-desc">${esc(t.description)}</p>
+    <p class="insp-dataaction">Genesys Data Action → <strong>${esc(t.dataAction)}</strong></p>
+    <div class="io-grid" style="margin-top:22px;">
+      <div class="io-col">
+        <h3>Inputs</h3>
+        ${renderInputsTable(t.inputs)}
+      </div>
+      <div class="io-col">
+        <h3>Outputs</h3>
+        <p class="io-out-var">→ stored as <strong>${esc(t.outputVar)}</strong></p>
+        ${renderOutputsTable(t.outputs)}
+      </div>
+    </div>
+    ${t.flowNote ? `<div class="flow-note" style="border-left-color:${t.color}">${esc(t.flowNote)}</div>` : ''}
+  `;
+  document.getElementById('inspector-body').innerHTML = html;
+
+  document.querySelectorAll('.tool-box').forEach(box => {
+    box.classList.toggle('active', box.getAttribute('data-tool') === id);
+    box.setAttribute('aria-pressed', box.getAttribute('data-tool') === id ? 'true' : 'false');
+  });
+}
+
+document.querySelectorAll('.tool-box').forEach(box => {
+  const id = box.getAttribute('data-tool');
+  box.addEventListener('click', () => renderTool(id));
+  box.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      renderTool(id);
+    }
+  });
+});
+
+renderTool('get_movies_by_genre');
+</script>
+
+</body>
+</html>
