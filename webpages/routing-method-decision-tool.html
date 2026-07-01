@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#FF4F1F" />
+<meta name="description" content="Interactive decision tool for selecting a contact center routing method, with a live-scored recommendation and PDF export." />
+<title>Routing Method Decision Tool</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='6' cy='16' r='3.4' fill='%23111827'/%3E%3Cpath d='M9.5 16H19' stroke='%23D8D2C6' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M9.5 16 19 7' stroke='%23D8D2C6' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='22' cy='16' r='3.6' fill='%23FF4F1F'/%3E%3Ccircle cx='22' cy='7' r='2.6' fill='none' stroke='%2398A2B3' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#111827;
+    --ink-soft:#344054;
+    --muted:#667085;
+    --muted-light:#98A2B3;
+
+    --accent:#FF4F1F;
+    --accent-strong:#CC3F18;
+    --accent-deep:#B23715;
+
+    --bg-page:#F3F1ED;
+    --bg-card:#FFFFFF;
+    --bg-peach:#FFF0E8;
+    --bg-amber:#FFF6E5;
+    --bg-footer:#EDE9E2;
+
+    --border:#E7E2D9;
+    --border-soft:#EFEBE3;
+    --border-card:#E5E1D8;
+
+    --conf-high-bg:#E7F6EF;   --conf-high-text:#0F7A55;
+    --conf-med-bg:#FFF6E5;    --conf-med-text:#B45309;
+    --conf-review-bg:#FEECEB; --conf-review-text:#C0341E;
+    --conf-incomplete-bg:#F1F0ED; --conf-incomplete-text:#667085;
+
+    --radius-sm:8px; --radius-md:12px; --radius-lg:16px;
+
+    --shadow-card:0 1px 2px rgba(17,24,39,.04), 0 1px 3px rgba(17,24,39,.05);
+
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",monospace;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0;
+    font-family:var(--font-sans);
+    color:var(--ink);
+    background:var(--bg-page);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.5;
+  }
+  svg{ display:block; }
+  button, select{ font-family:inherit; }
+  h1,h2,h3,p{ margin:0; }
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    background:rgba(255,255,255,.9);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-row{
+    max-width:1280px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:13px 24px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .brand-mark{ flex:none; }
+  .brand-text{ display:flex; flex-direction:column; line-height:1.25; min-width:0; }
+  .brand-title{ font-weight:750; font-size:15px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .brand-sub{ font-size:11.5px; color:var(--muted); font-weight:600; }
+
+  .topbar-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+  .progress-pill{
+    font-size:12.5px; font-weight:700; color:var(--ink-soft);
+    background:var(--bg-page); border:1px solid var(--border);
+    padding:6px 12px; border-radius:999px; white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .progress-track{ height:3px; background:var(--border-soft); }
+  .progress-fill{ height:100%; width:0%; background:var(--accent); transition:width .35s ease; }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:13px; font-weight:650; padding:8px 14px;
+    border-radius:9px; border:1px solid transparent; cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, transform .1s ease, opacity .15s ease;
+    white-space:nowrap;
+  }
+  .btn svg{ width:15px; height:15px; }
+  .btn:active{ transform:translateY(1px); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; }
+  .btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .btn-ghost{ background:transparent; border-color:var(--border); color:var(--ink-soft); }
+  .btn-ghost:hover:not(:disabled){ background:#fff; border-color:#D6D1C6; }
+  .btn-primary{ background:var(--accent-strong); color:#fff; box-shadow:var(--shadow-card); }
+  .btn-primary:hover:not(:disabled){ background:var(--accent-deep); }
+
+  /* ---------- Page / layout ---------- */
+  .page{ max-width:1280px; margin:0 auto; padding:28px 24px 64px; }
+  .intro-text{ max-width:740px; color:var(--muted); font-size:14.5px; margin:2px 0 26px; }
+
+  .layout{ display:grid; grid-template-columns:1fr; gap:20px; }
+  .sidebar{ display:flex; flex-direction:column; gap:20px; order:-1; }
+  .questions{ display:flex; flex-direction:column; gap:14px; order:0; min-width:0; }
+
+  @media (min-width:1024px){
+    .layout{ grid-template-columns:minmax(0,1fr) 368px; gap:28px; align-items:start; }
+    .sidebar{
+      order:0; position:sticky; top:84px;
+      max-height:calc(100vh - 104px); overflow-y:auto;
+      padding-bottom:4px; scrollbar-width:thin; scrollbar-color:#D8D2C6 transparent;
+    }
+    .sidebar::-webkit-scrollbar{ width:6px; }
+    .sidebar::-webkit-scrollbar-track{ background:transparent; }
+    .sidebar::-webkit-scrollbar-thumb{ background:#D8D2C6; border-radius:99px; }
+    .sidebar::-webkit-scrollbar-thumb:hover{ background:#C2BBAC; }
+  }
+
+  /* ---------- Question cards ---------- */
+  @keyframes fadeInUp{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:translateY(0); } }
+
+  .q-card{
+    background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-lg);
+    padding:18px 20px; animation:fadeInUp .45s ease both;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .q-card.is-answered{ border-color:#F4C7B4; box-shadow:0 0 0 1px rgba(255,79,31,.06); }
+
+  .q-head{ display:flex; align-items:flex-start; gap:12px; margin-bottom:13px; }
+  .q-badge{
+    flex:none; min-width:38px; height:26px; padding:0 6px; border-radius:7px;
+    background:var(--bg-page); border:1px solid var(--border); color:var(--muted);
+    font-size:11px; font-weight:750; letter-spacing:.02em;
+    display:flex; align-items:center; justify-content:center;
+    font-variant-numeric:tabular-nums; transition:all .2s ease;
+  }
+  .q-card.is-answered .q-badge{ background:var(--ink); border-color:var(--ink); color:#fff; }
+  .q-badge svg{ width:13px; height:13px; }
+  .q-title{ font-size:15px; font-weight:650; color:var(--ink); line-height:1.4; padding-top:2px; }
+
+  .q-select-wrap{ margin-bottom:13px; position:relative; }
+  .q-select{
+    width:100%; appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    background-color:#fff;
+    border:1.5px solid var(--border); border-radius:9px;
+    padding:10px 38px 10px 13px; font-size:14px; color:var(--ink); font-weight:500;
+    cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5.5 8L10 12.5L14.5 8' stroke='%23667085' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 11px center; background-size:17px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .q-select:hover{ border-color:#C9C2B4; }
+  .q-select:focus-visible{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,79,31,.15); }
+  .q-select.is-placeholder{ color:var(--muted-light); font-weight:500; }
+
+  .q-hints{ display:flex; flex-direction:column; gap:6px; padding-left:13px; border-left:2px solid var(--border-soft); }
+  .q-hint{ font-size:12.5px; color:var(--muted); line-height:1.55; }
+  .q-hint b{ color:var(--ink-soft); font-weight:650; }
+
+  /* ---------- Shared card ---------- */
+  .card{ background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); }
+  .card-eyebrow{ font-size:11px; font-weight:750; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin:0 0 4px; }
+
+  /* ---------- Recommendation card ---------- */
+  .rec-card{ padding:20px 22px 18px; }
+  .rec-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  .rec-title{ font-size:12.5px; font-weight:750; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); }
+
+  .rec-empty-title{ font-size:15px; font-weight:750; color:var(--ink); margin-bottom:6px; }
+  .rec-empty-text{ font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:14px; }
+  .rec-empty-progress{ display:flex; align-items:center; gap:10px; }
+  .rec-mini-track{ flex:1; height:6px; border-radius:99px; background:var(--bg-page); overflow:hidden; }
+  .rec-mini-fill{ height:100%; background:var(--accent); border-radius:99px; transition:width .3s ease; }
+  .rec-mini-label{ font-size:12px; font-weight:750; color:var(--ink-soft); white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+  .rec-row{ padding:11px 0; border-top:1px solid var(--border-soft); }
+  .rec-row:first-child{ border-top:none; padding-top:0; }
+  .rec-label{ font-size:10.5px; font-weight:750; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+  .rec-value-primary{ font-size:23px; font-weight:780; color:var(--accent); line-height:1.25; letter-spacing:-.01em; display:inline-block; }
+  .rec-value-primary.pulse{ animation:pulseOnce .4s ease; }
+  @keyframes pulseOnce{ 0%{ transform:scale(1); } 35%{ transform:scale(1.04); } 100%{ transform:scale(1); } }
+  .rec-value{ font-size:15.5px; font-weight:650; color:var(--ink); }
+  .rec-value.is-muted{ color:var(--muted); font-weight:550; font-style:italic; font-size:14px; }
+
+  .rec-guide{ margin-top:9px; display:flex; flex-direction:column; gap:7px; }
+  .rec-guide-item{ font-size:12.5px; line-height:1.55; color:var(--ink-soft); }
+  .rec-guide-item b{ display:block; color:var(--muted); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:2px; }
+
+  .confidence-badge{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:750; padding:5px 11px; border-radius:99px; white-space:nowrap; }
+  .confidence-badge .dot{ width:6px; height:6px; border-radius:50%; background:currentColor; flex:none; }
+  .conf-high{ background:var(--conf-high-bg); color:var(--conf-high-text); }
+  .conf-medium{ background:var(--conf-med-bg); color:var(--conf-med-text); }
+  .conf-review{ background:var(--conf-review-bg); color:var(--conf-review-text); }
+  .conf-incomplete{ background:var(--conf-incomplete-bg); color:var(--conf-incomplete-text); }
+
+  /* ---------- Scores card ---------- */
+  .scores-card{ padding:20px 20px 16px; }
+  .scores-group-label{ font-size:10.5px; font-weight:750; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:13px 0 8px; }
+  .scores-group-label:first-of-type{ margin-top:2px; }
+  .score-row{ padding:5px 0; }
+  .score-row-top{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:5px; }
+  .score-name{ font-size:12.5px; font-weight:600; color:var(--ink-soft); }
+  .score-row.is-top .score-name{ color:var(--ink); font-weight:700; }
+  .top-chip{ display:inline-block; margin-left:6px; font-size:9px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--accent-strong); background:var(--bg-peach); padding:2px 6px 1.5px; border-radius:99px; vertical-align:middle; }
+  .score-num{ flex:none; font-size:12.5px; font-weight:750; color:var(--muted); font-variant-numeric:tabular-nums; font-family:var(--font-mono); }
+  .score-row.is-top .score-num{ color:var(--accent-strong); }
+  .score-bar-track{ height:7px; border-radius:99px; background:var(--bg-page); overflow:hidden; }
+  .score-bar-fill{ height:100%; border-radius:99px; background:var(--accent); transition:width .5s cubic-bezier(.4,0,.2,1); }
+
+  /* ---------- Decision rule card ---------- */
+  .rule-card{ background:var(--bg-amber); border-color:#F3E0B8; padding:15px 18px; display:flex; gap:10px; margin-top:24px; }
+  .rule-icon{ flex:none; color:var(--conf-med-text); margin-top:1px; width:18px; height:18px; }
+  .rule-text{ font-size:12.5px; line-height:1.6; color:#7A4A0F; max-width:760px; }
+
+  /* ---------- Footer note ---------- */
+  .footer-note{ margin-top:16px; background:var(--bg-footer); border:1px solid var(--border); border-radius:var(--radius-md); padding:15px 20px; font-size:12px; line-height:1.65; color:var(--muted); }
+  .footer-note strong{ color:var(--ink-soft); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:639px){
+    .topbar-row{ padding:12px 16px; flex-wrap:wrap; row-gap:10px; }
+    .brand{ min-width:0; }
+    .brand-title{ white-space:normal; }
+    .brand-sub{ display:none; }
+    .topbar-actions{ width:100%; justify-content:flex-start; }
+    .page{ padding:22px 16px 44px; }
+    .rec-value-primary{ font-size:21px; }
+    .topbar-actions{ gap:8px; }
+    .btn{ padding:8px 11px; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .q-card{ animation:none; }
+    .score-bar-fill,.progress-fill,.rec-mini-fill,.rec-value-primary.pulse{ animation:none!important; transition:none!important; }
+  }
+
+  /* ---------- Print report (hidden on screen) ---------- */
+  #printReport{ display:none; }
+
+  @media print{
+    #appRoot{ display:none!important; }
+    #printReport{ display:block!important; }
+    body{ background:#fff; }
+    @page{ margin:14mm 14mm 16mm; }
+  }
+
+  .pr-doc{ font-family:var(--font-sans); color:#111827; max-width:760px; margin:0 auto; }
+  .pr-header{ border-bottom:2px solid #FF4F1F; padding-bottom:12px; margin-bottom:22px; }
+  .pr-title{ font-size:19px; font-weight:800; margin:0; }
+  .pr-meta{ font-size:11px; color:#667085; margin-top:4px; }
+  .pr-section{ margin-bottom:20px; break-inside:avoid; page-break-inside:avoid; }
+  .pr-section-title{ font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#667085; border-bottom:1px solid #E5E1D8; padding-bottom:6px; margin-bottom:11px; }
+  .pr-rec-grid{ display:grid; grid-template-columns:1fr 1fr; gap:13px 24px; margin-bottom:4px; }
+  .pr-rec-item-label{ font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#98A2B3; margin-bottom:3px; }
+  .pr-rec-item-value{ font-size:13.5px; font-weight:750; }
+  .pr-guide-box{ background:#FFF6E5; border:1px solid #F3E0B8; border-radius:8px; padding:12px 14px; margin-top:10px; break-inside:avoid; page-break-inside:avoid; }
+  .pr-guide-box div + div{ margin-top:4px; }
+  .pr-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
+  .pr-table th{ text-align:left; font-size:9px; text-transform:uppercase; letter-spacing:.04em; color:#98A2B3; padding:5px 8px; border-bottom:1px solid #D8D2C6; }
+  .pr-table td{ padding:6px 8px; border-bottom:1px solid #EFEBE3; vertical-align:top; }
+  .pr-qa-item{ break-inside:avoid; page-break-inside:avoid; padding:8px 2px; border-bottom:1px solid #EFEBE3; }
+  .pr-qa-q{ font-size:11.5px; font-weight:700; margin-bottom:2px; }
+  .pr-qa-a{ font-size:11.5px; color:#344054; }
+  .pr-qa-a.pr-unanswered{ color:#98A2B3; font-style:italic; }
+  .pr-footer-note{ font-size:10px; color:#667085; margin-top:12px; padding-top:10px; border-top:1px solid #E5E1D8; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<div id="appRoot">
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <svg class="brand-mark" width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+          <circle cx="5.5" cy="15" r="3.2" fill="#111827"/>
+          <path d="M8.7 15 19 6.2" stroke="#D8D2C6" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M8.7 15h10.5" stroke="#D8D2C6" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M8.7 15 19 23.8" stroke="#FF4F1F" stroke-width="2.1" stroke-linecap="round"/>
+          <circle cx="22" cy="6.2" r="2.3" fill="none" stroke="#98A2B3" stroke-width="1.6"/>
+          <circle cx="22" cy="15" r="2.3" fill="none" stroke="#98A2B3" stroke-width="1.6"/>
+          <circle cx="22.5" cy="23.8" r="3" fill="#FF4F1F"/>
+        </svg>
+        <div class="brand-text">
+          <span class="brand-title">Routing Method Decision Tool</span>
+          <span class="brand-sub">Contact centre routing guidance</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="progress-pill" id="progressPill">0 of 14 answered</span>
+        <button class="btn btn-ghost" id="resetBtn" type="button" disabled>
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.5 10a6.5 6.5 0 1 1-2.24-4.9M16.5 3.2v4.4h-4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Reset
+        </button>
+        <button class="btn btn-primary" id="exportBtn" type="button" title="Opens your browser's print dialog — choose &quot;Save as PDF&quot; as the destination">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v9m0 0-3.2-3.2M10 12l3.2-3.2M4 14.5v1A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5v-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Export as PDF
+        </button>
+      </div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </header>
+
+  <div class="page">
+    <p class="intro-text" id="introText"></p>
+
+    <div class="layout">
+      <section class="questions" id="questionsList" aria-label="Decision questions"></section>
+
+      <aside class="sidebar">
+        <div class="card rec-card" id="recCard" aria-live="polite" aria-atomic="true"></div>
+        <div class="card scores-card" id="scoresCard"></div>
+      </aside>
+    </div>
+
+    <div class="card rule-card" id="ruleCard"></div>
+    <footer class="footer-note" id="footerNote"></footer>
+  </div>
+</div>
+
+<div id="printReport"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var APP_DATA = {"meta":{"title":"Routing Method Decision Tool","subtitle":"Select answers in the dropdowns. The workbook scores each routing method and suggests a primary method plus optional controls.","decisionRule":"Decision rule: use the primary recommendation as the starting routing method, then review overlays. Priority and Skill Expression Filters are usually controls layered on top of a routing method, not replacements for queue design.","footerNote":"Note: This is a decision-support model. It provides a starting recommendation based on weighted answers. Validate final design with queue volume, SLA, skills, staffing, utilization, reporting, and governance constraints.","minAnswered":8},"questions":[{"id":"Q01","q":"What is the primary business objective?","why":"KPI focus drives the routing pattern.","hint":"Pick the outcome the business will measure first.","options":["Speed of answer / service level","First contact resolution","VIP / customer value experience","Sales conversion / outcome optimization","Overflow / service level protection","Simple and transparent operations"]},{"id":"Q02","q":"How complex are the interactions?","why":"Complexity determines whether simple ACD is enough.","hint":"Consider the knowledge needed to resolve the contact.","options":["Low / repetitive","Medium","High","Highly variable"]},{"id":"Q03","q":"Is specific expertise, language, region, or product knowledge required?","why":"Required expertise points toward skill matching.","hint":"Think about what the agent must know before taking the work.","options":["None","Some expertise","Strong expertise required","Multiple dynamic combinations"]},{"id":"Q04","q":"How many qualified agents are available per skill or segment?","why":"Small expert pools can create bottlenecks.","hint":"Use the smallest critical skill pool as the benchmark.","options":["Large pool","Moderate pool","Small / rare skill pool","Unknown or unstable"]},{"id":"Q05","q":"What fallback behavior is needed?","why":"Fallback design protects wait time and SLA.","hint":"Decide whether to relax requirements or borrow agents.","options":["No special fallback","Relax requirements after wait","Overflow to other teams","Strict no fallback"]},{"id":"Q06","q":"Do customers need the same known agent or relationship owner?","why":"Relationship continuity changes the routing model.","hint":"Use only where relationship value is meaningful.","options":["No","Nice to have","Important","Mandatory"]},{"id":"Q07","q":"Are urgency or VIP exceptions required?","why":"Priority should be an exception, not the base design.","hint":"Be careful of priority inflation.","options":["None","Occasional","Frequent but governed","Many interactions urgent"]},{"id":"Q08","q":"What is the data readiness and AI appetite?","why":"Predictive routing needs good historical data and governance.","hint":"Consider explainability, data volume, and outcome tracking.","options":["Low","Moderate","High with historical outcomes","Requires high explainability"]},{"id":"Q09","q":"Do you need dynamic routing logic from flow, CRM, or customer attributes?","why":"Dynamic rules can avoid queue and skill proliferation.","hint":"Examples: destination, segment, VIP, language, intent.","options":["None","Basic skill assignment","Dynamic skill combinations","Real-time conditions"]},{"id":"Q10","q":"Is there a multi-queue staffing or overflow challenge?","why":"Queue health can determine when agents should be shared.","hint":"Use only when teams can safely support each other.","options":["No","Occasional overflow","Significant cross-team sharing","Dedicated teams only"]},{"id":"Q11","q":"What is the operational maturity and governance level?","why":"Advanced routing requires ownership and monitoring.","hint":"Assess CoE maturity, change control, and reporting readiness.","options":["Low","Medium","High","Expert / CoE"]},{"id":"Q12","q":"How important is routing explainability and troubleshooting simplicity?","why":"Some methods are easier to explain than others.","hint":"Important for supervisors and business stakeholders.","options":["High","Medium","Low acceptable"]},{"id":"Q13","q":"How complex is agent utilization and media blending?","why":"Concurrency and interruption rules can affect routing outcomes.","hint":"Consider voice, chat, email, messages, labels, and ACW.","options":["Simple single media","Blended but low complexity","Complex with labels / interruption rules"]},{"id":"Q14","q":"Can the business accept waiting longer for an expert?","why":"Expert-first designs can improve quality but increase wait time.","hint":"Balance FCR against service level and abandon risk.","options":["No","Limited","Yes","Depends on urgency"]}],"scoring":[["Q01","Speed of answer / service level","Standard ACD",5],["Q01","Speed of answer / service level","Conditional Group Activation",2],["Q01","Speed of answer / service level","Skills-based Routing",1],["Q01","First contact resolution","Skills-based Routing",4],["Q01","First contact resolution","Bullseye Routing",4],["Q01","First contact resolution","Skill Expression Filters",3],["Q01","First contact resolution","Predictive Routing",2],["Q01","VIP / customer value experience","Preferred Agent Routing",4],["Q01","VIP / customer value experience","Direct Agent Routing",4],["Q01","VIP / customer value experience","Priority",3],["Q01","VIP / customer value experience","Skill Expression Filters",2],["Q01","Sales conversion / outcome optimization","Predictive Routing",5],["Q01","Sales conversion / outcome optimization","Skills-based Routing",2],["Q01","Sales conversion / outcome optimization","Preferred Agent Routing",2],["Q01","Overflow / service level protection","Conditional Group Activation",5],["Q01","Overflow / service level protection","Bullseye Routing",2],["Q01","Overflow / service level protection","Standard ACD",1],["Q01","Simple and transparent operations","Standard ACD",5],["Q01","Simple and transparent operations","Skills-based Routing",2],["Q02","Low / repetitive","Standard ACD",4],["Q02","Low / repetitive","Skills-based Routing",1],["Q02","Medium","Skills-based Routing",3],["Q02","Medium","Standard ACD",2],["Q02","High","Skills-based Routing",3],["Q02","High","Bullseye Routing",4],["Q02","High","Skill Expression Filters",4],["Q02","Highly variable","Skill Expression Filters",5],["Q02","Highly variable","Predictive Routing",3],["Q02","Highly variable","Conditional Group Activation",2],["Q03","None","Standard ACD",4],["Q03","Some expertise","Skills-based Routing",4],["Q03","Some expertise","Standard ACD",2],["Q03","Strong expertise required","Skills-based Routing",4],["Q03","Strong expertise required","Bullseye Routing",4],["Q03","Multiple dynamic combinations","Skill Expression Filters",5],["Q03","Multiple dynamic combinations","Skills-based Routing",3],["Q04","Large pool","Skills-based Routing",3],["Q04","Large pool","Predictive Routing",3],["Q04","Large pool","Skill Expression Filters",2],["Q04","Moderate pool","Skills-based Routing",3],["Q04","Moderate pool","Bullseye Routing",2],["Q04","Small / rare skill pool","Bullseye Routing",3],["Q04","Small / rare skill pool","Conditional Group Activation",2],["Q04","Small / rare skill pool","Standard ACD",1],["Q04","Small / rare skill pool","Skill Expression Filters",1],["Q04","Unknown or unstable","Standard ACD",3],["Q04","Unknown or unstable","Conditional Group Activation",2],["Q05","No special fallback","Standard ACD",2],["Q05","No special fallback","Skills-based Routing",2],["Q05","Relax requirements after wait","Bullseye Routing",5],["Q05","Overflow to other teams","Conditional Group Activation",5],["Q05","Strict no fallback","Direct Agent Routing",3],["Q05","Strict no fallback","Preferred Agent Routing",2],["Q05","Strict no fallback","Skill Expression Filters",3],["Q06","No","Standard ACD",2],["Q06","No","Skills-based Routing",2],["Q06","Nice to have","Preferred Agent Routing",3],["Q06","Important","Preferred Agent Routing",5],["Q06","Important","Direct Agent Routing",2],["Q06","Mandatory","Direct Agent Routing",5],["Q06","Mandatory","Preferred Agent Routing",3],["Q07","None","Standard ACD",2],["Q07","Occasional","Priority",4],["Q07","Occasional","Preferred Agent Routing",2],["Q07","Frequent but governed","Priority",5],["Q07","Frequent but governed","Skill Expression Filters",2],["Q07","Many interactions urgent","Priority",2],["Q07","Many interactions urgent","Standard ACD",1],["Q08","Low","Standard ACD",3],["Q08","Low","Skills-based Routing",2],["Q08","Moderate","Skills-based Routing",2],["Q08","Moderate","Skill Expression Filters",2],["Q08","High with historical outcomes","Predictive Routing",5],["Q08","Requires high explainability","Standard ACD",3],["Q08","Requires high explainability","Skills-based Routing",3],["Q08","Requires high explainability","Skill Expression Filters",2],["Q09","None","Standard ACD",3],["Q09","Basic skill assignment","Skills-based Routing",4],["Q09","Dynamic skill combinations","Skill Expression Filters",5],["Q09","Dynamic skill combinations","Skills-based Routing",2],["Q09","Real-time conditions","Skill Expression Filters",4],["Q09","Real-time conditions","Conditional Group Activation",3],["Q09","Real-time conditions","Priority",2],["Q10","No","Standard ACD",2],["Q10","No","Skills-based Routing",2],["Q10","Occasional overflow","Conditional Group Activation",4],["Q10","Significant cross-team sharing","Conditional Group Activation",5],["Q10","Dedicated teams only","Skills-based Routing",2],["Q10","Dedicated teams only","Bullseye Routing",2],["Q11","Low","Standard ACD",5],["Q11","Low","Skills-based Routing",2],["Q11","Medium","Skills-based Routing",3],["Q11","Medium","Priority",2],["Q11","High","Bullseye Routing",3],["Q11","High","Conditional Group Activation",4],["Q11","High","Skill Expression Filters",4],["Q11","High","Preferred Agent Routing",3],["Q11","Expert / CoE","Predictive Routing",4],["Q11","Expert / CoE","Conditional Group Activation",4],["Q11","Expert / CoE","Skill Expression Filters",5],["Q11","Expert / CoE","Bullseye Routing",4],["Q12","High","Standard ACD",4],["Q12","High","Skills-based Routing",4],["Q12","High","Skill Expression Filters",3],["Q12","Medium","Bullseye Routing",3],["Q12","Medium","Conditional Group Activation",2],["Q12","Low acceptable","Predictive Routing",4],["Q13","Simple single media","Standard ACD",3],["Q13","Blended but low complexity","Standard ACD",2],["Q13","Blended but low complexity","Skills-based Routing",2],["Q13","Complex with labels / interruption rules","Skill Expression Filters",3],["Q13","Complex with labels / interruption rules","Conditional Group Activation",3],["Q13","Complex with labels / interruption rules","Priority",2],["Q14","No","Standard ACD",3],["Q14","No","Conditional Group Activation",2],["Q14","Limited","Bullseye Routing",3],["Q14","Limited","Skills-based Routing",2],["Q14","Yes","Bullseye Routing",5],["Q14","Yes","Direct Agent Routing",2],["Q14","Depends on urgency","Priority",4],["Q14","Depends on urgency","Skill Expression Filters",2]],"guide":{"Standard ACD":{"optimizes":"Simple, transparent routing for speed of answer and service level.","best":"Simple contacts, low complexity, early maturity, broad agent pools.","watch":"May ignore context and reduce FCR if skills or customer needs matter."},"Skills-based Routing":{"optimizes":"Routes to agents with the right skills or language.","best":"Product, language, region, technical, or specialist needs.","watch":"Over-segmentation can increase wait time and create bottlenecks."},"Bullseye Routing":{"optimizes":"Expert-first routing with controlled fallback.","best":"Complex contacts where FCR matters but fallback is acceptable.","watch":"Can increase wait time if inner rings are too small or timers are too long."},"Conditional Group Activation":{"optimizes":"Activates shared/borrowed agent groups based on queue health.","best":"Overflow, service level protection, and cross-team balancing.","watch":"Rules can become complex and borrowed agents may be less proficient."},"Predictive Routing":{"optimizes":"AI-driven matching to optimize a selected business KPI.","best":"Mature environments with data volume and outcome governance.","watch":"Requires good data, governance, and stakeholder comfort with AI optimization."},"Preferred Agent Routing":{"optimizes":"Attempts relationship continuity before fallback.","best":"Account ownership, VIP continuity, or customer-agent affinity.","watch":"Preferred pools can be too small or unavailable."},"Direct Agent Routing":{"optimizes":"Routes to a specific target agent or backup path.","best":"Concierge, named advisor, or direct relationship use cases.","watch":"Can create bottlenecks and requires strong backup design."},"Skill Expression Filters":{"optimizes":"Dynamic eligibility filter using skills, language, proficiency, segment, destination, VIP, etc.","best":"Complex combinations that would otherwise create many queues or static skill sets.","watch":"Logic can become restrictive or hard to govern; monitor fallback and SLA."},"Priority":{"optimizes":"Raises interaction ranking by urgency while keeping eligibility rules unchanged.","best":"VIP, incidents, regulatory SLA, escalations, or long-waiting customers.","watch":"Overuse causes priority inflation and can starve standard queues."}},"primaryMethods":["Standard ACD","Skills-based Routing","Bullseye Routing","Conditional Group Activation","Predictive Routing","Preferred Agent Routing","Direct Agent Routing"],"overlayMethods":["Skill Expression Filters","Priority"]};
+
+  var ALL_METHODS = APP_DATA.primaryMethods.concat(APP_DATA.overlayMethods);
+  var STORAGE_KEY = "routing-decision-tool:answers:v1";
+
+  // ---------- Scoring engine (mirrors the workbook's SUMIFS / INDEX-MATCH / LARGE formulas) ----------
+  var lookup = new Map();
+  APP_DATA.scoring.forEach(function(row){
+    lookup.set(row[0] + "\u0001" + row[1] + "\u0001" + row[2], row[3]);
+  });
+
+  function computeScores(answers){
+    var scores = {};
+    ALL_METHODS.forEach(function(m){
+      var total = 0;
+      APP_DATA.questions.forEach(function(q){
+        var a = answers[q.id];
+        if(!a) return;
+        total += lookup.get(q.id + "\u0001" + a + "\u0001" + m) || 0;
+      });
+      scores[m] = total;
+    });
+    return scores;
+  }
+
+  function large(arr, k){
+    return arr.slice().sort(function(a,b){ return b-a; })[k-1];
+  }
+
+  function computeRecommendation(answers){
+    var scores = computeScores(answers);
+    var answeredCount = APP_DATA.questions.reduce(function(n,q){ return n + (answers[q.id] ? 1 : 0); }, 0);
+    var MIN = APP_DATA.meta.minAnswered;
+
+    if(answeredCount < MIN){
+      return { complete:false, answeredCount:answeredCount, scores:scores, primary:null, secondary:null, overlay:null, confidence:"Incomplete" };
+    }
+
+    var pScores = APP_DATA.primaryMethods.map(function(m){ return scores[m]; });
+    var maxP = Math.max.apply(null, pScores);
+    var primary = APP_DATA.primaryMethods[pScores.indexOf(maxP)];
+    var tieCount = pScores.filter(function(s){ return s === maxP; }).length;
+    var second = large(pScores, 2);
+    var secondary = tieCount > 1 ? "Tie - review top scores" : APP_DATA.primaryMethods[pScores.indexOf(second)];
+
+    var oScores = APP_DATA.overlayMethods.map(function(m){ return scores[m]; });
+    var maxO = Math.max.apply(null, oScores);
+    var overlay = maxO >= 6 ? APP_DATA.overlayMethods[oScores.indexOf(maxO)] : "No strong overlay indicated";
+
+    var gap = maxP - second;
+    var confidence = gap >= 6 ? "High" : (gap >= 3 ? "Medium" : "Review required");
+
+    return { complete:true, answeredCount:answeredCount, scores:scores, primary:primary, secondary:secondary, overlay:overlay, confidence:confidence, maxP:maxP };
+  }
+
+  // ---------- Persistence ----------
+  function loadAnswers(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return {};
+      var parsed = JSON.parse(raw);
+      return (parsed && typeof parsed === "object") ? parsed : {};
+    }catch(e){ return {}; }
+  }
+  function saveAnswers(a){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); }catch(e){}
+  }
+
+  var answers = loadAnswers();
+  var lastResult = null;
+  var prevPrimary = null;
+
+  // ---------- DOM refs ----------
+  var questionsList = document.getElementById("questionsList");
+  var recCard = document.getElementById("recCard");
+  var scoresCard = document.getElementById("scoresCard");
+  var ruleCard = document.getElementById("ruleCard");
+  var footerNote = document.getElementById("footerNote");
+  var introText = document.getElementById("introText");
+  var progressPill = document.getElementById("progressPill");
+  var progressFill = document.getElementById("progressFill");
+  var resetBtn = document.getElementById("resetBtn");
+  var exportBtn = document.getElementById("exportBtn");
+  var printReport = document.getElementById("printReport");
+
+  var ICON_CHECK = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, function(s){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[s];
+    });
+  }
+
+  // ---------- Static content ----------
+  function renderStatic(){
+    introText.textContent = APP_DATA.meta.subtitle;
+    footerNote.innerHTML = "<strong>Note —</strong> " + escapeHtml(APP_DATA.meta.footerNote.replace(/^Note:\s*/,""));
+    ruleCard.innerHTML =
+      '<svg class="rule-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v4.5M10 6.6h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>' +
+      '<div class="rule-text">' + escapeHtml(APP_DATA.meta.decisionRule) + "</div>";
+  }
+
+  // ---------- Questions ----------
+  function renderQuestions(){
+    questionsList.innerHTML = APP_DATA.questions.map(function(q, idx){
+      var val = answers[q.id] || "";
+      var optsHtml = '<option value="" disabled ' + (val ? "" : "selected") + '>Select an answer…</option>' +
+        q.options.map(function(o){
+          return '<option value="' + escapeHtml(o) + '" ' + (o === val ? "selected" : "") + ">" + escapeHtml(o) + "</option>";
+        }).join("");
+
+      return (
+        '<article class="q-card' + (val ? " is-answered" : "") + '" data-qid="' + q.id + '" style="animation-delay:' + Math.min(idx * 30, 260) + 'ms">' +
+          '<div class="q-head">' +
+            '<span class="q-badge">' + (val ? ICON_CHECK : q.id) + "</span>" +
+            '<h3 class="q-title" id="qtitle-' + q.id + '">' + escapeHtml(q.q) + "</h3>" +
+          "</div>" +
+          '<div class="q-select-wrap">' +
+            '<select class="q-select' + (val ? "" : " is-placeholder") + '" data-qid="' + q.id + '" aria-labelledby="qtitle-' + q.id + '">' +
+              optsHtml +
+            "</select>" +
+          "</div>" +
+          '<div class="q-hints">' +
+            '<div class="q-hint"><b>Why it matters —</b> ' + escapeHtml(q.why) + "</div>" +
+            '<div class="q-hint"><b>Guidance —</b> ' + escapeHtml(q.hint) + "</div>" +
+          "</div>" +
+        "</article>"
+      );
+    }).join("");
+
+    var selects = questionsList.querySelectorAll("select.q-select");
+    for(var i=0;i<selects.length;i++){ selects[i].addEventListener("change", onAnswerChange); }
+  }
+
+  function onAnswerChange(e){
+    var sel = e.target;
+    var qid = sel.dataset.qid;
+    var val = sel.value;
+    if(val){ answers[qid] = val; } else { delete answers[qid]; }
+    saveAnswers(answers);
+
+    var card = sel.closest(".q-card");
+    var badge = card.querySelector(".q-badge");
+    if(val){
+      card.classList.add("is-answered");
+      sel.classList.remove("is-placeholder");
+      badge.innerHTML = ICON_CHECK;
+    }else{
+      card.classList.remove("is-answered");
+      sel.classList.add("is-placeholder");
+      badge.textContent = qid;
+    }
+    updateAll();
+  }
+
+  // ---------- Recommendation ----------
+  function confidenceClass(conf){
+    if(conf === "High") return "conf-high";
+    if(conf === "Medium") return "conf-medium";
+    if(conf === "Review required") return "conf-review";
+    return "conf-incomplete";
+  }
+
+  function renderRecommendation(result){
+    if(!result.complete){
+      prevPrimary = null;
+      var remaining = Math.max(0, APP_DATA.meta.minAnswered - result.answeredCount);
+      var pct = Math.min(100, (result.answeredCount / APP_DATA.meta.minAnswered) * 100);
+      recCard.innerHTML =
+        '<div class="rec-header"><span class="rec-title">Recommendation</span>' +
+          '<span class="confidence-badge conf-incomplete"><span class="dot"></span>Incomplete</span>' +
+        "</div>" +
+        '<div class="rec-empty-title">Answer at least ' + APP_DATA.meta.minAnswered + " questions</div>" +
+        '<div class="rec-empty-text">' + (remaining > 0 ? (remaining + " more question" + (remaining === 1 ? "" : "s") + " needed to generate a recommendation.") : "Calculating your recommendation…") + "</div>" +
+        '<div class="rec-empty-progress">' +
+          '<div class="rec-mini-track"><div class="rec-mini-fill" style="width:' + pct + '%"></div></div>' +
+          '<span class="rec-mini-label">' + result.answeredCount + "/" + APP_DATA.meta.minAnswered + "</span>" +
+        "</div>";
+      return;
+    }
+
+    var g = APP_DATA.guide[result.primary];
+    var confCls = confidenceClass(result.confidence);
+    var overlayIsNamed = APP_DATA.overlayMethods.indexOf(result.overlay) !== -1;
+
+    recCard.innerHTML =
+      '<div class="rec-header"><span class="rec-title">Recommendation</span>' +
+        '<span class="confidence-badge ' + confCls + '"><span class="dot"></span>' + escapeHtml(result.confidence) + "</span>" +
+      "</div>" +
+      '<div class="rec-row">' +
+        '<div class="rec-label">Primary method</div>' +
+        '<div class="rec-value-primary" id="recPrimaryValue">' + escapeHtml(result.primary) + "</div>" +
+        (g ? (
+          '<div class="rec-guide">' +
+            '<div class="rec-guide-item"><b>What it optimizes</b>' + escapeHtml(g.optimizes) + "</div>" +
+            '<div class="rec-guide-item"><b>Best when</b>' + escapeHtml(g.best) + "</div>" +
+            '<div class="rec-guide-item"><b>Watch out for</b>' + escapeHtml(g.watch) + "</div>" +
+          "</div>"
+        ) : "") +
+      "</div>" +
+      '<div class="rec-row">' +
+        '<div class="rec-label">Secondary method</div>' +
+        '<div class="rec-value' + (result.secondary === "Tie - review top scores" ? " is-muted" : "") + '">' + escapeHtml(result.secondary) + "</div>" +
+      "</div>" +
+      '<div class="rec-row">' +
+        '<div class="rec-label">Overlay / control</div>' +
+        '<div class="rec-value' + (overlayIsNamed ? "" : " is-muted") + '">' + escapeHtml(result.overlay) + "</div>" +
+      "</div>";
+
+    var valueEl = document.getElementById("recPrimaryValue");
+    if(valueEl && prevPrimary && prevPrimary !== result.primary){
+      valueEl.classList.add("pulse");
+      valueEl.addEventListener("animationend", function handler(){
+        valueEl.classList.remove("pulse");
+        valueEl.removeEventListener("animationend", handler);
+      });
+    }
+    prevPrimary = result.primary;
+  }
+
+  // ---------- Scores ----------
+  function scoreRowHtml(method, score, isTop, maxAll){
+    var width = score === 0 ? 0 : Math.max(4, (score / maxAll) * 100);
+    return (
+      '<div class="score-row' + (isTop ? " is-top" : "") + '">' +
+        '<div class="score-row-top">' +
+          '<span class="score-name">' + escapeHtml(method) + (isTop ? ' <span class="top-chip">Top</span>' : "") + "</span>" +
+          '<span class="score-num">' + score + "</span>" +
+        "</div>" +
+        '<div class="score-bar-track"><div class="score-bar-fill" style="width:' + width + '%"></div></div>' +
+      "</div>"
+    );
+  }
+
+  function renderScores(result){
+    var scores = result.scores;
+    var allVals = ALL_METHODS.map(function(m){ return scores[m]; });
+    var maxAll = Math.max.apply(null, allVals);
+    var maxPrimary = Math.max.apply(null, APP_DATA.primaryMethods.map(function(m){ return scores[m]; }));
+    var maxOverlay = Math.max.apply(null, APP_DATA.overlayMethods.map(function(m){ return scores[m]; }));
+
+    var primaryRows = APP_DATA.primaryMethods.map(function(m){
+      return scoreRowHtml(m, scores[m], maxPrimary > 0 && scores[m] === maxPrimary, maxAll);
+    }).join("");
+    var overlayRows = APP_DATA.overlayMethods.map(function(m){
+      return scoreRowHtml(m, scores[m], maxOverlay > 0 && scores[m] === maxOverlay, maxAll);
+    }).join("");
+
+    scoresCard.innerHTML =
+      '<div class="card-eyebrow">Method scores</div>' +
+      '<div class="scores-group-label">Primary methods</div>' + primaryRows +
+      '<div class="scores-group-label">Overlay / controls</div>' + overlayRows;
+  }
+
+  // ---------- Progress / reset state ----------
+  function updateProgress(answeredCount){
+    var pct = (answeredCount / APP_DATA.questions.length) * 100;
+    progressFill.style.width = pct + "%";
+    progressPill.textContent = answeredCount + " of " + APP_DATA.questions.length + " answered";
+  }
+  function updateResetState(){
+    resetBtn.disabled = Object.keys(answers).length === 0;
+  }
+
+  function updateAll(){
+    var result = computeRecommendation(answers);
+    renderRecommendation(result);
+    renderScores(result);
+    updateProgress(result.answeredCount);
+    updateResetState();
+    lastResult = result;
+  }
+
+  // ---------- Reset ----------
+  resetBtn.addEventListener("click", function(){
+    if(Object.keys(answers).length === 0) return;
+    var ok = window.confirm("Reset all answers? This clears every selection.");
+    if(!ok) return;
+    answers = {};
+    saveAnswers(answers);
+    renderQuestions();
+    updateAll();
+  });
+
+  // ---------- Print / PDF export ----------
+  function slugify(str){
+    return String(str).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  }
+
+  function buildPrintReport(result){
+    var now = new Date();
+    var dateStr = now.toLocaleDateString(undefined, { year:"numeric", month:"long", day:"numeric" });
+    var timeStr = now.toLocaleTimeString(undefined, { hour:"2-digit", minute:"2-digit" });
+
+    var recBody;
+    if(result.complete){
+      var g = APP_DATA.guide[result.primary];
+      recBody =
+        '<div class="pr-rec-grid">' +
+          '<div><div class="pr-rec-item-label">Primary method</div><div class="pr-rec-item-value">' + escapeHtml(result.primary) + "</div></div>" +
+          '<div><div class="pr-rec-item-label">Confidence</div><div class="pr-rec-item-value">' + escapeHtml(result.confidence) + "</div></div>" +
+          '<div><div class="pr-rec-item-label">Secondary method</div><div class="pr-rec-item-value">' + escapeHtml(result.secondary) + "</div></div>" +
+          '<div><div class="pr-rec-item-label">Overlay / control</div><div class="pr-rec-item-value">' + escapeHtml(result.overlay) + "</div></div>" +
+        "</div>" +
+        (g ? (
+          '<div class="pr-guide-box">' +
+            '<div class="pr-rec-item-label">Why ' + escapeHtml(result.primary) + "</div>" +
+            '<div style="font-size:11.5px; line-height:1.6; margin-top:6px;">' +
+              "<div><strong>What it optimizes:</strong> " + escapeHtml(g.optimizes) + "</div>" +
+              "<div><strong>Best when:</strong> " + escapeHtml(g.best) + "</div>" +
+              "<div><strong>Watch out for:</strong> " + escapeHtml(g.watch) + "</div>" +
+            "</div>" +
+          "</div>"
+        ) : "");
+    }else{
+      recBody = '<p style="font-size:12.5px; color:#667085;">Only ' + result.answeredCount + " of " + APP_DATA.questions.length +
+        " questions were answered when this report was generated (minimum " + APP_DATA.meta.minAnswered + " required for a recommendation).</p>";
+    }
+
+    var scoreTableRows = ALL_METHODS.map(function(m){
+      var type = APP_DATA.primaryMethods.indexOf(m) !== -1 ? "Primary method" : "Overlay / control";
+      return "<tr><td>" + escapeHtml(m) + "</td><td>" + type + '</td><td style="text-align:right; font-weight:700;">' + result.scores[m] + "</td></tr>";
+    }).join("");
+
+    var qaRows = APP_DATA.questions.map(function(q){
+      var ans = answers[q.id];
+      return (
+        '<div class="pr-qa-item">' +
+          '<div class="pr-qa-q">' + q.id + " — " + escapeHtml(q.q) + "</div>" +
+          '<div class="pr-qa-a' + (ans ? "" : " pr-unanswered") + '">' + (ans ? escapeHtml(ans) : "Not answered") + "</div>" +
+        "</div>"
+      );
+    }).join("");
+
+    printReport.innerHTML =
+      '<div class="pr-doc">' +
+        '<div class="pr-header">' +
+          '<p class="pr-title">' + escapeHtml(APP_DATA.meta.title) + "</p>" +
+          '<p class="pr-meta">Recommendation report · generated ' + dateStr + " at " + timeStr + "</p>" +
+        "</div>" +
+        '<div class="pr-section"><div class="pr-section-title">Recommendation</div>' + recBody + "</div>" +
+        '<div class="pr-section"><div class="pr-section-title">Method scores</div>' +
+          '<table class="pr-table"><thead><tr><th>Method / control</th><th>Type</th><th style="text-align:right;">Score</th></tr></thead><tbody>' +
+          scoreTableRows + "</tbody></table></div>" +
+        '<div class="pr-section"><div class="pr-section-title">Answers (' + result.answeredCount + " of " + APP_DATA.questions.length + ")</div>" +
+          qaRows + "</div>" +
+        '<div class="pr-section" style="margin-bottom:0;"><div class="pr-section-title">Decision rule</div>' +
+          '<p style="font-size:11.5px; line-height:1.6; color:#344054; margin:0;">' + escapeHtml(APP_DATA.meta.decisionRule) + "</p>" +
+          '<p class="pr-footer-note">' + escapeHtml(APP_DATA.meta.footerNote) + "</p>" +
+        "</div>" +
+      "</div>";
+  }
+
+  function exportPDF(){
+    var result = lastResult || computeRecommendation(answers);
+    buildPrintReport(result);
+
+    var originalTitle = document.title;
+    var dateSlug = new Date().toISOString().slice(0,10);
+    var label = result.complete ? result.primary : "incomplete";
+    document.title = "Routing-Method-Recommendation-" + slugify(label) + "-" + dateSlug;
+
+    var restored = false;
+    function restore(){
+      if(restored) return;
+      restored = true;
+      document.title = originalTitle;
+      window.removeEventListener("afterprint", restore);
+    }
+    window.addEventListener("afterprint", restore);
+    setTimeout(restore, 120000);
+
+    window.print();
+  }
+  exportBtn.addEventListener("click", exportPDF);
+
+  // ---------- Init ----------
+  renderStatic();
+  renderQuestions();
+  updateAll();
+
+})();
+</script>
+</body>
+</html>
