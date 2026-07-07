@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A2o Consultant Hiring Brief</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1E3A5F;--blue:#2a78d6;--blue-l:#E6F1FB;--blue-d:#0C447C;
+  --teal:#1baf7a;--teal-l:#E1F5EE;--teal-d:#085041;
+  --amber:#eda100;--amber-l:#FAEEDA;--amber-d:#633806;
+  --red:#A32D2D;--red-l:#FCEBEB;--red-d:#501313;
+  --purple:#5046a0;--purple-l:#EEEDFC;--purple-d:#2e2870;
+  --grey:#888780;--grey-l:#F1EFE8;--grey-d:#444441;
+  --ink:#1A1918;--ink2:#3D3D3A;--ink3:#73726C;
+  --rule:#E1E0D9;--bg:#F8F7F4;--card:#FFFFFF;
+  --r:8px;--r-lg:12px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* HEADER */
+.site-header{background:var(--navy);padding:28px 40px 24px;border-bottom:3px solid var(--blue)}
+.site-header h1{font-family:'Libre Baskerville',serif;font-size:26px;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
+.site-header .sub{font-size:13px;color:rgba(255,255,255,.55)}
+.site-header .meta{display:flex;gap:24px;margin-top:14px;flex-wrap:wrap}
+.meta-item{font-size:12px;color:rgba(255,255,255,.45)}
+.meta-item strong{color:rgba(255,255,255,.75);font-weight:500}
+
+/* NAV */
+.nav-bar{background:var(--card);border-bottom:1px solid var(--rule);padding:0 40px;display:flex;position:sticky;top:0;z-index:100;overflow-x:auto}
+.nav-btn{padding:14px 18px;border:none;background:transparent;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;white-space:nowrap;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.nav-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+.nav-btn:hover{color:var(--ink)}
+.nav-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* LAYOUT */
+.main{max-width:960px;margin:0 auto;padding:36px 40px 60px}
+.view{display:none}
+.view.active{display:block}
+
+/* TYPOGRAPHY */
+.section-label{font-size:10.5px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;margin-top:32px}
+.section-label:first-child{margin-top:0}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:28px}
+.kpi{background:var(--card);border-radius:var(--r);padding:16px 18px;border:1px solid var(--rule)}
+.kpi-val{font-size:28px;font-weight:500;line-height:1;margin-bottom:5px}
+.kpi-lbl{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;padding:10px 14px;background:var(--card);border-radius:var(--r);border:1px solid var(--rule)}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3)}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* POSITION CARDS */
+.pos-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:28px}
+.pos-card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);padding:16px 18px}
+.pos-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px}
+.pos-country{font-size:15px;font-weight:500}
+.pos-count{font-size:11px;color:var(--ink3);margin-top:1px}
+.pos-roles{display:flex;flex-direction:column;gap:6px}
+.pos-role{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--ink3)}
+.pos-role-info{display:flex;flex-direction:column;gap:2px}
+.pos-role-title{font-size:12.5px;color:var(--ink2);font-weight:500}
+.pos-role-meta{font-size:11px;color:var(--ink3)}
+.pos-role-start{font-size:11px;color:var(--teal-d);font-weight:500}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.badges{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+
+/* INSIGHT GRID */
+.insight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.insight-card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);padding:16px 18px}
+.insight-icon{font-size:20px;margin-bottom:8px}
+.insight-title{font-size:13px;font-weight:500;margin-bottom:5px}
+.insight-body{font-size:12px;color:var(--ink3);line-height:1.65}
+
+/* PILLARS */
+.pillars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:24px}
+.pillar{background:var(--card);border:1px solid var(--rule);padding:14px 16px;border-top-width:3px;border-top-style:solid;border-radius:0 0 var(--r) var(--r)}
+.pillar-name{font-size:12px;font-weight:500;margin-bottom:7px}
+.pillar-items{font-size:11.5px;color:var(--ink3);line-height:1.7}
+
+/* WAVE ROADMAP */
+.roadmap{display:flex;flex-direction:column;margin-bottom:24px}
+.rm-item{display:flex;gap:16px}
+.rm-left{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0}
+.rm-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.rm-line{width:1.5px;flex:1;background:var(--rule);margin:4px 0}
+.rm-item:last-child .rm-line{display:none}
+.rm-content{padding-bottom:22px;flex:1}
+.rm-wave-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;margin-bottom:5px}
+.rm-label{font-size:13px;font-weight:500;margin-bottom:4px}
+.rm-desc{font-size:12.5px;color:var(--ink3);line-height:1.55}
+
+/* CHALLENGES */
+.chal{border:1px solid var(--rule);border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px;background:var(--card)}
+.chal-header{padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;user-select:none}
+.chal-header:hover{background:var(--bg)}
+.chal-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+.chal-title-block{flex:1}
+.chal-title{font-size:14px;font-weight:500}
+.chal-sub{font-size:12px;color:var(--ink3);margin-top:2px}
+.chal-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.status-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.chevron{width:18px;height:18px;color:var(--ink3);transition:transform .2s;flex-shrink:0}
+.chevron.open{transform:rotate(180deg)}
+.chal-body{display:none;border-top:1px solid var(--rule)}
+.chal-body.open{display:block}
+.prs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.prs-col{padding:16px 20px}
+.prs-col+.prs-col{border-left:1px solid var(--rule)}
+.prs-col:nth-child(odd){background:var(--bg)}
+.prs-col-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
+.prs-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:12.5px;color:var(--ink3);line-height:1.55}
+.prs-item:last-child{margin-bottom:0}
+.prs-dot{width:5px;height:5px;border-radius:50%;margin-top:7px;flex-shrink:0}
+
+/* FUNNEL */
+.funnel-wrap{display:flex;flex-direction:column;gap:2px;margin-bottom:28px}
+.funnel-row-f{display:flex;align-items:stretch}
+.funnel-bar-f{display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:54px;border-radius:var(--r);flex:1;min-width:0}
+.funnel-label-f{font-size:13px;font-weight:500}
+.funnel-count-f{font-size:20px;font-weight:500;margin-left:12px;white-space:nowrap}
+.funnel-side-f{width:220px;flex-shrink:0;display:flex;align-items:center;padding-left:16px}
+.funnel-side-text{font-size:11.5px;color:var(--ink3);line-height:1.5}
+.funnel-side-text strong{color:var(--ink2);font-weight:500}
+.dead-bar{border:1.5px dashed var(--red);border-radius:var(--r);flex:1}
+.dead-bar-inner{display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:54px;background:var(--red-l);border-radius:7px}
+.dead-label-f{font-size:13px;font-weight:500;color:var(--red);display:flex;align-items:center;gap:8px}
+.dead-tag{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:#F09595;color:var(--red-d)}
+.conn-row{display:flex;align-items:center;margin:1px 0}
+.conn-center{flex:1;display:flex;flex-direction:column;align-items:center;padding:2px 0}
+.conn-line{width:1.5px;height:14px;background:var(--rule)}
+.conn-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.conn-side{width:220px;flex-shrink:0}
+
+/* TIMELINE STRIP */
+.tl-strip{display:flex;border-radius:var(--r);overflow:hidden;height:38px;margin:20px 0 8px}
+.tl-seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;padding:0 8px;white-space:nowrap;overflow:hidden}
+
+/* MATH CARDS */
+.math-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:20px}
+.math-card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:14px 16px;text-align:center}
+.math-card.hl{border-color:#F09595;background:var(--red-l)}
+.math-val{font-size:22px;font-weight:500;line-height:1;margin-bottom:4px}
+.math-lbl{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.03em;line-height:1.4}
+
+/* INSIGHT BAND */
+.insight-band{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:14px 18px;margin:16px 0;display:flex;align-items:flex-start;gap:12px}
+.insight-band.red{border-left:3px solid var(--red);border-radius:0 var(--r) var(--r) 0}
+.insight-band.blue{border-left:3px solid var(--blue);border-radius:0 var(--r) var(--r) 0}
+.insight-band.amber{border-left:3px solid var(--amber);border-radius:0 var(--r) var(--r) 0}
+.ib-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.ib-text{font-size:13px;color:var(--ink3);line-height:1.65}
+.ib-text strong{color:var(--ink);font-weight:500}
+
+/* CONSTRAINT & LEVER CARDS */
+.constraint-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 24px}
+.constraint-card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);padding:16px 18px}
+.constraint-card.crit{border-color:var(--red);border-width:1.5px}
+.cc-icon{font-size:18px;margin-bottom:8px}
+.cc-title{font-size:12.5px;font-weight:500;margin-bottom:5px}
+.cc-body{font-size:12px;color:var(--ink3);line-height:1.6}
+.lever-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.lever{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);padding:16px 18px}
+.lever.primary{border-color:var(--blue);border-width:1.5px}
+.lever-head{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.lever-icon{font-size:17px}
+.lever-title{font-size:13px;font-weight:500}
+.lever-body{font-size:12px;color:var(--ink3);line-height:1.65}
+
+/* ACTION CARDS */
+.action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.action-card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);padding:16px 18px}
+.action-card.hl{border-color:var(--blue);border-width:1.5px}
+.action-head{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.action-icon{font-size:17px}
+.action-title{font-size:13px;font-weight:500}
+.action-items{font-size:12px;color:var(--ink3);line-height:1.7}
+.action-items li{margin-left:16px;margin-bottom:3px}
+
+/* MISC */
+.divider{height:1px;background:var(--rule);margin:24px 0}
+.new-tag{font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;background:var(--blue-l);color:var(--blue-d);margin-left:7px;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>A2o Consultant Programme — Hiring Brief</h1>
+  <div class="sub">Senior Principal A2o Consultant — Multi-Market European &amp; Expansion Build</div>
+  <div class="meta">
+    <div class="meta-item"><strong>Prepared:</strong> July 2026</div>
+    <div class="meta-item"><strong>Status:</strong> Active multi-market hiring</div>
+    <div class="meta-item"><strong>Audience:</strong> Internal leadership</div>
+    <div class="meta-item"><strong>Markets:</strong> 8 countries · 11 roles</div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <button class="nav-btn active" onclick="show('landscape',this)">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Hiring Landscape
+  </button>
+  <button class="nav-btn" onclick="show('current',this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+    Current State
+  </button>
+  <button class="nav-btn" onclick="show('challenges',this)">
+    <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Challenges
+  </button>
+  <button class="nav-btn" onclick="show('funnel',this)">
+    <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+    Hiring Funnel
+  </button>
+</nav>
+
+<main class="main">
+
+<!-- ══════════════════════════════════════════════
+     TAB 1 — HIRING LANDSCAPE
+══════════════════════════════════════════════ -->
+<div id="view-landscape" class="view active">
+
+  <div class="section-label">Programme overview</div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val" style="color:var(--teal)">4</div><div class="kpi-lbl">Hired / onboarded</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--blue)">3</div><div class="kpi-lbl">Actively hiring</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--amber)">1</div><div class="kpi-lbl">In approval</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--grey)">2</div><div class="kpi-lbl">Tentative / exploratory</div></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="dot" style="background:var(--teal)"></span>Hired — starting confirmed</div>
+    <div class="legend-item"><span class="dot" style="background:var(--blue)"></span>Actively hiring</div>
+    <div class="legend-item"><span class="dot" style="background:var(--amber)"></span>In approval process</div>
+    <div class="legend-item"><span class="dot" style="background:var(--grey)"></span>Tentative / exploratory</div>
+  </div>
+
+  <div class="section-label">Position tracker — 11 roles across 8 markets</div>
+  <div class="pos-grid">
+
+    <div class="pos-card">
+      <div class="pos-head">
+        <div><div class="pos-country">France</div><div class="pos-count">1 position</div></div>
+        <span class="badge" style="background:var(--teal-l);color:var(--teal-d)">Hired</span>
+      </div>
+      <div class="pos-roles">
+        <div class="pos-role">
+          <span class="dot" style="background:var(--teal);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Onboarded</span>
+            <span class="pos-role-start">▶ Start date: 1 September 2026</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-card">
+      <div class="pos-head">
+        <div><div class="pos-country">Spain</div><div class="pos-count">2 positions</div></div>
+        <span class="badge" style="background:var(--teal-l);color:var(--teal-d)">Hired</span>
+      </div>
+      <div class="pos-roles">
+        <div class="pos-role">
+          <span class="dot" style="background:var(--teal);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Onboarded</span>
+            <span class="pos-role-start">▶ Start date: 1 August 2026</span>
+          </div>
+        </div>
+        <div class="pos-role">
+          <span class="dot" style="background:var(--teal);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Onboarded</span>
+            <span class="pos-role-start">▶ Start date: 1 August 2026</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-card">
+      <div class="pos-head">
+        <div><div class="pos-country">Netherlands</div><div class="pos-count">2 positions</div></div>
+        <div class="badges">
+          <span class="badge" style="background:var(--teal-l);color:var(--teal-d)">Hired</span>
+          <span class="badge" style="background:var(--amber-l);color:var(--amber-d)">Approval</span>
+        </div>
+      </div>
+      <div class="pos-roles">
+        <div class="pos-role">
+          <span class="dot" style="background:var(--teal);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Onboarded</span>
+            <span class="pos-role-start">▶ Start date: 1 August 2026</span>
+          </div>
+        </div>
+        <div class="pos-role">
+          <span class="dot" style="background:var(--amber);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Pending headcount approval</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-card">
+      <div class="pos-head">
+        <div><div class="pos-country">United Kingdom</div><div class="pos-count">2 positions</div></div>
+        <span class="badge" style="background:var(--blue-l);color:var(--blue-d)">Active</span>
+      </div>
+      <div class="pos-roles">
+        <div class="pos-role">
+          <span class="dot" style="background:var(--blue);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Actively sourcing</span>
+          </div>
+        </div>
+        <div class="pos-role">
+          <span class="dot" style="background:var(--blue);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Actively sourcing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-card">
+      <div class="pos-head">
+        <div><div class="pos-country">Germany</div><div class="pos-count">1 position</div></div>
+        <span class="badge" style="background:var(--blue-l);color:var(--blue-d)">Active</span>
+      </div>
+      <div class="pos-roles">
+        <div class="pos-role">
+          <span class="dot" style="background:var(--blue);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Actively sourcing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-card">
+      <div class="pos-head">
+        <div><div class="pos-country">Italy</div><div class="pos-count">1 position</div></div>
+        <span class="badge" style="background:var(--blue-l);color:var(--blue-d)">Active</span>
+      </div>
+      <div class="pos-roles">
+        <div class="pos-role">
+          <span class="dot" style="background:var(--blue);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Actively sourcing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-card">
+      <div class="pos-head">
+        <div><div class="pos-country">Dubai (UAE)</div><div class="pos-count">1 position</div></div>
+        <span class="badge" style="background:var(--grey-l);color:var(--grey-d)">Tentative</span>
+      </div>
+      <div class="pos-roles">
+        <div class="pos-role">
+          <span class="dot" style="background:var(--grey);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">A2o Consultant</span>
+            <span class="pos-role-meta">Under consideration</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-card">
+      <div class="pos-head">
+        <div><div class="pos-country">South Africa</div><div class="pos-count">1 position</div></div>
+        <span class="badge" style="background:var(--grey-l);color:var(--grey-d)">Tentative</span>
+      </div>
+      <div class="pos-roles">
+        <div class="pos-role">
+          <span class="dot" style="background:var(--grey);margin-top:5px"></span>
+          <div class="pos-role-info">
+            <span class="pos-role-title">Sr. Principal A2o Consultant</span>
+            <span class="pos-role-meta">Candidate identified</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Strategic context</div>
+  <div class="insight-grid">
+    <div class="insight-card">
+      <div class="insight-icon" style="color:var(--blue)">🌍</div>
+      <div class="insight-title">Multi-language coverage</div>
+      <div class="insight-body">Active across English, French, German, Dutch, Italian, and Arabic markets. Requires a consistent role definition and job architecture that travels across HR frameworks in 8 jurisdictions.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon" style="color:var(--amber)">📊</div>
+      <div class="insight-title">Pipeline split</div>
+      <div class="insight-body">36% hired with confirmed start dates, 27% actively sourcing, 9% in approval, 18% tentative. Notice period commitments mean Aug and Sept starts are already locked — current hires cannot be accelerated.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon" style="color:var(--teal)">📈</div>
+      <div class="insight-title">Velocity signal</div>
+      <div class="insight-body">France, Spain, and Netherlands completed fastest — Foundation wave validated the model. UK and Germany are live but slower, reflecting the rarity of the tri-skill AI + Genesys + consulting profile.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 2 — CURRENT STATE
+══════════════════════════════════════════════ -->
+<div id="view-current" class="view">
+
+  <div class="section-label">Role — what we are actually hiring for</div>
+  <div class="pillars">
+    <div class="pillar" style="border-top-color:var(--blue)">
+      <div class="pillar-name" style="color:var(--blue-d)">AI and LLM fluency</div>
+      <div class="pillar-items">Agentic AI design<br>LLM prompt engineering<br>Orchestration frameworks<br>AI governance and trust<br>GenAI use-case scoping</div>
+    </div>
+    <div class="pillar" style="border-top-color:var(--amber)">
+      <div class="pillar-name" style="color:var(--amber-d)">Genesys and CCaaS</div>
+      <div class="pillar-items">Genesys Cloud CX<br>IVR and bot architecture<br>WFO / WEM integration<br>CX data and analytics<br>Contact centre transformation</div>
+    </div>
+    <div class="pillar" style="border-top-color:var(--teal)">
+      <div class="pillar-name" style="color:var(--teal-d)">Enterprise consulting</div>
+      <div class="pillar-items">C-suite communication<br>Business case development<br>Structured problem solving<br>Change management<br>Multi-stakeholder delivery</div>
+    </div>
+  </div>
+
+  <div class="section-label">Programme waves</div>
+  <div class="roadmap">
+
+    <div class="rm-item">
+      <div class="rm-left"><div class="rm-dot" style="background:var(--teal)"></div><div class="rm-line"></div></div>
+      <div class="rm-content">
+        <div class="rm-wave-tag" style="background:var(--teal-l);color:var(--teal-d)">✓ Wave 1 — Foundation</div>
+        <div class="rm-label">France · Spain · Netherlands — 4 hires confirmed</div>
+        <div class="rm-desc">Resolved the initial blockers: headcount approval process, JD and grade architecture, and recruiter pipeline quality. Established compensation precedent and shift to network-led sourcing. Spain and Netherlands start 1 Aug; France starts 1 Sept. These hires anchor all future approval and pay range arguments.</div>
+      </div>
+    </div>
+
+    <div class="rm-item">
+      <div class="rm-left"><div class="rm-dot" style="background:var(--blue)"></div><div class="rm-line"></div></div>
+      <div class="rm-content">
+        <div class="rm-wave-tag" style="background:var(--blue-l);color:var(--blue-d)">→ Wave 2 — Scaling</div>
+        <div class="rm-label">UK (×2) · Germany · Italy · Netherlands (2nd seat)</div>
+        <div class="rm-desc">5 roles across the core European markets. UK (2) is the highest-priority closure given the largest talent pool. Netherlands second seat pending approval — submit consolidated business case referencing Wave 1 outcomes. Sourcing via direct networks and partner ecosystem; notice periods of 2–3 months mean hire decisions made today translate to Q4 starts.</div>
+      </div>
+    </div>
+
+    <div class="rm-item">
+      <div class="rm-left"><div class="rm-dot" style="background:var(--purple)"></div><div class="rm-line"></div></div>
+      <div class="rm-content">
+        <div class="rm-wave-tag" style="background:var(--purple-l);color:var(--purple-d)">◎ Wave 3 — Expansion</div>
+        <div class="rm-label">Dubai (UAE) · South Africa</div>
+        <div class="rm-desc">Strategic market expansion. South Africa: candidate already identified via network — fast-track approval now; the identified candidate de-risks the business case. Dubai: A2o Consultant (not Sr. Principal) covering Arabic-language and MENA enterprise accounts — initiate entity and employment structure review (DIFC vs mainland) now given longer approval cycles. Both markets benefit from initiating headcount requests before Wave 2 closes.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Immediate actions for leadership</div>
+  <div class="action-row">
+    <div class="action-card hl">
+      <div class="action-head"><div class="action-icon" style="color:var(--blue)">🌐</div><div class="action-title">Scale network and partner sourcing</div></div>
+      <div class="action-items"><ul>
+        <li>Formalise direct sourcing through own networks as the primary channel for all Wave 2 roles</li>
+        <li>Establish named contacts at key Genesys and SI partners per market for ongoing warm referrals</li>
+        <li>Create an internal referral incentive for candidates reaching offer stage</li>
+        <li>Begin warming Wave 3 candidates now — before Dubai and SA roles are posted</li>
+      </ul></div>
+    </div>
+    <div class="action-card">
+      <div class="action-head"><div class="action-icon" style="color:var(--amber)">🏗️</div><div class="action-title">Unblock approval pipeline</div></div>
+      <div class="action-items"><ul>
+        <li>Submit Netherlands (Wave 2 second seat) approval with Wave 1 hire as precedent</li>
+        <li>Fast-track South Africa — submit approval with identified candidate CV attached</li>
+        <li>Initiate Dubai headcount request and entity structure review immediately</li>
+        <li>Attach 12-month revenue impact model to all approval submissions</li>
+      </ul></div>
+    </div>
+    <div class="action-card">
+      <div class="action-head"><div class="action-icon" style="color:var(--teal)">📄</div><div class="action-title">Resolve job architecture</div></div>
+      <div class="action-items"><ul>
+        <li>Formally create "Sr. Principal A2o Consultant" and "A2o Consultant" as distinct job families</li>
+        <li>Use Wave 1 completed hires to anchor pay range before external benchmarking completes</li>
+        <li>Publish one globally consistent JD per grade with local language variants</li>
+      </ul></div>
+    </div>
+    <div class="action-card">
+      <div class="action-head"><div class="action-icon" style="color:var(--red)">⏱</div><div class="action-title">Account for notice periods in planning</div></div>
+      <div class="action-items"><ul>
+        <li>European notice periods of 2–3 months mean any hire made today starts in Q4 2026 at earliest</li>
+        <li>Build notice period buffer into all Wave 2 and 3 timeline commitments to leadership</li>
+        <li>Accelerate UK and Germany hiring decisions — every week of delay pushes start dates further into 2027</li>
+      </ul></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 3 — CHALLENGES
+══════════════════════════════════════════════ -->
+<div id="view-challenges" class="view">
+
+  <div class="insight-band blue">
+    <div class="ib-icon" style="color:var(--blue)">ℹ️</div>
+    <div class="ib-text">Five structural challenges are impeding programme velocity. Each is addressable — but all require <strong>leadership decisions</strong>, not just recruiting effort. Expand each challenge to see the full diagnostic.</div>
+  </div>
+
+  <!-- C01 -->
+  <div class="chal" id="c1">
+    <div class="chal-header" onclick="tc('c1')">
+      <div class="chal-num" style="background:var(--teal-l);color:var(--teal-d)">01</div>
+      <div class="chal-title-block">
+        <div class="chal-title">Headcount approval friction</div>
+        <div class="chal-sub">HR sign-off delayed across multiple markets simultaneously</div>
+      </div>
+      <div class="chal-right">
+        <span class="status-chip" style="background:var(--teal-l);color:var(--teal-d)">✓ Largely resolved</span>
+        <svg class="chevron" id="c1-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="chal-body" id="c1-body">
+      <div class="prs-grid">
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--red)">Problem</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Multiple requests submitted simultaneously, creating a volume surge HR was not structured to process</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Approval chains vary by country — local HR, regional HRBP, and finance sign-off required in different sequences</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Roles classified as "new" triggered additional budget committee reviews</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--amber-d)">Root cause</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>No pre-agreed multi-market headcount plan — each request processed in isolation</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>A2o Consultant is a new category with no existing budget envelope or workforce plan</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>HR lacked context on business urgency behind simultaneous multi-market timing</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--teal-d)">Mitigation</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Wave-based programme plan now in place — submit remaining approvals as a single consolidated Wave 2/3 request</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Executive sponsorship secured — Wave 1 hires provide precedent and authority for subsequent approvals</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Dedicated HRBP engagement in progress for multi-market routing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C02 -->
+  <div class="chal" id="c2">
+    <div class="chal-header" onclick="tc('c2')">
+      <div class="chal-num" style="background:var(--amber-l);color:var(--amber-d)">02</div>
+      <div class="chal-title-block">
+        <div class="chal-title">Job description and grade misalignment</div>
+        <div class="chal-sub">Hybrid role doesn't fit standard HR job architecture</div>
+      </div>
+      <div class="chal-right">
+        <span class="status-chip" style="background:var(--amber-l);color:var(--amber-d)">⏱ Ongoing</span>
+        <svg class="chevron" id="c2-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="chal-body" id="c2-body">
+      <div class="prs-grid">
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--red)">Problem</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>No HR template combining AI/LLM, Genesys, and senior consulting in a single grade</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>JD flagged as "too technical" for consulting band or "too commercial" for engineering band</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Comp benchmarking failed — no comparable role in salary survey data, causing pay range disputes</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--amber-d)">Root cause</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>Role sits at intersection of three disciplines historically treated as separate career tracks</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>HR architecture designed for established functional roles, not emerging hybrid profiles</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>Lack of external data defaults comp to the lower band, making offers uncompetitive</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--teal-d)">Mitigation</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Create "Sr. Principal A2o Consultant" and "A2o Consultant" as distinct job families anchored to consulting band</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Commission blended comp benchmarking using Wave 1 offer data alongside Radford / Mercer external data</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Publish one globally consistent JD per grade with local language variants — eliminates per-market JD renegotiation</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C03 -->
+  <div class="chal" id="c3">
+    <div class="chal-header" onclick="tc('c3')">
+      <div class="chal-num" style="background:var(--red-l);color:var(--red)">03</div>
+      <div class="chal-title-block">
+        <div class="chal-title">Talent scarcity — the tri-skill gap</div>
+        <div class="chal-sub">AI + Genesys + enterprise consulting in one profile is rare</div>
+      </div>
+      <div class="chal-right">
+        <span class="status-chip" style="background:var(--red-l);color:var(--red)">⚠ Critical</span>
+        <svg class="chevron" id="c3-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="chal-body" id="c3-body">
+      <div class="prs-grid">
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--red)">Problem</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Standard sourcing returns AI engineers with no client skills or CCaaS consultants with no AI depth — rarely both</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Genesys-certified professionals are a small global community; those with agentic AI project experience are a fraction</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Fully-qualified candidates are in senior roles, not actively looking, and receive multiple competing offers when they surface</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--amber-d)">Root cause</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>Profile only became commercially relevant in the last 2–3 years — market hasn't yet produced a significant cohort</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>Genesys expertise is concentrated in a small set of SI partners (TTEC, Concentrix, Accenture CXaaS) and rarely circulates outside them</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>AI consulting is split: hyperscaler alumni lack CCaaS depth; Genesys specialists haven't made the AI leap yet</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--teal-d)">Mitigation</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Adopt "2 of 3 skills + structured 90-day upskill" as the formal hiring bar — expands addressable pool 3–5×</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Target Genesys SI partner ecosystem directly — TTEC, Concentrix, and Accenture CXaaS alumni are the densest available pool</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Build a warm talent community — maintain active relationships with qualified candidates not yet ready to move</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C04 -->
+  <div class="chal" id="c4">
+    <div class="chal-header" onclick="tc('c4')">
+      <div class="chal-num" style="background:var(--blue-l);color:var(--blue-d)">04</div>
+      <div class="chal-title-block">
+        <div class="chal-title">Recruiter pipeline quality</div>
+        <div class="chal-sub">Agencies returning keyword matches, not genuine hybrid profiles</div>
+      </div>
+      <div class="chal-right">
+        <span class="status-chip" style="background:var(--teal-l);color:var(--teal-d)">↗ Mitigating</span>
+        <svg class="chevron" id="c4-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="chal-body" id="c4-body">
+      <div class="prs-grid">
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--red)">Problem</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Recruitment partners returned candidates matching individual keywords rather than the hybrid profile</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Generic recruiters lacked domain fluency — candidates passed HR screen but failed competency interviews</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Unsuitable shortlists slowed programme velocity and created hiring manager frustration</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--amber-d)">Root cause</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>Standard briefing documents don't convey the nuance of an emerging hybrid role — recruiters default to existing databases</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>No specialist recruiter has a ready-made pool — this profile requires proactive market mapping, not database search</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>Recruiter incentives tied to placement volume — without tight qualification criteria, speed takes precedence over fit</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--teal-d)">Mitigation — in progress</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span><strong>Leveraging own and partner networks directly</strong> — bypassing generalist recruiters; warm introductions yield significantly higher-quality profiles</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Engaging Genesys partner ecosystem as a structured sourcing channel — partner referrals outperform cold agency outreach on fit</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Mandatory pre-screen scoring rubric introduced — only candidates meeting 2 of 3 skill criteria reach hiring manager stage</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C05 -->
+  <div class="chal" id="c5">
+    <div class="chal-header" onclick="tc('c5')">
+      <div class="chal-num" style="background:var(--red-l);color:var(--red)">05</div>
+      <div class="chal-title-block">
+        <div class="chal-title">European notice periods — 2–3 months</div>
+        <div class="chal-sub">Hire decisions today translate to Q4 starts — every delay compounds</div>
+      </div>
+      <div class="chal-right">
+        <span class="status-chip" style="background:var(--amber-l);color:var(--amber-d)">⏱ Structural</span>
+        <svg class="chevron" id="c5-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="chal-body" id="c5-body">
+      <div class="prs-grid">
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--red)">Problem</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Standard European employment contracts carry 2–3 month notice periods for senior roles — the time-to-start is structurally longer than time-to-hire</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>A successful hire made in July will not be in seat until October at earliest — this is not a process failure, it is market reality</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--red)"></span>Each week of delay in making a hire decision pushes the start date one week further — compounding impact across 5 active roles in Wave 2</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--amber-d)">Root cause</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>European labour law and senior employment norms — notice periods of 2–3 months are standard for this level across UK, Germany, Netherlands, Italy, and France</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>Leadership planning timelines have not always accounted for notice period lag — resource availability dates have been underestimated</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--amber)"></span>Candidates with shorter notice periods are rare and often less experienced — notice period length is a signal of seniority, not a negotiating point</div>
+        </div>
+        <div class="prs-col">
+          <div class="prs-col-label" style="color:var(--teal-d)">Mitigation</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Rebuild all hiring timelines with notice period baked in — communicate Q4 2026 and Q1 2027 start dates as realistic expectations, not failures</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>Accelerate hire decisions for UK and Germany immediately — every week of pipeline delay now equals a week of delayed revenue capacity in Q4</div>
+          <div class="prs-item"><span class="prs-dot" style="background:var(--teal)"></span>For Wave 3 (Dubai, South Africa), initiate hiring now so that expansion roles are in seat by Q1 2027 — these markets also carry notice period obligations</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 4 — HIRING FUNNEL
+══════════════════════════════════════════════ -->
+<div id="view-funnel" class="view">
+
+  <div class="section-label">Full hiring funnel — per role, including mandatory pre-launch window</div>
+
+  <div class="funnel-wrap">
+
+    <div class="funnel-row-f">
+      <div class="dead-bar">
+        <div class="dead-bar-inner">
+          <span class="dead-label-f">🔒 Mandatory posting window — position not yet public</span>
+          <span class="dead-tag">~2 weeks dead time</span>
+        </div>
+      </div>
+      <div class="funnel-side-f">
+        <div class="funnel-side-text"><strong style="color:var(--red)">Zero sourcing activity permitted.</strong> Role cannot be shared or recruited against. The funnel hasn't started — but the clock has.</div>
+      </div>
+    </div>
+
+    <div class="conn-row">
+      <div class="conn-center"><div class="conn-line"></div><span class="conn-chip" style="background:var(--red-l);color:var(--red)">🔓 Position goes live</span><div class="conn-line"></div></div>
+      <div class="conn-side"></div>
+    </div>
+
+    <div class="funnel-row-f">
+      <div class="funnel-bar-f" style="background:#1E3A5F;color:#fff">
+        <span class="funnel-label-f">Market pool — candidates identified</span>
+        <span class="funnel-count-f">~15–20</span>
+      </div>
+      <div class="funnel-side-f">
+        <div class="funnel-side-text">⚠ <strong>Primary bottleneck.</strong> Tiny pool for this profile. Own networks and partner ecosystem are the only reliable channel.</div>
+      </div>
+    </div>
+
+    <div class="conn-row">
+      <div class="conn-center"><div class="conn-line"></div><span class="conn-chip" style="background:var(--amber-l);color:var(--amber-d)">~40% pass</span><div class="conn-line"></div></div>
+      <div class="conn-side"></div>
+    </div>
+
+    <div class="funnel-row-f">
+      <div class="funnel-bar-f" style="background:#2a4a7f;color:#fff">
+        <span class="funnel-label-f">HR screen — minimum viability check</span>
+        <span class="funnel-count-f">6–8</span>
+      </div>
+      <div class="funnel-side-f">
+        <div class="funnel-side-text">HR lacks domain depth for this profile. Tight pre-screen rubric essential to avoid false negatives and wasted interview slots.</div>
+      </div>
+    </div>
+
+    <div class="conn-row">
+      <div class="conn-center"><div class="conn-line"></div><span class="conn-chip" style="background:var(--amber-l);color:var(--amber-d)">~50% pass</span><div class="conn-line"></div></div>
+      <div class="conn-side"></div>
+    </div>
+
+    <div class="funnel-row-f">
+      <div class="funnel-bar-f" style="background:#185FA5;color:#fff">
+        <span class="funnel-label-f">First interview — hiring manager assessment</span>
+        <span class="funnel-count-f">3–4</span>
+      </div>
+      <div class="funnel-side-f">
+        <div class="funnel-side-text">⏱ <strong>Scheduling constraint.</strong> Interviewer availability throttles throughput. Becomes the bottleneck once top-of-funnel improves.</div>
+      </div>
+    </div>
+
+    <div class="conn-row">
+      <div class="conn-center"><div class="conn-line"></div><span class="conn-chip" style="background:var(--amber-l);color:var(--amber-d)">~50–75% pass</span><div class="conn-line"></div></div>
+      <div class="conn-side"></div>
+    </div>
+
+    <div class="funnel-row-f">
+      <div class="funnel-bar-f" style="background:#378ADD;color:#fff">
+        <span class="funnel-label-f">Panel interview — multi-stakeholder assessment</span>
+        <span class="funnel-count-f">2–3</span>
+      </div>
+      <div class="funnel-side-f">
+        <div class="funnel-side-text">Hardest stage to schedule. Candidate dropout risk peaks here for in-demand profiles receiving competing offers.</div>
+      </div>
+    </div>
+
+    <div class="conn-row">
+      <div class="conn-center"><div class="conn-line"></div><span class="conn-chip" style="background:var(--teal-l);color:var(--teal-d)">1 selected + 1 reserve</span><div class="conn-line"></div></div>
+      <div class="conn-side"></div>
+    </div>
+
+    <div class="funnel-row-f">
+      <div class="funnel-bar-f" style="background:var(--teal);color:#fff">
+        <span class="funnel-label-f">Final interview — leadership sign-off</span>
+        <span class="funnel-count-f">1 → (2)</span>
+      </div>
+      <div class="funnel-side-f">
+        <div class="funnel-side-text">↺ <strong>Restart risk.</strong> Declined offer or rejection resets to panel stage — always carry a reserve candidate.</div>
+      </div>
+    </div>
+
+    <div class="conn-row">
+      <div class="conn-center"><div class="conn-line"></div><span class="conn-chip" style="background:var(--teal-l);color:var(--teal-d)">Offer accepted</span><div class="conn-line"></div></div>
+      <div class="conn-side"></div>
+    </div>
+
+    <div class="funnel-row-f">
+      <div class="funnel-bar-f" style="background:#0F6E56;color:#fff">
+        <span class="funnel-label-f">Hire confirmed</span>
+        <span class="funnel-count-f">1</span>
+      </div>
+      <div class="funnel-side-f"></div>
+    </div>
+
+    <div class="conn-row">
+      <div class="conn-center"><div class="conn-line"></div><span class="conn-chip" style="background:var(--amber-l);color:var(--amber-d)">+ 2–3 month notice period</span><div class="conn-line"></div></div>
+      <div class="conn-side"></div>
+    </div>
+
+    <div class="funnel-row-f">
+      <div class="funnel-bar-f" style="background:var(--navy);color:#fff">
+        <span class="funnel-label-f">Consultant in seat — revenue-generating</span>
+        <span class="funnel-count-f">Day 1</span>
+      </div>
+      <div class="funnel-side-f">
+        <div class="funnel-side-text">⚠ <strong>The real end-state.</strong> Notice period is not optional — it extends time-to-value by 2–3 months regardless of how fast the hiring process runs.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Elapsed time — minimum realistic timeline from approval to consultant in seat</div>
+
+  <div class="tl-strip">
+    <div class="tl-seg" style="background:var(--red-l);color:var(--red);flex:2;outline:1.5px dashed var(--red);outline-offset:-2px">2 wks posting</div>
+    <div class="tl-seg" style="background:#1E3A5F;color:#fff;flex:1.5">1–2 wks sourcing</div>
+    <div class="tl-seg" style="background:#2a4a7f;color:#fff;flex:1">1 wk screen</div>
+    <div class="tl-seg" style="background:#185FA5;color:#fff;flex:1">1 wk 1st intv.</div>
+    <div class="tl-seg" style="background:#378ADD;color:#fff;flex:1">1 wk panel</div>
+    <div class="tl-seg" style="background:var(--teal);color:#fff;flex:1">1 wk final</div>
+    <div class="tl-seg" style="background:var(--amber);color:#fff;flex:3">2–3 months notice period</div>
+  </div>
+
+  <div class="math-row">
+    <div class="math-card hl">
+      <div class="math-val" style="color:var(--red)">2 wks</div>
+      <div class="math-lbl">Dead time before sourcing starts</div>
+    </div>
+    <div class="math-card">
+      <div class="math-val" style="color:#1E3A5F">6–8 wks</div>
+      <div class="math-lbl">Minimum hire-to-offer time</div>
+    </div>
+    <div class="math-card hl">
+      <div class="math-val" style="color:var(--amber-d)">+10–14 wks</div>
+      <div class="math-lbl">Notice period on top</div>
+    </div>
+    <div class="math-card hl">
+      <div class="math-val" style="color:var(--red)">~4–5 months</div>
+      <div class="math-lbl">Approval to in-seat — minimum</div>
+    </div>
+  </div>
+
+  <div class="insight-band amber">
+    <div class="ib-icon" style="color:var(--amber)">⏱</div>
+    <div class="ib-text"><strong>The total pipeline from approval to consultant in seat is a minimum of 4–5 months.</strong> The hiring process itself cannot be compressed below 6–8 weeks, and European notice periods add a further 2–3 months on top. This is not a process problem — it is the structural reality of hiring senior professionals in European markets. Every week of delay in making a hire decision today pushes the productive start date one week further into 2027.</div>
+  </div>
+
+  <div class="section-label">Where each stage is breaking down</div>
+  <div class="constraint-row">
+    <div class="constraint-card crit">
+      <div class="cc-icon" style="color:var(--red)">🔒</div>
+      <div class="cc-title">Pre-funnel — 2-week posting window</div>
+      <div class="cc-body">Fixed dead time before sourcing can begin. Only mitigation: warm candidates through networks before the role goes public. Relationship building requires no live posting.</div>
+    </div>
+    <div class="constraint-card crit">
+      <div class="cc-icon" style="color:var(--red)">🔍</div>
+      <div class="cc-title">Top of funnel — pool scarcity</div>
+      <div class="cc-body">The market does not have enough of this profile. Generalist recruiters return keyword matches. Active sourcing via own networks and the Genesys partner ecosystem is the only reliable path.</div>
+    </div>
+    <div class="constraint-card crit">
+      <div class="cc-icon" style="color:var(--amber)">📅</div>
+      <div class="cc-title">Post-hire — notice period lag</div>
+      <div class="cc-body">2–3 months from offer acceptance to Day 1 in seat. This is not negotiable for senior European hires. Revenue capacity impact must be planned around this constraint, not against it.</div>
+    </div>
+  </div>
+
+  <div class="section-label">The levers that actually move this</div>
+  <div class="lever-row">
+    <div class="lever primary">
+      <div class="lever-head"><div class="lever-icon" style="color:var(--blue)">🌐</div><div class="lever-title">Increase top-of-funnel — the primary lever</div></div>
+      <div class="lever-body">More candidates at the top improves every stage below. Own networks + partner ecosystem + pre-screened "2 of 3 skill" candidates. Network sourcing can begin before the posting window opens — this is the single most impactful action available.</div>
+    </div>
+    <div class="lever">
+      <div class="lever-head"><div class="lever-icon" style="color:var(--amber)">⏱</div><div class="lever-title">Submit approvals earlier — run windows in parallel</div></div>
+      <div class="lever-body">Submitting Wave 3 approvals now means the posting clock runs concurrently with Wave 2 active hiring. Earlier submission is the only way to compress the total programme timeline against the notice period constraint.</div>
+    </div>
+    <div class="lever">
+      <div class="lever-head"><div class="lever-icon" style="color:var(--teal)">👥</div><div class="lever-title">Always carry a reserve to final stage</div></div>
+      <div class="lever-body">Never run a single-candidate final. A declined offer or rejection resets the process by 3–4 weeks — plus the full notice period. Running two candidates in parallel costs one extra interview but eliminates restart risk entirely.</div>
+    </div>
+    <div class="lever">
+      <div class="lever-head"><div class="lever-icon" style="color:var(--grey)">🔧</div><div class="lever-title">Formally accept the "2 of 3 skills" hiring bar</div></div>
+      <div class="lever-body">A structured 90-day upskill programme expands the addressable candidate pool by 3–5× immediately. Perfect candidates are vanishingly rare and already employed. The constraint is bar-setting, not market size.</div>
+    </div>
+  </div>
+
+  <div class="insight-band blue" style="margin-top:24px">
+    <div class="ib-icon" style="color:var(--blue)">💡</div>
+    <div class="ib-text"><strong>The 2-week posting window is also worth a direct policy question to HR.</strong> It likely exists for internal mobility priority and equal-opportunity compliance. Worth confirming: does it apply uniformly across all 8 markets? Are there exceptions for hard-to-fill specialist roles? Can the window run concurrently with the approval process? That last question alone could recover a week per hire across the full programme.</div>
+  </div>
+
+</div>
+
+</main>
+
+<script>
+function show(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+function tc(id){
+  const body=document.getElementById(id+'-body');
+  const chev=document.getElementById(id+'-chev');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+</script>
+</body>
+</html>
