@@ -1,0 +1,72 @@
+<div id="seq"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+const vars = dark ? {
+  darkMode: true,
+  actorBkg: '#2a2a28', actorBorder: '#5c5b54', actorTextColor: '#e8e6dc', actorLineColor: '#5c5b54',
+  signalColor: '#c2c0b6', signalTextColor: '#c2c0b6',
+  labelBoxBkgColor: '#2a2a28', labelBoxBorderColor: '#5c5b54', labelTextColor: '#c2c0b6',
+  loopTextColor: '#9c9a92',
+  noteBkgColor: '#3a362a', noteBorderColor: '#6b6354', noteTextColor: '#c2c0b6',
+  activationBkgColor: '#3a3a36', activationBorderColor: '#5c5b54',
+  sequenceNumberColor: '#1a1a18'
+} : {
+  darkMode: false,
+  actorBkg: '#f1efe8', actorBorder: '#b4b2a9', actorTextColor: '#2c2c2a', actorLineColor: '#b4b2a9',
+  signalColor: '#73726c', signalTextColor: '#3d3d3a',
+  labelBoxBkgColor: '#f1efe8', labelBoxBorderColor: '#b4b2a9', labelTextColor: '#3d3d3a',
+  loopTextColor: '#5f5e5a',
+  noteBkgColor: '#faeeda', noteBorderColor: '#dcbb7a', noteTextColor: '#412402',
+  activationBkgColor: '#e6f1fb', activationBorderColor: '#85b7eb',
+  sequenceNumberColor: '#ffffff'
+};
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"anthropic-sans", sans-serif',
+  themeVariables: { ...vars, fontSize: '13px', fontFamily: '"anthropic-sans", sans-serif' }
+});
+const src = `sequenceDiagram
+autonumber
+participant Customer
+participant AVA
+participant T0 as Get Customer Details
+participant T6 as Get Showroom Location
+participant T3 as Car Test-Drive Availability
+participant T1 as Test-Drive Available Dates
+participant T2 as Car Slot Availability
+participant T4 as Create Lead
+participant T5 as Confirm the Test Drive
+participant T8 as Send WhatsApp
+Note over Customer,AVA: Customer states phone number (or it's already in session context)
+AVA->>T0: phoneNumber
+T0-->>AVA: CustomerProfile (name, language, existing recordId if any)
+Note over Customer,AVA: Confirms UAE driving licence, asks preferred showroom
+AVA->>T6: (no inputs)
+T6-->>AVA: ShowroomInfo (showroom list)
+Note over Customer,AVA: Customer picks a showroom
+AVA->>T3: ServiceTerritoryId, PreferredCar (optional)
+T3-->>AVA: availableModels[] carId, modelName
+Note over Customer,AVA: Customer confirms a car model
+AVA->>T1: ServiceTerritoryId, carId
+T1-->>AVA: available dates
+Note over Customer,AVA: Customer picks a date
+AVA->>T2: ServiceTerritoryId, carId, date, preferredTime
+T2-->>AVA: preferredSlot / alternateSlots
+Note over Customer,AVA: Customer confirms a time slot
+alt customer not already identified
+AVA->>T4: BranchCode, BranchId, name, email, phone
+T4-->>AVA: leadId
+else customer already identified
+Note over AVA: parentRecordId already known from step 2
+end
+AVA->>T5: carid, startDate, endDate, territoryId, parentRecordId
+T5-->>AVA: success, serviceAppointmentId
+AVA->>T8: name, model, showroom, appointment time, phone
+T8-->>AVA: conversationId
+Note over Customer,AVA: AVA confirms the booking to the customer`;
+const { svg } = await mermaid.render('seq-svg', src);
+document.getElementById('seq').innerHTML = svg;
+</script>
