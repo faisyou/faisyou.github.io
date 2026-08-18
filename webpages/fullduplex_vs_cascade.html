@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full-Duplex Voice AI — Executive Briefing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#0A1220;
+    --panel:#111B2E;
+    --panel-2:#0D1728;
+    --line:rgba(237,239,243,0.10);
+    --line-strong:rgba(237,239,243,0.18);
+    --paper:#EDEFF3;
+    --muted:#8B93A8;
+    --amber:#E8A33D;
+    --amber-dim:rgba(232,163,61,0.14);
+    --teal:#57B8AC;
+    --teal-dim:rgba(87,184,172,0.14);
+    --good:#6FBF8B;
+    --con:#D9695A;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--paper);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
+
+  .wrap{max-width:1080px; margin:0 auto; padding:0 40px;}
+  @media (max-width:700px){ .wrap{padding:0 20px;} }
+
+  h1,h2,h3{font-family:'Fraunces',Georgia,serif; margin:0; font-weight:600; letter-spacing:-0.01em;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--amber);
+    display:flex; align-items:center; gap:10px;
+  }
+  .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 0 0 rgba(232,163,61,0.6);
+    animation:pulse 2.4s infinite;
+    flex:none;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(232,163,61,0.55);}
+    70%{box-shadow:0 0 0 8px rgba(232,163,61,0);}
+    100%{box-shadow:0 0 0 0 rgba(232,163,61,0);}
+  }
+
+  /* ===== HERO ===== */
+  .hero{padding:76px 0 56px; border-bottom:1px solid var(--line);}
+  .hero h1{font-size:56px; line-height:1.04; margin:18px 0 16px; color:var(--paper);}
+  .hero h1 em{font-style:normal; color:var(--amber);}
+  .hero p.lede{font-size:19px; color:var(--muted); max-width:640px; margin:0 0 40px;}
+  @media (max-width:700px){ .hero h1{font-size:38px;} }
+
+  /* duplex meter — signature element */
+  .meter{
+    display:grid; grid-template-columns:1fr 1fr; gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:10px;
+    overflow:hidden;
+  }
+  .meter-panel{background:var(--panel-2); padding:24px 26px;}
+  .meter-label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:flex; justify-content:space-between;}
+  .meter-label b{color:var(--paper); font-weight:600;}
+  .lanes{display:flex; flex-direction:column; gap:8px;}
+  .lane{display:flex; align-items:center; gap:10px; height:20px;}
+  .lane-tag{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); width:52px; flex:none;}
+  .lane-track{flex:1; height:14px; border-radius:3px; position:relative; overflow:hidden; background:rgba(255,255,255,0.04);}
+  .seg{position:absolute; top:0; bottom:0; border-radius:3px;}
+  /* half-duplex: alternating blocks with gaps */
+  .half .user{background:var(--teal);}
+  .half .agent{background:var(--muted);}
+  /* full duplex: continuous overlapping */
+  .full .user{background:var(--teal); opacity:0.9;}
+  .full .agent{background:var(--amber); opacity:0.9;}
+  .meter-foot{margin-top:16px; font-size:13px; color:var(--muted);}
+
+  /* ===== SECTION shell ===== */
+  section{padding:64px 0; border-bottom:1px solid var(--line);}
+  .kicker{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--teal); margin-bottom:10px;}
+  section h2{font-size:32px; margin-bottom:18px; max-width:760px;}
+  section > .wrap > p.intro{font-size:17px; color:var(--muted); max-width:700px; margin:0 0 34px;}
+
+  /* pipeline diagram */
+  .pipeline{display:flex; align-items:center; gap:0; margin:28px 0 8px; flex-wrap:wrap;}
+  .pnode{
+    background:var(--panel); border:1px solid var(--line-strong); border-radius:8px;
+    padding:14px 18px; font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--paper);
+    text-align:center; min-width:110px;
+  }
+  .pnode small{display:block; color:var(--muted); font-size:11px; margin-top:4px; font-family:'Inter',sans-serif;}
+  .parrow{color:var(--muted); font-size:20px; padding:0 10px; flex:none;}
+  .full-pipe{
+    background:linear-gradient(90deg, var(--teal-dim), var(--amber-dim));
+    border:1px solid var(--line-strong); border-radius:8px; padding:16px 22px;
+    font-family:'IBM Plex Mono',monospace; font-size:13px; text-align:center; flex:1; min-width:260px;
+  }
+  .full-pipe small{display:block; color:var(--muted); font-size:11px; margin-top:4px; font-family:'Inter',sans-serif;}
+
+  .callout{
+    border-left:2px solid var(--amber); padding:4px 0 4px 18px; margin:30px 0;
+    color:var(--paper); font-size:15px; max-width:700px;
+  }
+  .callout b{color:var(--amber);}
+
+  /* comparison table */
+  table{width:100%; border-collapse:collapse; margin-top:8px; font-size:14.5px;}
+  thead th{
+    text-align:left; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--muted); padding:10px 14px; border-bottom:1px solid var(--line-strong);
+    font-weight:500;
+  }
+  tbody td{padding:14px 14px; border-bottom:1px solid var(--line); vertical-align:top;}
+  tbody tr:hover{background:rgba(255,255,255,0.02);}
+  td.vendor{font-weight:600; color:var(--paper); white-space:nowrap;}
+  td .tag{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:2px 7px;
+    border-radius:4px; margin-top:6px;
+  }
+  .tag.open{background:var(--teal-dim); color:var(--teal);}
+  .tag.closed{background:var(--amber-dim); color:var(--amber);}
+
+  /* pros/cons */
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:10px;}
+  @media (max-width:700px){ .grid2{grid-template-columns:1fr;} }
+  .card{background:var(--panel); border:1px solid var(--line-strong); border-radius:10px; padding:26px 28px;}
+  .card h3{font-size:18px; margin-bottom:4px; color:var(--paper);}
+  .card .sub{font-size:12.5px; color:var(--muted); margin-bottom:18px; font-family:'IBM Plex Mono',monospace;}
+  .card ul{list-style:none; margin:0; padding:0;}
+  .card li{display:flex; gap:10px; padding:9px 0; border-top:1px solid var(--line); font-size:14.5px;}
+  .card li:first-child{border-top:none;}
+  .mark{flex:none; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:13px; margin-top:1px;}
+  .pro .mark{color:var(--good);}
+  .con .mark{color:var(--con);}
+
+  /* focus section (languages + intelligence) */
+  .focus{background:var(--panel-2);}
+  .focus-badge{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--con); background:rgba(217,105,90,0.12);
+    border:1px solid rgba(217,105,90,0.35); border-radius:20px; padding:5px 14px; margin-bottom:16px;
+  }
+  .barblock{margin:26px 0;}
+  .barrow{display:grid; grid-template-columns:190px 1fr; align-items:center; gap:16px; margin:14px 0;}
+  @media (max-width:700px){ .barrow{grid-template-columns:1fr;} }
+  .barrow .rowlabel{font-size:13.5px; color:var(--paper); font-weight:500;}
+  .barrow .rowlabel small{display:block; color:var(--muted); font-weight:400; font-size:12px; margin-top:2px;}
+  .bartrack{height:30px; border-radius:6px; background:rgba(255,255,255,0.05); position:relative; overflow:hidden;}
+  .barfill{height:100%; border-radius:6px; display:flex; align-items:center; padding:0 12px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#0A1220; font-weight:600; white-space:nowrap;}
+  .barfill.duplex{background:var(--amber);}
+  .barfill.cascade{background:var(--teal);}
+
+  .evidence{
+    margin-top:36px; display:grid; grid-template-columns:1fr 1fr; gap:20px;
+  }
+  @media (max-width:700px){ .evidence{grid-template-columns:1fr;} }
+  .ecard{border:1px solid var(--line-strong); border-radius:10px; padding:22px 24px; background:var(--panel);}
+  .ecard .etag{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;}
+  .ecard p{font-size:14.5px; margin:0; color:var(--paper);}
+  .ecard p + p{margin-top:10px; color:var(--muted); font-size:13.5px;}
+
+  /* bottom line */
+  .bottom{background:var(--panel);}
+  .verdict{display:flex; gap:20px; align-items:flex-start; margin-top:20px;}
+  @media (max-width:700px){ .verdict{flex-direction:column;} }
+  .vnum{font-family:'Fraunces',serif; font-size:44px; color:var(--amber); line-height:1; flex:none;}
+  footer{padding:36px 0 60px;}
+  footer p{color:var(--muted); font-size:12.5px; font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="wrap hero">
+  <div class="eyebrow"><span class="dot"></span>EXECUTIVE BRIEFING — VOICE AI ARCHITECTURE</div>
+  <h1>Full-duplex voice AI:<br>the model that can<br><em>talk over you.</em></h1>
+  <p class="lede">A new generation of voice agents from NVIDIA and OpenAI can listen and speak at the same time. Here's what that actually means, how the vendors differ, and the two costs — language coverage and reasoning depth — that executives evaluating these systems need to see clearly.</p>
+
+  <div class="meter">
+    <div class="meter-panel">
+      <div class="meter-label"><span>Cascaded / turn-based</span><b>walkie-talkie</b></div>
+      <div class="lanes half">
+        <div class="lane"><span class="lane-tag">CALLER</span>
+          <div class="lane-track"><div class="seg user" style="left:0%; width:30%"></div><div class="seg user" style="left:55%; width:20%"></div></div>
+        </div>
+        <div class="lane"><span class="lane-tag">AGENT</span>
+          <div class="lane-track"><div class="seg agent" style="left:32%; width:20%"></div><div class="seg agent" style="left:78%; width:18%"></div></div>
+        </div>
+      </div>
+      <div class="meter-foot">One side always waits. A silence detector decides when to hand over the mic.</div>
+    </div>
+    <div class="meter-panel">
+      <div class="meter-label"><span>Full duplex</span><b>phone call</b></div>
+      <div class="lanes full">
+        <div class="lane"><span class="lane-tag">CALLER</span>
+          <div class="lane-track"><div class="seg user" style="left:0%; width:100%"></div></div>
+        </div>
+        <div class="lane"><span class="lane-tag">AGENT</span>
+          <div class="lane-track"><div class="seg agent" style="left:8%; width:88%"></div></div>
+        </div>
+      </div>
+      <div class="meter-foot">Both channels stay open continuously. Either side can interrupt, overlap, or backchannel.</div>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT IS FULL DUPLEX -->
+<section>
+  <div class="wrap">
+    <div class="kicker">01 — The concept</div>
+    <h2>Full duplex is a telecom term, borrowed for voice AI</h2>
+    <p class="intro">In telecommunications, a <b>full-duplex</b> channel lets both parties send and receive at the same time — like a phone call. A <b>half-duplex</b> channel forces one direction at a time — like a walkie-talkie, where you have to say "over" before the other person can respond.</p>
+
+    <p style="max-width:700px; color:var(--paper); font-size:15.5px;">Applied to voice AI, a <b>full-duplex model</b> is a single system that continuously listens while it is generating speech. It never fully hands off the microphone. It can be interrupted mid-sentence, it can yield gracefully, and it can backchannel ("mhmm," a nod-equivalent) without an external component telling it when to do so.</p>
+
+    <div class="callout">Most consumer voice assistants people have used to date — including the original ChatGPT voice mode — are <b>not</b> this. They are cascaded pipelines dressed up to feel conversational.</div>
+
+    <h3 style="font-size:18px; margin:36px 0 6px; color:var(--paper);">The typical voice agent today: three models in a relay</h3>
+    <p style="color:var(--muted); font-size:14.5px; max-width:680px; margin-bottom:6px;">Speech-to-Text → Large Language Model → Text-to-Speech, with a voice-activity detector (VAD) deciding when the caller has "finished talking."</p>
+    <div class="pipeline">
+      <div class="pnode">🎙 Audio in</div><div class="parrow">→</div>
+      <div class="pnode">STT<small>transcribe</small></div><div class="parrow">→</div>
+      <div class="pnode">LLM<small>reason</small></div><div class="parrow">→</div>
+      <div class="pnode">TTS<small>synthesize</small></div><div class="parrow">→</div>
+      <div class="pnode">🔊 Audio out</div>
+    </div>
+    <p style="color:var(--muted); font-size:14px; margin-top:16px;">Each hop adds latency, and a VAD module has to guess when silence means "done" versus "thinking." This is why cascaded bots often talk over a hesitant pause, or wait too long after a quick reply.</p>
+
+    <h3 style="font-size:18px; margin:34px 0 10px; color:var(--paper);">The full-duplex agent: one continuous stream</h3>
+    <div class="full-pipe">🎙 ⇄ 🔊 &nbsp; one model, one continuous audio stream, listening and speaking concurrently
+      <small>No handoff between components. No VAD deciding when to speak. Interruption is a native behavior, not a bolted-on feature.</small>
+    </div>
+  </div>
+</section>
+
+<!-- LANDSCAPE -->
+<section>
+  <div class="wrap">
+    <div class="kicker">02 — The landscape</div>
+    <h2>How NVIDIA and OpenAI differ — and who else is building this</h2>
+    <p class="intro">NVIDIA and OpenAI have both arrived at full duplex, but from different directions and for different audiences. OpenAI's <b>earlier</b> GPT-4o Realtime voice mode was speech-native but still leaned on a turn detector — genuinely full duplex only arrived with GPT-Live in July 2026.</p>
+
+    <table>
+      <thead><tr><th>Vendor / model</th><th>Architecture</th><th>What's distinctive</th><th>Deployment</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="vendor">NVIDIA<br><span style="color:var(--muted); font-weight:400; font-size:13px;">NemotronLabs VoiceChat 11B</span></td>
+          <td>Single 11B end-to-end network — a speech encoder feeding an LLM backbone that drives a TTS decoder directly. No separate ASR/LLM/TTS services.</td>
+          <td>~448ms turn-taking latency; first open full-duplex model with live tool-calling via a side channel plus "on-hold" filler lines while an API runs.</td>
+          <td><span class="tag open">Open weights</span><br><span style="color:var(--muted); font-size:12.5px;">Research-labeled; self-hosted, needs one 80GB GPU; no hosted API</span></td>
+        </tr>
+        <tr>
+          <td class="vendor">NVIDIA<br><span style="color:var(--muted); font-weight:400; font-size:13px;">PersonaPlex</span></td>
+          <td>7B model built on the Kyutai Moshi architecture, adds persona/role conditioning and voice cloning.</td>
+          <td>Holds a consistent character under interruption; built for role-driven use cases like customer service.</td>
+          <td><span class="tag open">Open weights (MIT)</span></td>
+        </tr>
+        <tr>
+          <td class="vendor">OpenAI<br><span style="color:var(--muted); font-weight:400; font-size:13px;">GPT-Live (Jul 2026)</span></td>
+          <td>Full-duplex voice model handles the live conversation; asynchronously delegates hard reasoning or tool use to a frontier model (GPT-5.5) in the background.</td>
+          <td>Removes the turn detector entirely; backchannels naturally; can show visual cards (weather, stocks) mid-conversation.</td>
+          <td><span class="tag closed">Hosted product</span><br><span style="color:var(--muted); font-size:12.5px;">Live in ChatGPT; API access planned, not yet available</span></td>
+        </tr>
+        <tr>
+          <td class="vendor">Kyutai<br><span style="color:var(--muted); font-weight:400; font-size:13px;">Moshi</span></td>
+          <td>Open pioneer of full-duplex speech-text modeling; interleaved token structure with an "inner monologue" for fluency.</td>
+          <td>Foundational architecture — NVIDIA's PersonaPlex is built directly on it.</td>
+          <td><span class="tag open">Open weights</span></td>
+        </tr>
+        <tr>
+          <td class="vendor">Google<br><span style="color:var(--muted); font-weight:400; font-size:13px;">Gemini Live</span></td>
+          <td>Commercial full-duplex API.</td>
+          <td>Benchmarked alongside GPT-4o Realtime and Nova Sonic in independent turn-taking evaluations.</td>
+          <td><span class="tag closed">Hosted API</span></td>
+        </tr>
+        <tr>
+          <td class="vendor">Amazon<br><span style="color:var(--muted); font-weight:400; font-size:13px;">Nova Sonic</span></td>
+          <td>Commercial full-duplex speech service on AWS Bedrock.</td>
+          <td>Enterprise-cloud distribution via Bedrock.</td>
+          <td><span class="tag closed">Hosted API</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="color:var(--muted); font-size:13.5px; margin-top:14px;">Worth noting: a parallel track of "VAD-free cascaded" systems (e.g. Freeze-Omni, DuplexCascade) is closing the gap without going fully end-to-end — keeping the ASR→LLM→TTS split but removing the rigid silence-detector, which matters for enterprise buyers who want duplex-style turn-taking without giving up a swappable, auditable pipeline.</p>
+  </div>
+</section>
+
+<!-- PROS CONS -->
+<section>
+  <div class="wrap">
+    <div class="kicker">03 — Trade-offs</div>
+    <h2>Full duplex vs. the cascaded pipeline</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>Full duplex (end-to-end)</h3>
+        <div class="sub">NVIDIA VoiceChat · GPT-Live · Moshi · Gemini Live</div>
+        <ul>
+          <li class="pro"><span class="mark">+</span>Sub-second, natural turn-taking; genuine barge-in and backchanneling</li>
+          <li class="pro"><span class="mark">+</span>No brittle voice-activity-detector guessing when the caller is "done"</li>
+          <li class="pro"><span class="mark">+</span>Preserves tone, hesitation, and emotion instead of flattening speech to text first</li>
+          <li class="pro"><span class="mark">+</span>Fewer moving parts to orchestrate in production (one model, not three services)</li>
+          <li class="con"><span class="mark">–</span>Narrower language coverage — see focus below</li>
+          <li class="con"><span class="mark">–</span>Weaker reasoning depth — see focus below</li>
+          <li class="con"><span class="mark">–</span>Harder to bolt on tool-calling, RAG, and guardrails; vendors are still inventing workarounds (side channels, delegation)</li>
+          <li class="con"><span class="mark">–</span>Immature commercial tooling; NVIDIA's flagship model is research-labeled and self-hosted only</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Cascaded (STT → LLM → TTS)</h3>
+        <div class="sub">Classic voice-bot stack, including newer VAD-free variants</div>
+        <ul>
+          <li class="pro"><span class="mark">+</span>Full reasoning power of frontier text LLMs — nothing traded away for speech</li>
+          <li class="pro"><span class="mark">+</span>Mature, swappable components; easy tool-calling, RAG, logging, compliance review</li>
+          <li class="pro"><span class="mark">+</span>Broad language and dialect coverage from established ASR/TTS vendors</li>
+          <li class="pro"><span class="mark">+</span>Cheaper to run and easier to debug at scale</li>
+          <li class="con"><span class="mark">–</span>Extra latency at every hop (transcribe, reason, synthesize)</li>
+          <li class="con"><span class="mark">–</span>Loses prosody and emotional nuance once speech becomes flat text</li>
+          <li class="con"><span class="mark">–</span>Classic versions feel stilted, waiting for silence before responding</li>
+          <li class="con"><span class="mark">–</span>Interruption handling is bolted on, not native</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOCUS: languages + intelligence -->
+<section class="focus">
+  <div class="wrap">
+    <div class="kicker" style="color:var(--con);">04 — The trade-off that matters most for enterprise deployment</div>
+    <div class="focus-badge">what the demos don't show you</div>
+    <h2>Full duplex buys naturalness — at the cost of languages and intelligence</h2>
+    <p class="intro">The turn-taking numbers are genuinely impressive. But two constraints are easy to miss in a vendor demo, and both matter directly for any multilingual, reasoning-heavy deployment.</p>
+
+    <div class="barblock">
+      <div class="barrow">
+        <div class="rowlabel">Language coverage<small>full duplex</small></div>
+        <div class="bartrack"><div class="barfill duplex" style="width:14%;">English-first, 1–2 languages</div></div>
+      </div>
+      <div class="barrow">
+        <div class="rowlabel">Language coverage<small>cascaded pipeline</small></div>
+        <div class="bartrack"><div class="barfill cascade" style="width:92%;">100+ languages, production-grade</div></div>
+      </div>
+      <div class="barrow">
+        <div class="rowlabel">Reasoning depth<small>full duplex</small></div>
+        <div class="bartrack"><div class="barfill duplex" style="width:40%;">Traded off for latency</div></div>
+      </div>
+      <div class="barrow">
+        <div class="rowlabel">Reasoning depth<small>cascaded pipeline</small></div>
+        <div class="bartrack"><div class="barfill cascade" style="width:88%;">Full frontier LLM reasoning</div></div>
+      </div>
+      <p style="color:var(--muted); font-size:12px; font-family:'IBM Plex Mono',monospace; margin-top:10px;">Illustrative positioning based on public benchmark coverage, not a single numeric score.</p>
+    </div>
+
+    <div class="evidence">
+      <div class="ecard">
+        <div class="etag">Why languages lag</div>
+        <p>End-to-end full-duplex models must learn listening and speaking jointly from dual-channel conversational audio — a data type that is scarce even in English and far scarcer in most other languages.</p>
+        <p>NVIDIA's flagship model uses a speech encoder explicitly trained for English. The newest multilingual full-duplex benchmark, M3-DuplexBench, currently covers just two languages (English and Japanese) — that is the frontier of academic evaluation today.</p>
+        <p>Cascaded pipelines don't have this problem: each leg (ASR, TTS) is a separately-trained, mature component — Whisper-class ASR and modern TTS engines already span well over 100 languages and dialects, because they were never required to learn speech generation and conversational timing at once.</p>
+      </div>
+      <div class="ecard">
+        <div class="etag">Why intelligence lags</div>
+        <p>Academic surveys of these architectures note that full-duplex end-to-end models typically expose only speech as output and trade away some of the text-reasoning strength that pure LLMs have, in exchange for low-latency conversational behavior.</p>
+        <p>OpenAI's own product decision is the clearest evidence of this: rather than making GPT-Live itself the reasoner, it keeps a lightweight voice-native model on the live audio path and asynchronously delegates harder questions to GPT-5.5 in the background. If the full-duplex layer were reasoning-equivalent to a frontier LLM, that delegation step wouldn't be necessary.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM LINE -->
+<section class="bottom" style="border-bottom:none;">
+  <div class="wrap">
+    <div class="kicker">05 — Bottom line</div>
+    <h2>What this means for a deployment decision</h2>
+    <div class="verdict">
+      <div class="vnum">01</div>
+      <p style="margin:0; font-size:15.5px; max-width:640px;">For <b>multilingual, reasoning-heavy</b> contact-center use cases — think Arabic/English dual-language support, complex billing disputes, or multi-step troubleshooting — a cascaded (or VAD-free cascaded) pipeline remains the safer choice today. It keeps full LLM reasoning and broad language coverage intact.</p>
+    </div>
+    <div class="verdict" style="margin-top:22px;">
+      <div class="vnum">02</div>
+      <p style="margin:0; font-size:15.5px; max-width:640px;">Full duplex is the right bet where <b>naturalness and latency are the product</b> — companion-style assistants, high-volume English-language front doors, or as a conversational "front end" layered over a stronger reasoning model via delegation, the way GPT-Live now does.</p>
+    </div>
+    <div class="verdict" style="margin-top:22px;">
+      <div class="vnum">03</div>
+      <p style="margin:0; font-size:15.5px; max-width:640px;">Expect the gap to close, not stay fixed. Delegation patterns (route hard reasoning to a bigger model) and hybrid VAD-free cascades are both explicit attempts to buy full-duplex naturalness without giving up intelligence or language breadth — that convergence point is the one to watch for the next 12 months.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>PREPARED AS AN EXECUTIVE BRIEFING · SOURCES: NVIDIA / HUGGING FACE MODEL CARDS · OPENAI · ACADEMIC BENCHMARKS (FULL-DUPLEX-BENCH, M3-DUPLEXBENCH) · AUG 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>
