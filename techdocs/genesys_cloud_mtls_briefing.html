@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Genesys Cloud Web Services Data Action mutual TLS briefing and AWS diagnostic test approach">
+<title>Genesys Cloud Mutual TLS — How It Works and How to Prove It</title>
+<style>
+:root{
+  --bg:#f6f7fb; --paper:#ffffff; --text:#16181d; --muted:#606775; --line:#d9ddea;
+  --accent:#5b4fd6; --accent-soft:#efedff; --accent-dark:#4036a8; --danger:#9b2c2c;
+  --ok:#246b45; --code:#f1f3f8; --shadow:0 14px 42px rgba(25,30,55,.08);
+}
+*{box-sizing:border-box} html,body{height:100%;margin:0} body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+button{font:inherit}.deck{height:100%;width:100%;position:relative}.slide{display:none;height:100%;width:100%;padding:4.5vh 4.5vw 8vh}.slide.active{display:flex}.slide-inner{width:min(1180px,100%);height:100%;margin:auto;background:var(--paper);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:34px 42px 30px;display:flex;flex-direction:column;min-height:0}.slide-header{flex:0 0 auto;margin-bottom:20px}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--accent);font-weight:800;margin-bottom:7px}.slide h1{font-size:clamp(28px,3.2vw,46px);line-height:1.04;letter-spacing:-.035em;margin:0}.slide h2{font-size:20px;margin:0 0 10px;letter-spacing:-.015em}.slide p{line-height:1.4;margin:6px 0}.slide-body{flex:1;min-height:0;display:flex;flex-direction:column;gap:16px}.subtitle{font-size:clamp(20px,2.1vw,30px);line-height:1.25;color:var(--muted);max-width:700px}.bottom-note,.source-note{font-size:13px;color:var(--muted)}.bottom-note{margin-top:auto;border-top:1px solid var(--line);padding-top:14px}.source-note{background:#f8f8fb;border-left:3px solid var(--line);padding:10px 12px;border-radius:8px}.hero-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:45px;align-items:center;flex:1}.hero-diagram{display:flex;align-items:center;justify-content:center;gap:16px}.endpoint,.mini-node,.arch-node,.success-node{border:1px solid var(--line);border-radius:14px;background:#fff;padding:18px 20px;text-align:center;font-weight:800}.endpoint.accent,.mini-node.accent,.arch-node.accent,.success-node.accent{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-dark)}.bi-arrow{display:flex;align-items:center;gap:8px;color:var(--accent);font-size:26px}.bi-arrow strong{font-size:15px}.takeaway{background:var(--accent-soft);border-left:5px solid var(--accent);border-radius:10px;padding:14px 18px;font-size:18px;font-weight:700}.takeaway.large{display:inline-block;margin-top:28px;font-size:22px}.takeaway.mini{font-size:14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}.grid2.equal{grid-template-columns:1fr 1fr}.small-gap{gap:10px}.stack{display:flex;flex-direction:column;gap:12px}.stack.center{align-items:center;justify-content:center}.card,.panel{border:1px solid var(--line);border-radius:14px;background:#fff;padding:18px}.card.numbered{display:grid;grid-template-columns:36px 1fr;align-items:center;gap:12px}.card.numbered b{height:32px;width:32px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}.direction{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}.direction.reverse{margin-top:10px}.down{display:flex;flex-direction:column;align-items:center;font-size:24px;color:var(--accent)}.down small{font-size:13px;color:var(--muted);font-weight:700}.panel.accent-border,.card.accent-border,.stage.accent-border{border:2px solid var(--accent)}.inline-flow,.inline-architecture{display:flex;align-items:center;justify-content:center;gap:14px}.line-arrow{font-size:34px;color:var(--accent)}.compact{margin:12px 0 0;padding-left:22px}.compact li{margin:7px 0}.banner{border:1px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:12px;text-align:center}.sequence{display:grid;grid-template-columns:1fr 1fr;gap:4px 44px;position:relative}.sequence:before,.sequence:after{content:"";position:absolute;top:44px;bottom:0;width:2px;background:var(--line)}.sequence:before{left:22%}.sequence:after{right:22%}.seq-head{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;text-align:center;font-weight:800}.phase{grid-column:1/-1;text-align:center;font-size:11px;letter-spacing:.14em;font-weight:900;color:var(--muted);padding:6px;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);margin:2px 0}.phase.ok{color:var(--ok);background:#eef9f2}.phase.app{color:var(--accent);background:var(--accent-soft)}.seq-row{grid-column:1/-1;position:relative;height:30px;display:flex;align-items:center;justify-content:center}.seq-row:before{content:"";width:55%;height:2px;background:var(--accent);position:absolute}.seq-row.to-right:after,.seq-row.to-left:after{position:absolute;color:var(--accent);font-size:18px}.seq-row.to-right:after{content:"▶";right:22%}.seq-row.to-left:after{content:"◀";left:22%}.seq-row span{z-index:1;background:#fff;padding:0 10px;font-size:13px;font-weight:700}.seq-note{font-size:12px;color:var(--muted);z-index:2}.seq-note.left{grid-column:1;text-align:center}.seq-note.right{grid-column:2;text-align:center}.three-lane{display:grid;grid-template-columns:1fr;gap:4px}.lane-head{display:grid;grid-template-columns:1fr 1.2fr 1fr;font-weight:800;text-align:center;margin-bottom:4px}.lane-step{position:relative;display:grid;grid-template-columns:36px 1fr 1.2fr 1fr;min-height:29px;align-items:center}.lane-step b{height:23px;width:23px;display:grid;place-items:center;border-radius:50%;background:var(--code);font-size:11px}.lane-step .a{grid-column:2;text-align:center}.lane-step .b{grid-column:3;text-align:center}.lane-step .c{grid-column:4;text-align:center}.lane-step .arrow{position:absolute;color:var(--accent);font-weight:900}.lane-step .a-b{left:46%}.lane-step .b-c{left:73%}.lane-step .c-b{left:73%}.lane-step .b-a{left:46%}.dual-callout{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dual-callout>div{border-left:4px solid var(--accent);background:#f8f8fb;padding:10px 12px;border-radius:8px;font-size:13px}.ownership{display:grid;grid-template-columns:1fr 140px 1fr;gap:16px;align-items:stretch}.owner{border:1px solid var(--line);border-radius:16px;padding:18px}.owner.accent-panel{border:2px solid var(--accent);background:var(--accent-soft)}.tls-bridge{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:6px}.tls-bridge b{border:2px solid var(--accent);color:var(--accent);border-radius:50%;width:70px;height:70px;display:grid;place-items:center}.identity-box{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;background:#fff}.identity-box strong{display:block;margin-top:8px}.identity-box small{display:block;color:var(--muted);margin-top:4px}.tag{display:inline-block;font-size:10px;font-weight:900;letter-spacing:.1em;border-radius:999px;padding:5px 8px;border:1px solid var(--line);background:#fff}.tag.client{color:var(--accent);border-color:#cfc9ff;background:#f5f3ff}.tag.server{color:#315d78;border-color:#c9dce6;background:#f4f9fb}.tag.key{color:#7b4d25;border-color:#ead6c4;background:#fff8f1}.tag.ca{color:#385d47;border-color:#cce1d4;background:#f4fbf6}.warning{background:#fff4f4;border:1px solid #f0cccc;color:var(--danger);padding:12px 16px;border-radius:10px;font-weight:800;text-align:center}.warning.soft{font-size:13px}.ownership-trust{display:flex;flex-direction:column;gap:10px}.concept-title{text-align:center;font-size:12px;letter-spacing:.14em;font-weight:900;color:var(--muted)}.center{text-align:center}.center small{display:block;color:var(--muted);margin-top:6px}.swap-arrow{text-align:center;color:var(--accent);font-weight:800}.three-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card.tall{min-height:200px}.flow-trust>div{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:10px;padding:12px}.flow-trust strong{color:var(--accent)}.gates{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}.gate{width:106px;min-height:78px;border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}.gate b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}.gate span{font-size:12px;font-weight:800}.stack.sparse{gap:6px}.layer-row{display:grid;grid-template-columns:230px 1fr;border:1px solid var(--line);border-radius:10px;padding:10px 14px}.layer-row span:first-child{font-weight:800}.layer-row.accent-row{border-color:var(--accent);background:var(--accent-soft)}.experiment{display:flex;flex-direction:column;align-items:center;gap:8px}.down-arrow{display:flex;flex-direction:column;align-items:center;color:var(--accent);font-size:28px}.down-arrow small{font-size:12px;color:var(--muted);font-weight:700}.question-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:70%}.question-grid div{background:#f8f8fb;border:1px solid var(--line);padding:9px 12px;border-radius:8px;font-size:13px;text-align:center}.stages{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.stage{position:relative;border:1px solid var(--line);border-radius:14px;padding:18px}.stage-num{position:absolute;right:12px;top:10px;font-size:34px;font-weight:900;color:#e1e3ec}.stage pre{font-size:12px}.expect{margin-top:10px;font-weight:800;color:var(--ok)}.progression{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;color:var(--muted);font-weight:900}.progression span{border:1px solid var(--line);background:#fff;padding:8px 10px;border-radius:999px;font-size:12px}.progression.big span{font-size:12px;border-color:var(--accent);color:var(--accent-dark)}.architecture{display:flex;flex-direction:column;align-items:center;gap:5px}.arch-node{min-width:250px;padding:10px 14px}.arch-node.cloud{border-style:dashed}.arch-node.aws{background:#faf8f3}.arch-arrow{color:var(--accent);display:flex;flex-direction:column;align-items:center}.arch-arrow small{color:var(--muted)}.arch-fan{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:92%}.arch-fan>div{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;font-size:12px}.why-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.why-row>div{padding:7px 10px;border-radius:999px;background:#f8f8fb;font-size:12px}.step-columns{display:grid;grid-template-columns:1fr 1fr;gap:30px}.number-flow{margin:0;padding-left:30px}.number-flow li{padding:7px 0;border-bottom:1px solid #eee}.inline-architecture{margin:20px 0}.check-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.check-grid>div{border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;font-size:13px;font-weight:700}.check-grid.small{grid-template-columns:repeat(3,1fr)}.cert-directions .panel{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}.identity-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}.identity-pair span{border:1px solid var(--line);border-radius:9px;padding:12px;text-align:center;font-size:13px}.code-slide{align-items:start}.slide pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;margin:0}.slide code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:.92em}.field-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}.field-row span{font-family:ui-monospace,monospace;background:var(--code);border:1px solid var(--line);border-radius:999px;padding:6px 8px;font-size:11px}.state-num{font-size:11px;letter-spacing:.12em;font-weight:900;color:var(--accent)}.decision{display:grid;grid-template-columns:1fr 2fr;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden}.decision>div{padding:14px}.branches{display:flex;gap:10px;background:#fafafd}.branches span{flex:1;border-left:3px solid var(--accent);padding-left:10px;font-size:13px}.config-box{border:1px solid var(--line);border-radius:14px;overflow:hidden}.config-box>div{display:grid;grid-template-columns:210px 1fr;padding:11px 14px;border-bottom:1px solid var(--line);gap:14px}.config-box>div:last-child{border-bottom:0}.config-box span{font-weight:800;color:var(--muted)}.evidence ul,.proof-columns ul,.production ul{margin:0;padding-left:20px}.evidence li,.proof-columns li,.production li{margin:7px 0}.evidence-chain{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;color:var(--muted);font-size:12px;font-weight:800}.evidence-chain span{border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fff}.table-wrap{overflow:auto;min-height:0}.slide table{width:100%;border-collapse:collapse;font-size:12px}.slide th,.slide td{border-bottom:1px solid var(--line);padding:8px 10px;vertical-align:top;text-align:left}.slide th{background:#f3f4f8;font-size:11px;text-transform:uppercase;letter-spacing:.06em}.success-flow{display:grid;grid-template-columns:210px 1fr;gap:6px 18px;align-items:center;width:82%;margin:auto}.success-node{grid-column:1/-1;justify-self:center;min-width:260px;padding:11px}.success-step{grid-column:1/-1;display:grid;grid-template-columns:34px 1fr;align-items:center;gap:10px;border:1px solid var(--line);border-radius:9px;padding:8px 12px}.success-step b{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}.conclusion{display:flex;flex-direction:column;gap:10px}.big-statement{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:14px;border:1px solid var(--line);border-radius:14px;padding:15px}.big-statement b{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:18px}.big-statement span{font-size:17px}.appendix-hero{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:26px;flex:1}.appendix-hero p{font-size:24px;max-width:760px;color:var(--muted)}.code-full{flex:1;min-height:0}.code-full pre{height:100%;font-size:10.5px;line-height:1.28}.code-legend{display:flex;gap:8px;flex-wrap:wrap}.code-legend span{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:6px 8px}.compact-config>div{padding:8px 12px}.one-line{text-align:center}.timeline{display:grid;grid-template-columns:1fr 1fr;gap:10px}.timeline>div{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;grid-template-columns:34px 1fr;align-items:center;gap:8px}.timeline b{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}.sg-card{width:60%;margin:auto;border:1px solid var(--line);border-radius:14px;overflow:hidden}.sg-head{background:var(--accent-soft);padding:14px;font-weight:900;text-align:center;color:var(--accent-dark)}.sg-row{display:grid;grid-template-columns:1fr 1fr;padding:12px 16px;border-bottom:1px solid var(--line)}.sg-row:last-child{border-bottom:0}.four-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.logs pre{font-size:12px}.rotation-flow{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}.rotation-flow span{border:1px solid var(--line);border-radius:10px;padding:10px;font-weight:800;font-size:12px}
+.nav{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:999px;padding:7px 10px;box-shadow:0 8px 30px rgba(25,30,55,.12);z-index:20}.nav button{border:0;background:var(--accent-soft);color:var(--accent-dark);font-weight:900;border-radius:999px;padding:8px 12px;cursor:pointer}.nav button:disabled{opacity:.35;cursor:not-allowed}.counter{min-width:72px;text-align:center;font-size:12px;font-weight:800;color:var(--muted)}.progress{position:fixed;left:0;bottom:0;height:4px;background:var(--accent);width:0;z-index:30;transition:width .15s ease}.hint{position:fixed;right:18px;bottom:22px;font-size:11px;color:#858b98}.title-slide .slide-header{margin-bottom:0}.divider-slide .slide-header{display:none}
+@media(max-width:900px){.slide{padding:2vh 2vw 9vh}.slide-inner{padding:24px}.hero-grid,.grid2,.three-cards,.ownership,.stages,.step-columns,.four-cards{grid-template-columns:1fr}.ownership{overflow:auto}.tls-bridge{display:none}.check-grid{grid-template-columns:1fr 1fr}.arch-fan{grid-template-columns:1fr 1fr}.slide-body{overflow:auto}.table-wrap{overflow:auto}.hero-diagram{flex-wrap:wrap}.question-grid{width:100%}.sg-card{width:100%}.timeline{grid-template-columns:1fr}.hint{display:none}}
+@media print{body{overflow:visible;background:white}.slide{display:block;height:100vh;page-break-after:always;padding:12mm}.slide-inner{box-shadow:none;border:0;height:100%;padding:8mm}.nav,.progress,.hint{display:none}}
+</style>
+</head>
+<body>
+<main class="deck" id="deck">
+<section class="slide title-slide" data-title="Genesys Cloud Mutual TLS — How It Works and How to Prove It">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Genesys Cloud Mutual TLS — How It Works and How to Prove It</h1>
+        </header>
+        <div class="slide-body">
+  <div class="hero-grid">
+    <div>
+      <p class="subtitle">Web Services Data Action | mTLS behavior, certificate ownership, and AWS test approach</p>
+      <div class="takeaway large">Two-way TLS identity</div>
+    </div>
+    <div class="hero-diagram" aria-label="Genesys Cloud and customer web service connected by mutual TLS">
+      <div class="endpoint accent">Genesys Cloud</div>
+      <div class="bi-arrow"><span>←</span><strong>mTLS</strong><span>→</span></div>
+      <div class="endpoint">Customer Web Service</div>
+    </div>
+  </div>
+  <div class="bottom-note">Understand the identity model → observe the client certificate → enforce trust → prove the complete Data Action path.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Executive summary">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Executive summary</h1>
+        </header>
+        <div class="slide-body">
+  <div class="grid2 equal">
+    <div class="stack">
+      <div class="card numbered"><b>1</b><span>Normal TLS authenticates the <strong>server</strong> to Genesys.</span></div>
+      <div class="card numbered"><b>2</b><span>Mutual TLS adds authentication of the <strong>client</strong>.</span></div>
+      <div class="card numbered"><b>3</b><span>The customer endpoint requests a client certificate during the TLS handshake.</span></div>
+      <div class="card numbered"><b>4</b><span>The customer endpoint validates the certificate presented by the Genesys Data Actions service.</span></div>
+    </div>
+    <div class="stack center">
+      <div class="direction"><span class="mini-node accent">Genesys Cloud</span><span class="down">↓<small>“Prove who you are”</small></span><span class="mini-node">Customer endpoint</span></div>
+      <div class="direction reverse"><span class="mini-node">Customer endpoint</span><span class="down">↓<small>“Prove who YOU are”</small></span><span class="mini-node accent">Genesys Cloud</span></div>
+    </div>
+  </div>
+  <div class="takeaway">mTLS establishes identity before the HTTP request is processed.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Normal TLS vs Mutual TLS">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Normal TLS vs Mutual TLS</h1>
+        </header>
+        <div class="slide-body">
+  <div class="grid2 equal compare">
+    <div class="panel">
+      <h2>Normal HTTPS</h2>
+      <div class="inline-flow"><span class="mini-node accent">Genesys</span><span class="line-arrow">→</span><span class="mini-node">Customer server</span></div>
+      <ol class="compact">
+        <li>Customer presents <strong>server certificate</strong>.</li>
+        <li>Genesys validates server identity.</li>
+        <li>Encrypted TLS session is established.</li>
+        <li>HTTP request is sent.</li>
+      </ol>
+    </div>
+    <div class="panel accent-border">
+      <h2>Mutual TLS</h2>
+      <div class="inline-flow"><span class="mini-node accent">Genesys</span><span class="line-arrow">↔</span><span class="mini-node">Customer server</span></div>
+      <ol class="compact">
+        <li>Customer presents server certificate.</li>
+        <li>Genesys validates server identity.</li>
+        <li>Customer requests a <strong>client certificate</strong>.</li>
+        <li>Genesys presents its client certificate.</li>
+        <li>Customer validates client identity.</li>
+        <li>TLS session is established; HTTP follows.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="banner">mTLS adds <strong>CLIENT CERTIFICATE AUTHENTICATION</strong> — it does not replace API keys, OAuth, or application authorization.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="The TLS handshake in plain English">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>The TLS handshake in plain English</h1>
+        </header>
+        <div class="slide-body">
+  <div class="sequence">
+    <div class="seq-head"><span class="accent">Genesys Cloud</span><span>Customer HTTPS endpoint</span></div>
+    <div class="phase">TLS HANDSHAKE</div>
+    <div class="seq-row to-right"><span>ClientHello</span></div>
+    <div class="seq-row to-left"><span>Server certificate</span></div>
+    <div class="seq-note left">Validate server identity</div>
+    <div class="seq-row to-left"><span>Request client certificate</span></div>
+    <div class="seq-row to-right"><span>Client certificate + proof of private-key possession</span></div>
+    <div class="seq-note right">Validate client identity</div>
+    <div class="phase ok">TLS ESTABLISHED</div>
+    <div class="phase app">HTTP REQUEST / RESPONSE</div>
+    <div class="seq-row to-right"><span>HTTP request</span></div>
+    <div class="seq-row to-left"><span>HTTP response</span></div>
+  </div>
+  <div class="takeaway">Certificate exchange and validation happen at the TLS layer, before application HTTP processing.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="What happens in a Genesys Web Services Data Action">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>What happens in a Genesys Web Services Data Action</h1>
+        </header>
+        <div class="slide-body">
+  <div class="three-lane">
+    <div class="lane-head"><span>Architect / Flow</span><span class="accent">Data Action execution</span><span>Customer endpoint</span></div>
+    <div class="lane-step"><b>1</b><span class="a">Invoke action</span><span class="arrow a-b">→</span></div>
+    <div class="phase">TLS HANDSHAKE</div>
+    <div class="lane-step"><b>2</b><span class="b">Open outbound HTTPS connection</span><span class="arrow b-c">→</span></div>
+    <div class="lane-step"><b>3</b><span class="c">Present server certificate</span><span class="arrow c-b">←</span></div>
+    <div class="lane-step"><b>4</b><span class="b">Validate server certificate</span></div>
+    <div class="lane-step"><b>5</b><span class="c">Request client certificate</span><span class="arrow c-b">←</span></div>
+    <div class="lane-step"><b>6</b><span class="b">Present mTLS client certificate</span><span class="arrow b-c">→</span></div>
+    <div class="lane-step"><b>7</b><span class="c">Validate / trust client certificate</span></div>
+    <div class="phase ok">TLS SESSION ESTABLISHED</div>
+    <div class="phase app">HTTP REQUEST / RESPONSE</div>
+    <div class="lane-step"><b>8</b><span class="b">Send HTTP request</span><span class="arrow b-c">→</span></div>
+    <div class="lane-step"><b>9</b><span class="c">Process + return HTTP response</span><span class="arrow c-b">←</span></div>
+    <div class="lane-step"><b>10</b><span class="b">Process response</span><span class="arrow b-a">←</span><span class="a">Flow receives result</span></div>
+  </div>
+  <div class="dual-callout"><div>TLS client-auth failure can occur <strong>before</strong> API key/OAuth evaluation.</div><div>A successful TLS handshake does <strong>not</strong> mean the application request is authorized.</div></div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Who Owns Which Certificate?">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Who Owns Which Certificate?</h1>
+        </header>
+        <div class="slide-body">
+  <div class="ownership">
+    <div class="owner accent-panel">
+      <h2>Genesys Cloud</h2>
+      <div class="identity-box"><span class="tag client">CLIENT CERTIFICATE</span><strong>Genesys client certificate</strong></div>
+      <div class="identity-box secret"><span class="tag key">PRIVATE KEY</span><strong>Genesys client private key</strong><small>stays secret; never sent</small></div>
+      <p>Presents the client certificate to authenticate the Data Actions service to the customer endpoint.</p>
+    </div>
+    <div class="tls-bridge"><span>presents →</span><b>TLS</b><span>← presents</span></div>
+    <div class="owner">
+      <h2>Customer / API owner</h2>
+      <div class="identity-box"><span class="tag server">SERVER CERTIFICATE</span><strong>Customer server certificate</strong></div>
+      <div class="identity-box secret"><span class="tag key">PRIVATE KEY</span><strong>Customer server private key</strong><small>stays secret; never sent</small></div>
+      <p>Presents the server certificate to authenticate the HTTPS endpoint to Genesys.</p>
+    </div>
+  </div>
+  <div class="warning">Never exchange or expose private keys between Genesys and the customer.</div>
+  <div class="grid2 small-gap"><div class="takeaway mini">Customer does <strong>not</strong> need the Genesys private key — it needs trust configuration for the Genesys client identity.</div><div class="takeaway mini">Genesys does <strong>not</strong> need the customer private key — it validates the customer’s server certificate.</div></div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Ownership ≠ Trust">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Ownership ≠ Trust</h1>
+        </header>
+        <div class="slide-body">
+  <div class="ownership-trust">
+    <div class="concept-title">WHO OWNS IT?</div>
+    <div class="grid2 equal">
+      <div class="card center"><h2>Genesys</h2><div class="tag client">CLIENT CERTIFICATE</div><div class="tag key">CLIENT PRIVATE KEY</div></div>
+      <div class="card center"><h2>Customer</h2><div class="tag server">SERVER CERTIFICATE</div><div class="tag key">SERVER PRIVATE KEY</div></div>
+    </div>
+    <div class="swap-arrow">↓ identity is presented across the connection ↓</div>
+    <div class="concept-title">WHO TRUSTS / VALIDATES IT?</div>
+    <div class="grid2 equal">
+      <div class="card center"><h2>Customer validates</h2><strong>Genesys client certificate</strong><small>using configured trust policy</small></div>
+      <div class="card center"><h2>Genesys validates</h2><strong>Customer server certificate</strong><small>using its HTTPS trust policy</small></div>
+    </div>
+  </div>
+  <div class="takeaway">Certificate ownership tells us who controls the identity. Trust configuration tells us who is willing to accept that identity.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="The certificate model">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>The certificate model</h1>
+        </header>
+        <div class="slide-body">
+  <div class="three-cards">
+    <div class="card center tall"><span class="tag server">SERVER CERTIFICATE</span><h2>Customer endpoint identity</h2><p>Presented by the customer HTTPS endpoint. Genesys validates it before sending the request.</p></div>
+    <div class="card center tall accent-border"><span class="tag client">CLIENT CERTIFICATE</span><h2>Genesys client identity</h2><p>Presented by the Data Actions service when the customer endpoint requests a client certificate.</p></div>
+    <div class="card center tall"><span class="tag ca">TRUSTED CA / CHAIN</span><h2>Receiving-side trust</h2><p>Used to decide whether the presented certificate should be accepted under the configured policy.</p></div>
+  </div>
+  <div class="grid2 equal flow-trust"><div><strong>Genesys trusts</strong><span>Customer server certificate / public CA chain</span></div><div><strong>Customer trusts</strong><span>Genesys Data Actions client identity according to the configured signing authority</span></div></div>
+  <div class="source-note">Current Genesys documentation supports a Genesys Cloud regional CA or DigiCert signing authority; follow current Resource Center guidance for the chosen mode.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="What must be true for Genesys mTLS to work">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>What must be true for Genesys mTLS to work</h1>
+        </header>
+        <div class="slide-body">
+  <div class="gates">
+    <div class="gate"><b>1</b><span>DNS / network</span></div><span>→</span>
+    <div class="gate"><b>2</b><span>Server identity</span></div><span>→</span>
+    <div class="gate"><b>3</b><span>Client cert requested</span></div><span>→</span>
+    <div class="gate"><b>4</b><span>Client cert presented</span></div><span>→</span>
+    <div class="gate"><b>5</b><span>Client trust</span></div><span>→</span>
+    <div class="gate"><b>6</b><span>TLS established</span></div><span>→</span>
+    <div class="gate"><b>7</b><span>HTTP sent</span></div><span>→</span>
+    <div class="gate"><b>8</b><span>App authz</span></div>
+  </div>
+  <div class="stack sparse">
+    <div class="layer-row"><span>Network</span><span>DNS, route, TCP 443</span></div>
+    <div class="layer-row"><span>TLS server identity</span><span>Customer certificate valid + hostname trusted</span></div>
+    <div class="layer-row accent-row"><span>TLS client identity</span><span>Endpoint requests cert; Genesys presents; customer validates</span></div>
+    <div class="layer-row"><span>HTTP authentication</span><span>API key, OAuth, Basic, etc. — if configured</span></div>
+    <div class="layer-row"><span>Application authorization</span><span>Permissions / business policy</span></div>
+  </div>
+  <div class="takeaway">mTLS and API authentication are different layers.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="How Do We Prove Genesys Is Actually Sending the Client Certificate?">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>How Do We Prove Genesys Is Actually Sending the Client Certificate?</h1>
+        </header>
+        <div class="slide-body">
+  <div class="experiment">
+    <div class="endpoint accent">Genesys Data Action</div>
+    <div class="down-arrow"><span>↓</span><small>TLS handshake</small></div>
+    <div class="endpoint">Purpose-built HTTPS test server</div>
+    <div class="question-grid">
+      <div>Did a client certificate arrive?</div>
+      <div>What certificate was presented?</div>
+      <div>Was it considered authorized?</div>
+      <div>Did the TLS handshake complete?</div>
+    </div>
+  </div>
+  <div class="grid2 equal">
+    <div class="card"><h2>Diagnostic behavior</h2><p>Request a client certificate, log peer-certificate metadata, and initially avoid rejecting solely on trust failure.</p></div>
+    <div class="card"><h2>Then tighten</h2><p>Configure the required trust material and reject missing, invalid, or untrusted client certificates.</p></div>
+  </div>
+  <div class="takeaway">First prove certificate <strong>PRESENTATION</strong>. Then prove certificate <strong>TRUST</strong>.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Recommended test strategy">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Recommended test strategy</h1>
+        </header>
+        <div class="slide-body">
+  <div class="stages">
+    <div class="stage"><div class="stage-num">1</div><h2>HTTPS ONLY</h2><p><strong>Goal:</strong> prove Genesys can reach the AWS endpoint.</p><code>Genesys → HTTPS → Node.js</code><div class="expect">Expected: HTTP 200</div></div>
+    <div class="stage accent-border"><div class="stage-num">2</div><h2>REQUEST CLIENT CERT</h2><pre><code>requestCert = true
+rejectUnauthorized = false</code></pre><p><strong>Goal:</strong> observe whether a client certificate is presented.</p><small>Capture subject, issuer, serial, validity, fingerprint, authorization state.</small></div>
+    <div class="stage"><div class="stage-num">3</div><h2>ENFORCE TRUST</h2><pre><code>requestCert = true
+rejectUnauthorized = true
+ca = trusted material</code></pre><p><strong>Goal:</strong> prove full client authentication under the chosen trust policy.</p></div>
+  </div>
+  <div class="progression"><span>Reachability</span>→<span>Certificate presentation</span>→<span>Certificate trust</span>→<span>Data Action success</span></div>
+  <div class="warning soft">Stage 2 is a temporary diagnostic configuration, not a production security posture.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="AWS test architecture">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>AWS test architecture</h1>
+        </header>
+        <div class="slide-body">
+  <div class="architecture">
+    <div class="arch-node cloud">Internet</div><div class="arch-arrow">↓ <small>TCP 443</small></div>
+    <div class="arch-node">Public DNS name<br><code>mtls-test.example.com</code></div><div class="arch-arrow">↓</div>
+    <div class="arch-node aws">AWS EC2 instance</div><div class="arch-arrow">↓</div>
+    <div class="arch-node accent">Node.js HTTPS server</div>
+    <div class="arch-fan">
+      <div>Server cert + key</div><div>Client-cert request</div><div><code>/test</code> endpoint</div><div>Certificate logging</div>
+    </div>
+    <div class="arch-arrow">↓</div><div class="arch-node">Console / structured logs</div>
+  </div>
+  <div class="why-row"><div><strong>Why EC2 first?</strong></div><div>Direct TLS termination</div><div>Easy peer-certificate inspection</div><div>Full control of Node.js TLS settings</div></div>
+  <div class="source-note">Managed gateways/load balancers may be better for production. Direct Node.js TLS termination makes the diagnostic path easier to see.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="AWS build steps">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>AWS build steps</h1>
+        </header>
+        <div class="slide-body">
+  <div class="step-columns">
+    <ol class="number-flow">
+      <li>Create a small Linux EC2 instance.</li><li>Install Node.js.</li><li>Assign or map a public DNS name.</li><li>Obtain/install a server certificate.</li><li>Allow inbound TCP 443 in the Security Group.</li><li>Confirm the host firewall permits 443.</li><li>Create the Node.js HTTPS server.</li>
+    </ol>
+    <ol class="number-flow" start="8">
+      <li>Configure it to request a client certificate.</li><li>Log certificate metadata.</li><li>Start the server.</li><li>Point the Web Services Data Action at the endpoint.</li><li>Execute the Data Action.</li><li>Inspect server logs.</li><li>Inspect the Data Action result.</li>
+    </ol>
+  </div>
+  <div class="takeaway">Build the simplest endpoint that gives you direct evidence at the TLS boundary.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="DNS, TCP 443, and HTTPS">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>DNS, TCP 443, and HTTPS</h1>
+        </header>
+        <div class="slide-body">
+  <div class="inline-architecture"><div class="arch-node"><code>mtls-test.example.com</code></div><span>→</span><div class="arch-node aws">Public AWS endpoint</div><span>→ <b>:443</b> →</span><div class="arch-node accent">Node.js HTTPS</div></div>
+  <div class="check-grid">
+    <div>✓ Public DNS name resolves</div><div>✓ TCP 443 publicly reachable</div><div>✓ Security Group allows 443</div><div>✓ Host firewall allows 443</div><div>✓ Node listens on 443 / mapped port</div><div>✓ Certificate matches hostname</div><div>✓ Server chain is complete</div><div>✓ Private key matches server cert</div>
+  </div>
+  <div class="takeaway">The test server does not need to run on a laptop. AWS provides the publicly reachable HTTPS endpoint.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="AWS server certificate vs Genesys client certificate">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>AWS server certificate vs Genesys client certificate</h1>
+        </header>
+        <div class="slide-body">
+  <div class="grid2 equal cert-directions">
+    <div class="panel">
+      <span class="tag server">CUSTOMER SERVER</span>
+      <div class="identity-pair"><span>server private key</span><span>server certificate</span></div>
+      <div class="down-arrow">↓ <small>proves server identity</small></div>
+      <div class="mini-node accent">Genesys</div>
+    </div>
+    <div class="panel accent-border">
+      <span class="tag client">GENESYS CLIENT</span>
+      <div class="identity-pair"><span>client private key</span><span>client certificate</span></div>
+      <div class="down-arrow">↓ <small>proves client identity</small></div>
+      <div class="mini-node">Customer server</div>
+    </div>
+  </div>
+  <div class="takeaway">The server certificate and Genesys client certificate serve opposite directions.</div>
+  <div class="warning">Private keys remain secret and are never transferred between the parties.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Minimal Node.js HTTPS test server">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Minimal Node.js HTTPS test server</h1>
+        </header>
+        <div class="slide-body">
+  <div class="grid2 code-slide">
+    <pre><code>const server = https.createServer({
+  key: fs.readFileSync(KEY_PATH),
+  cert: fs.readFileSync(CERT_PATH),
+
+  // Ask the TLS client for a certificate.
+  requestCert: true,
+
+  // DIAGNOSTIC ONLY: observe even if
+  // trust validation does not pass yet.
+  rejectUnauthorized: false
+}, handler);</code></pre>
+    <div class="stack">
+      <div class="card"><h2><code>requestCert</code></h2><p>Requests that the TLS client provide a certificate.</p></div>
+      <div class="card"><h2><code>rejectUnauthorized</code></h2><p>Controls whether the connection is rejected when client-certificate validation fails.</p></div>
+      <div class="card"><h2>Inspect</h2><pre><code>req.socket.getPeerCertificate(true)
+req.client.authorized</code></pre></div>
+    </div>
+  </div>
+  <div class="field-row"><span>present?</span><span>subject</span><span>issuer</span><span>serial</span><span>validity</span><span>fingerprint256</span><span>authorized</span><span>timestamp</span></div>
+  <div class="warning soft">Use relaxed validation only to observe presentation. Production should enforce trust.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="What does “certificate presented” actually prove?">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>What does “certificate presented” actually prove?</h1>
+        </header>
+        <div class="slide-body">
+  <div class="three-cards states">
+    <div class="card tall"><div class="state-num">STATE 1</div><h2>No client certificate</h2><p>No peer certificate was observed by the server.</p></div>
+    <div class="card tall accent-border"><div class="state-num">STATE 2</div><h2>Presented, not trusted</h2><p>The server saw a certificate, but validation failed under the configured trust policy.</p></div>
+    <div class="card tall"><div class="state-num">STATE 3</div><h2>Presented and trusted</h2><p>The TLS client identity was successfully validated under the configured trust policy.</p></div>
+  </div>
+  <div class="decision"><div>Certificate <strong>PRESENT?</strong></div><div class="branches"><span>NO → stop: presentation not observed</span><span>YES → is it <strong>TRUSTED?</strong> → NO / YES</span></div></div>
+  <div class="takeaway">Certificate presentation and certificate trust are separate test questions.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Configure the Genesys Web Services Data Action">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Configure the Genesys Web Services Data Action</h1>
+        </header>
+        <div class="slide-body">
+  <div class="config-box">
+    <div><span>Endpoint</span><code>https://mtls-test.example.com/test</code></div>
+    <div><span>Method</span><code>GET</code> or <code>POST</code></div>
+    <div><span>Headers</span><em>Optional diagnostic headers</em></div>
+    <div><span>Application authentication</span><em>Use what the experiment requires</em></div>
+    <div><span>mTLS</span><em>Configure the integration to use the applicable Data Actions client-certificate signing authority</em></div>
+  </div>
+  <div class="grid2 equal">
+    <div class="card"><h2>Verified current behavior</h2><p>Genesys documents mTLS support for the <strong>web services data actions integration</strong>, with Genesys Cloud regional CA or DigiCert signing options.</p></div>
+    <div class="card"><h2>Keep product details current</h2><p>Exact UI labels, certificate retrieval steps, and lifecycle behavior should be verified against the current Genesys Cloud Resource Center.</p></div>
+  </div>
+  <div class="source-note">Current docs: “MTLS support for data actions” and “Security for data actions” (Genesys Cloud Resource Center).</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Evidence to capture">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Evidence to capture</h1>
+        </header>
+        <div class="slide-body">
+  <div class="three-cards evidence">
+    <div class="card tall"><h2>Node.js server</h2><ul><li>Client certificate: YES/NO</li><li>Subject / issuer</li><li>Serial number</li><li>Validity period</li><li>SHA-256 fingerprint</li><li><code>req.client.authorized</code></li><li>Timestamp</li></ul></div>
+    <div class="card tall"><h2>Genesys</h2><ul><li>Data Action result</li><li>HTTP status</li><li>Response body</li><li>TLS / connection error if any</li></ul></div>
+    <div class="card tall"><h2>AWS</h2><ul><li>Server logs</li><li>Security Group</li><li>DNS record</li><li>Server cert / chain</li><li>Listening process / port</li></ul></div>
+  </div>
+  <div class="evidence-chain"><span>Data Action</span>→<span>TLS handshake</span>→<span>Client cert observed</span>→<span>Validated</span>→<span>HTTP request</span>→<span>HTTP 200</span>→<span>Success</span></div>
+  <div class="takeaway">Evidence should demonstrate each layer independently.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Troubleshooting matrix">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Troubleshooting matrix</h1>
+        </header>
+        <div class="slide-body">
+  <div class="table-wrap"><table>
+    <thead><tr><th>Symptom</th><th>Likely layer</th><th>What it means</th><th>Inspect</th></tr></thead>
+    <tbody>
+      <tr><td>Cannot resolve hostname</td><td>DNS</td><td>Endpoint cannot be resolved.</td><td>DNS record</td></tr>
+      <tr><td>Connection timeout</td><td>Network</td><td>TCP 443 cannot be reached.</td><td>Security Group, firewall, routing</td></tr>
+      <tr><td>TLS server cert error</td><td>TLS server auth</td><td>Genesys does not accept the server certificate.</td><td>Chain, hostname, validity, trust</td></tr>
+      <tr><td>Client cert not present</td><td>TLS client auth</td><td>No peer certificate observed.</td><td><code>requestCert</code>, intended endpoint, Genesys mTLS config</td></tr>
+      <tr><td>Client cert present, unauthorized</td><td>Certificate trust</td><td>Certificate arrived but trust validation failed.</td><td>CA / chain / configured trust policy</td></tr>
+      <tr><td>HTTP 401</td><td>Application auth</td><td>TLS succeeded; HTTP authentication failed.</td><td>OAuth, API key, Authorization header</td></tr>
+      <tr><td>HTTP 403</td><td>Application authz</td><td>Identity recognized; access denied.</td><td>Permissions / authorization policy</td></tr>
+      <tr><td>HTTP 200</td><td>End-to-end</td><td>Network + TLS + HTTP path succeeded.</td><td>Capture evidence</td></tr>
+    </tbody>
+  </table></div>
+  <div class="takeaway">TLS failure occurs before the HTTP request. An HTTP 401/403 means TLS already succeeded.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="What success looks like">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>What success looks like</h1>
+        </header>
+        <div class="slide-body">
+  <div class="success-flow">
+    <div class="success-node accent">Genesys Cloud</div>
+    <div class="success-step"><b>1</b><span>TLS handshake begins</span></div>
+    <div class="success-node">Customer Node.js endpoint</div>
+    <div class="success-step"><b>2</b><span>Server certificate validated</span></div>
+    <div class="success-step"><b>3</b><span>Client certificate requested</span></div>
+    <div class="success-step"><b>4</b><span>Genesys client certificate presented</span></div>
+    <div class="success-step"><b>5</b><span>Client identity trusted</span></div>
+    <div class="success-step"><b>6</b><span>TLS session established</span></div>
+    <div class="success-step"><b>7</b><span>HTTP request → <code>/test</code></span></div>
+    <div class="success-step"><b>8</b><span>HTTP 200 → Data Action success</span></div>
+  </div>
+  <div class="takeaway">At this point, we have evidence rather than an assumption that mTLS is functioning.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="What this test proves — and what it does not">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>What this test proves — and what it does not</h1>
+        </header>
+        <div class="slide-body">
+  <div class="grid2 equal proof-columns">
+    <div class="panel accent-border"><h2>THIS TEST PROVES</h2><ul><li>AWS endpoint is reachable.</li><li>Genesys can establish TLS with it.</li><li>The server can observe whether a client cert is presented.</li><li>Presented certificate metadata can be captured.</li><li>Customer trust can be enforced.</li><li>The Data Action can complete an HTTP request.</li></ul></div>
+    <div class="panel"><h2>THIS TEST DOES NOT AUTOMATICALLY PROVE</h2><ul><li>Production certificate lifecycle and rotation are correct.</li><li>High availability or production gateway behavior.</li><li>Every possible region/path.</li><li>Application authorization policy.</li><li>Security of the entire production integration.</li></ul></div>
+  </div>
+  <div class="takeaway">A diagnostic proves specific layers. It should not be used to overclaim production readiness.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Test-to-production transition">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Test-to-production transition</h1>
+        </header>
+        <div class="slide-body">
+  <div class="grid2 equal compare production">
+    <div class="panel"><h2>TEST</h2><ul><li>EC2</li><li>Node.js diagnostic server</li><li>Direct TLS termination</li><li>Diagnostic certificate logging</li><li>Temporary relaxed validation during observation</li></ul></div>
+    <div class="panel accent-border"><h2>PRODUCTION</h2><ul><li>Managed certificate lifecycle + rotation</li><li>Protected private keys</li><li>Strict trust policy</li><li>Strict client-certificate validation</li><li>Monitoring + audit logging</li><li>High availability + controlled ingress</li><li>Gateway / load balancer where appropriate</li><li>Least-privilege application authorization</li></ul></div>
+  </div>
+  <div class="warning">Do not carry <code>rejectUnauthorized = false</code> into production.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Executive conclusion">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Genesys Cloud Web Services Data Action</div>
+          <h1>Executive conclusion</h1>
+        </header>
+        <div class="slide-body">
+  <div class="conclusion">
+    <div class="big-statement"><b>1</b><span>mTLS adds <strong>client authentication</strong> to HTTPS.</span></div>
+    <div class="big-statement"><b>2</b><span>The customer endpoint validates the client certificate presented by the Genesys Data Actions service during the TLS handshake.</span></div>
+    <div class="big-statement"><b>3</b><span>The fastest way to remove uncertainty is a controlled AWS HTTPS endpoint that observes the certificate, then progressively enforces trust.</span></div>
+  </div>
+  <div class="progression big"><span>PROVE CONNECTIVITY</span>→<span>PROVE CERTIFICATE PRESENTATION</span>→<span>PROVE CERTIFICATE TRUST</span>→<span>PROVE DATA ACTION SUCCESS</span></div>
+  <div class="takeaway">The AWS test converts an assumption about mTLS into observable evidence.</div>
+</div>
+      </div>
+    </section><section class="slide divider-slide" data-title="Technical Appendix">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Technical Appendix</h1>
+        </header>
+        <div class="slide-body">
+  <div class="appendix-hero">
+    <div class="tag ca">IMPLEMENTATION DETAIL</div>
+    <p>Runnable Node.js diagnostic server, EC2 setup, network checks, curl/OpenSSL tests, example evidence, and rotation considerations.</p>
+    <div class="progression"><span>Build</span>→<span>Observe</span>→<span>Validate</span>→<span>Harden</span></div>
+  </div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Appendix A — Full Node.js server source">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Appendix A — Full Node.js server source</h1>
+        </header>
+        <div class="slide-body">
+  <div class="code-full"><pre><code>const https = require(&#x27;https&#x27;);
+const fs = require(&#x27;fs&#x27;);
+
+const PORT = Number(process.env.PORT || 443);
+const KEY_PATH = process.env.SERVER_KEY || &#x27;./certs/server-key.pem&#x27;;
+const CERT_PATH = process.env.SERVER_CERT || &#x27;./certs/server-cert.pem&#x27;;
+const CA_PATH = process.env.CLIENT_CA || &#x27;&#x27;;
+const STRICT_CLIENT_AUTH = process.env.STRICT_CLIENT_AUTH === &#x27;true&#x27;;
+
+function readOptional(path) {
+  return path ? fs.readFileSync(path) : undefined;
+}
+
+const tlsOptions = {
+  key: fs.readFileSync(KEY_PATH),
+  cert: fs.readFileSync(CERT_PATH),
+  requestCert: true,
+  rejectUnauthorized: STRICT_CLIENT_AUTH,
+  ca: readOptional(CA_PATH)
+};
+
+function certSummary(socket) {
+  const cert = socket.getPeerCertificate(true);
+  const presented = Boolean(cert &amp;&amp; Object.keys(cert).length);
+  return {
+    clientCertificatePresented: presented,
+    authorized: socket.authorized,
+    authorizationError: socket.authorizationError || null,
+    subject: presented ? cert.subject : null,
+    issuer: presented ? cert.issuer : null,
+    serialNumber: presented ? cert.serialNumber : null,
+    validFrom: presented ? cert.valid_from : null,
+    validTo: presented ? cert.valid_to : null,
+    fingerprint256: presented ? cert.fingerprint256 : null
+  };
+}
+
+const server = https.createServer(tlsOptions, (req, res) =&gt; {
+  try {
+    const summary = certSummary(req.socket);
+    const result = {
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      path: req.url,
+      remoteAddress: req.socket.remoteAddress,
+      tlsProtocol: req.socket.getProtocol(),
+      ...summary
+    };
+
+    console.log(JSON.stringify(result));
+
+    if (req.url !== &#x27;/test&#x27;) {
+      res.writeHead(404, { &#x27;content-type&#x27;: &#x27;application/json&#x27; });
+      return res.end(JSON.stringify({ error: &#x27;not_found&#x27; }));
+    }
+
+    res.writeHead(200, { &#x27;content-type&#x27;: &#x27;application/json&#x27; });
+    res.end(JSON.stringify(result, null, 2));
+  } catch (err) {
+    console.error(&#x27;request_error&#x27;, err);
+    if (!res.headersSent) {
+      res.writeHead(500, { &#x27;content-type&#x27;: &#x27;application/json&#x27; });
+    }
+    res.end(JSON.stringify({ error: &#x27;internal_error&#x27; }));
+  }
+});
+
+server.on(&#x27;tlsClientError&#x27;, (err, socket) =&gt; {
+  console.error(&#x27;tls_client_error&#x27;, {
+    message: err.message,
+    remoteAddress: socket &amp;&amp; socket.remoteAddress
+  });
+});
+
+server.on(&#x27;error&#x27;, (err) =&gt; {
+  console.error(&#x27;server_error&#x27;, err);
+  process.exitCode = 1;
+});
+
+server.listen(PORT, &#x27;0.0.0.0&#x27;, () =&gt; {
+  console.log(`mTLS diagnostic server listening on ${PORT}`);
+  console.log(`strict client auth: ${STRICT_CLIENT_AUTH}`);
+});</code></pre></div>
+  <div class="code-legend"><span><code>requestCert: true</code> = ask the client for a certificate</span><span><code>rejectUnauthorized</code> = enforce validation result</span><span><code>ca</code> = trust material when strict mode is enabled</span></div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Appendix B — Node.js runtime requirements">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Appendix B — Node.js runtime requirements</h1>
+        </header>
+        <div class="slide-body">
+  <div class="grid2 equal">
+    <div class="card"><h2>Runtime</h2><ul><li>Use a currently supported Node.js LTS release.</li><li>No third-party packages are required.</li><li>Run under a service manager for repeatability.</li></ul></div>
+    <div class="card"><h2>Files</h2><pre><code>mtls-test/
+├─ server.js
+└─ certs/
+   ├─ server-key.pem
+   ├─ server-cert.pem
+   └─ client-trust.pem   # strict mode</code></pre></div>
+  </div>
+  <div class="config-box compact-config">
+    <div><span><code>PORT</code></span><code>443</code></div>
+    <div><span><code>SERVER_KEY</code></span><code>./certs/server-key.pem</code></div>
+    <div><span><code>SERVER_CERT</code></span><code>./certs/server-cert.pem</code></div>
+    <div><span><code>CLIENT_CA</code></span><code>./certs/client-trust.pem</code></div>
+    <div><span><code>STRICT_CLIENT_AUTH</code></span><code>false</code> → diagnostic; <code>true</code> → enforce</div>
+  </div>
+  <pre class="one-line"><code>sudo -E node server.js</code></pre>
+</div>
+      </div>
+    </section><section class="slide " data-title="Appendix C — AWS EC2 setup">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Appendix C — AWS EC2 setup</h1>
+        </header>
+        <div class="slide-body">
+  <div class="timeline">
+    <div><b>1</b><span>Select a small Linux EC2 instance.</span></div><div><b>2</b><span>Place it in a public subnet with a route to an Internet Gateway.</span></div><div><b>3</b><span>Associate a public IP / Elastic IP as appropriate.</span></div><div><b>4</b><span>Configure the Security Group.</span></div><div><b>5</b><span>Install a supported Node.js runtime.</span></div><div><b>6</b><span>Copy certificates securely; lock down private-key permissions.</span></div><div><b>7</b><span>Start the server and verify local HTTPS.</span></div><div><b>8</b><span>Verify external HTTPS before involving Genesys.</span></div>
+  </div>
+  <div class="takeaway">Keep the first diagnostic architecture intentionally boring: one host, one TLS terminator, one test endpoint.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Appendix D — AWS Security Group">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Appendix D — AWS Security Group</h1>
+        </header>
+        <div class="slide-body">
+  <div class="sg-card">
+    <div class="sg-head">Example initial inbound rule</div>
+    <div class="sg-row"><span>Protocol</span><strong>TCP</strong></div>
+    <div class="sg-row"><span>Port</span><strong>443</strong></div>
+    <div class="sg-row"><span>Source</span><code>0.0.0.0/0</code></div>
+    <div class="sg-row"><span>Purpose</span><strong>Public HTTPS diagnostic</strong></div>
+  </div>
+  <div class="warning">Broad ingress is suitable only for a controlled initial public HTTPS test. Restrict production ingress appropriately.</div>
+  <div class="source-note">Also check the operating-system firewall and any NACL/routing controls; a Security Group alone does not prove reachability.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Appendix E — DNS and server certificate">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Appendix E — DNS and server certificate</h1>
+        </header>
+        <div class="slide-body">
+  <div class="inline-architecture"><div class="arch-node"><code>mtls-test.example.com</code></div><span>→</span><div class="arch-node aws">AWS public endpoint</div><span>→</span><div class="arch-node accent">Node.js :443</div></div>
+  <div class="four-cards">
+    <div class="card"><h2>DNS</h2><p>Hostname resolves to the reachable AWS endpoint.</p></div>
+    <div class="card"><h2>Hostname match</h2><p>The server certificate covers the exact hostname used by the Data Action.</p></div>
+    <div class="card"><h2>Certificate chain</h2><p>Serve the required intermediate chain so the client can build trust.</p></div>
+    <div class="card"><h2>Private key</h2><p>Matches the server certificate and remains on the customer-controlled host.</p></div>
+  </div>
+  <div class="takeaway">The server private key remains on the customer-controlled AWS host.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Appendix F — Independent testing with curl">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Appendix F — Independent testing with curl</h1>
+        </header>
+        <div class="slide-body">
+  <div class="stack">
+    <div class="card"><h2>1. Verify normal HTTPS</h2><pre><code>curl -v https://mtls-test.example.com/test</code></pre><p>Proves DNS, TCP reachability, server-certificate validation, and HTTP response handling from the curl host.</p></div>
+    <div class="card"><h2>2. Reproduce client-certificate presentation</h2><pre><code>curl -v --cert test-client-cert.pem --key test-client-key.pem   https://mtls-test.example.com/test</code></pre><p>Useful for validating your server’s client-certificate request/inspection logic with a test identity you control.</p></div>
+  </div>
+  <div class="source-note">A curl test validates the endpoint; it does not reproduce Genesys Cloud’s exact TLS client behavior.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Appendix G — OpenSSL diagnostic commands">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Appendix G — OpenSSL diagnostic commands</h1>
+        </header>
+        <div class="slide-body">
+  <div class="grid2 equal code-slide">
+    <div><h2>Inspect the server handshake</h2><pre><code>openssl s_client   -connect mtls-test.example.com:443   -servername mtls-test.example.com   -showcerts</code></pre></div>
+    <div><h2>Inspect a certificate file</h2><pre><code>openssl x509   -in cert.pem   -noout -subject -issuer   -serial -dates -fingerprint -sha256</code></pre></div>
+  </div>
+  <div class="check-grid small"><div>Look for server certificate</div><div>Chain construction</div><div>TLS protocol</div><div>Client-certificate request</div><div>Handshake result</div><div>Verification errors</div></div>
+  <div class="source-note">OpenSSL is an independent diagnostic client; it does not prove what Genesys itself presents.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Appendix H — Example server logs">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Appendix H — Example server logs</h1>
+        </header>
+        <div class="slide-body">
+  <div class="three-cards logs">
+    <div class="card tall"><h2>Case 1 — no client cert</h2><pre><code>{
+  "clientCertificatePresented": false,
+  "authorized": false
+}</code></pre></div>
+    <div class="card tall accent-border"><h2>Case 2 — present, not trusted</h2><pre><code>{
+  "clientCertificatePresented": true,
+  "authorized": false,
+  "subject": {"CN":"example"},
+  "issuer": {"CN":"example CA"}
+}</code></pre></div>
+    <div class="card tall"><h2>Case 3 — present + trusted</h2><pre><code>{
+  "clientCertificatePresented": true,
+  "authorized": true,
+  "fingerprint256": "AA:BB:…"
+}</code></pre></div>
+  </div>
+  <div class="takeaway">Use placeholder metadata in documentation. Capture the real values only from your actual test.</div>
+</div>
+      </div>
+    </section><section class="slide " data-title="Appendix I — Certificate rotation">
+      <div class="slide-inner">
+        <header class="slide-header">
+          <div class="eyebrow">Technical Appendix</div>
+          <h1>Appendix I — Certificate rotation</h1>
+        </header>
+        <div class="slide-body">
+  <div class="rotation-flow"><span>Monitor expiry</span>→<span>Acquire upcoming trust material</span>→<span>Overlap trust where appropriate</span>→<span>Observe rotation</span>→<span>Remove obsolete trust</span></div>
+  <div class="grid2 equal">
+    <div class="card"><h2>Plan for</h2><ul><li>Client certificate expiration</li><li>Server certificate expiration</li><li>Trust-chain changes</li><li>Monitoring and alerting</li></ul></div>
+    <div class="card accent-border"><h2>Current Genesys guidance</h2><p>Genesys documents annual rotation for Data Actions mTLS certificates. The exact trust approach depends on whether the integration uses the Genesys Cloud regional CA or DigiCert signing authority.</p><p>Verify the current provisioning and rotation process against official Genesys Cloud documentation before production rollout.</p></div>
+  </div>
+  <div class="source-note">Genesys Resource Center currently recommends trusting the regional Genesys CA in Genesys-CA mode and provides current/upcoming certificate information for rotation workflows.</div>
+</div>
+      </div>
+    </section>
+</main>
+<nav class="nav" aria-label="Slide navigation">
+  <button id="prev" type="button" aria-label="Previous slide">← Previous</button>
+  <span class="counter" id="counter" aria-live="polite"></span>
+  <button id="next" type="button" aria-label="Next slide">Next →</button>
+</nav>
+<div class="hint">← → navigate · Home / End jump</div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<script>
+(() => {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  let index = 0;
+
+  const fromHash = () => {
+    const m = location.hash.match(/slide-(\d+)/);
+    if (m) index = Math.max(0, Math.min(slides.length - 1, Number(m[1]) - 1));
+  };
+
+  function render(updateHash = true) {
+    slides.forEach((s, i) => s.classList.toggle('active', i === index));
+    counter.textContent = `${index + 1} / ${slides.length}`;
+    prev.disabled = index === 0;
+    next.disabled = index === slides.length - 1;
+    progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+    document.title = `${slides[index].dataset.title} — Genesys Cloud mTLS`;
+    if (updateHash) history.replaceState(null, '', `#slide-${index + 1}`);
+  }
+
+  function go(delta) { index = Math.max(0, Math.min(slides.length - 1, index + delta)); render(); }
+  prev.addEventListener('click', () => go(-1));
+  next.addEventListener('click', () => go(1));
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight','PageDown',' '].includes(e.key)) { e.preventDefault(); go(1); }
+    if (['ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+    if (e.key === 'Home') { e.preventDefault(); index = 0; render(); }
+    if (e.key === 'End') { e.preventDefault(); index = slides.length - 1; render(); }
+  });
+  window.addEventListener('hashchange', () => { fromHash(); render(false); });
+  fromHash();
+  render(false);
+})();
+</script>
+</body>
+</html>
