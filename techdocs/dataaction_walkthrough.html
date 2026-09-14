@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genesys Cloud Mutual TLS — How It Works and How to Prove It</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --bg-subtle:#f5f7fa;
+    --bg-panel:#fbfcfd;
+    --ink:#161a20;
+    --ink-muted:#5a6472;
+    --border:#dbe1e8;
+    --accent:#1f5fa8;
+    --accent-soft:#e8f0fa;
+    --good:#2f7d5b;
+    --good-soft:#e7f4ee;
+    --warn:#a06a0f;
+    --warn-soft:#faf1de;
+    --bad:#b3413a;
+    --bad-soft:#fbebe9;
+    --code-bg:#eef2f6;
+    --code-ink:#101828;
+    --radius:8px;
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-weight:700;color:var(--ink);}
+  p{margin:0 0 12px;}
+  a{color:var(--accent);}
+
+  /* progress bar */
+  .progress-track{position:fixed;top:0;left:0;width:100%;height:3px;background:var(--border);z-index:30;}
+  .progress-fill{height:100%;width:0%;background:var(--accent);transition:width .2s ease;}
+
+  /* deck / slides */
+  .deck{position:relative;height:calc(100vh - 58px);height:calc(100dvh - 58px);width:100%;}
+  .slide{display:none;position:absolute;inset:0;overflow-y:auto;}
+  .slide.active{display:block;}
+  .slide-inner{max-width:980px;margin:0 auto;padding:52px 40px 70px;}
+
+  .slide-title{font-size:1.85rem;line-height:1.25;margin:0 0 10px;}
+  .slide-sub{font-size:1.02rem;color:var(--ink-muted);margin:0 0 26px;max-width:72ch;}
+  .slide-body{font-size:.97rem;line-height:1.6;}
+  .slide-body p{max-width:74ch;}
+  .slide-body h3{font-size:1.05rem;margin:28px 0 10px;}
+  .slide-body ul,.slide-body ol{padding-left:22px;margin:10px 0;}
+  .slide-body li{margin-bottom:6px;}
+  .slide-body strong{font-weight:700;}
+
+  /* title & divider slides */
+  .title-slide .slide-inner,.divider-slide .slide-inner{min-height:82%;display:flex;flex-direction:column;justify-content:center;}
+  .title-slide .slide-title{font-size:2.3rem;max-width:18ch;}
+  .divider-slide .slide-title{font-size:2.1rem;}
+  .kicker{font-size:.78rem;font-weight:700;color:var(--accent);letter-spacing:.02em;margin-bottom:12px;}
+
+  .hero-diagram{margin:26px 0 8px;}
+  .hero-line{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .hero-box{border:1px solid var(--border);background:var(--bg-panel);padding:14px 22px;border-radius:var(--radius);font-weight:600;font-size:1.02rem;}
+  .hero-arrow{color:var(--accent);font-size:1.7rem;text-align:center;}
+  .hero-arrow .lbl{display:block;font-family:var(--font-sans);font-size:.68rem;color:var(--ink-muted);margin-top:3px;font-weight:600;}
+
+  /* callouts / takeaways */
+  .callout{border-left:4px solid var(--accent);background:var(--bg-subtle);padding:13px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:.94rem;}
+  .callout strong{color:var(--ink);}
+  .callout.strong-warn{border-left-color:var(--bad);background:var(--bad-soft);}
+  .takeaway{margin-top:30px;border-left:4px solid var(--accent);background:var(--accent-soft);padding:15px 20px;border-radius:0 6px 6px 0;font-size:1.02rem;font-weight:600;}
+  .muted-note{font-size:.82rem;color:var(--ink-muted);margin-top:16px;}
+
+  /* diagram containers */
+  .diagram{border:1px solid var(--border);background:var(--bg-subtle);border-radius:var(--radius);padding:22px 24px;margin:18px 0;}
+  .diagram-label{font-size:.78rem;font-weight:700;color:var(--ink-muted);margin-bottom:12px;}
+
+  /* generic columns */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:18px 0;}
+  .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0;}
+  .col-box{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;background:var(--bg-panel);}
+  .col-box h4{margin:0 0 10px;font-size:.95rem;}
+  .col-box p:last-child{margin-bottom:0;}
+  .col-heading{font-weight:700;font-size:.85rem;color:var(--ink-muted);margin-bottom:10px;}
+
+  /* stacked identity boxes */
+  .stack{display:flex;flex-direction:column;gap:8px;}
+  .stack .item{border:1px solid var(--border);background:#fff;border-radius:6px;padding:10px 12px;text-align:center;font-size:.88rem;}
+  .identity-row{display:flex;align-items:center;gap:18px;margin:18px 0;}
+  .identity-col{flex:1;text-align:center;}
+  .identity-link{font-size:.85rem;color:var(--accent);font-weight:700;white-space:nowrap;text-align:center;padding:0 4px;}
+
+  /* vertical flow */
+  .flow{display:flex;flex-direction:column;align-items:center;gap:0;margin:16px 0;}
+  .flow-step{border:1px solid var(--border);background:#fff;border-radius:6px;padding:11px 20px;text-align:center;font-size:.9rem;min-width:230px;}
+  .flow-arrow{color:var(--accent);font-size:1.05rem;line-height:2;text-align:center;}
+
+  /* gate chain */
+  .gate-chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:16px 0;}
+  .gate{border:1px solid var(--border);background:#fff;padding:8px 14px;border-radius:20px;font-size:.82rem;white-space:nowrap;}
+  .gate.final{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+  .gate-arrow{color:var(--accent);font-weight:700;}
+
+  /* sequence diagram */
+  .seq{border:1px solid var(--border);background:var(--bg-subtle);border-radius:var(--radius);padding:24px 26px;margin:18px 0;}
+  .seq-heads{display:flex;justify-content:space-between;font-weight:700;font-size:.86rem;margin-bottom:16px;}
+  .seq-msg{margin:16px 0;text-align:center;}
+  .seq-msg .lbl{font-size:.83rem;margin-bottom:6px;color:var(--ink);}
+  .seq-msg .line{position:relative;height:1px;background:var(--ink-muted);width:84%;margin:0 auto;}
+  .seq-msg.r .line::after{content:'';position:absolute;right:0;top:-4px;border-left:7px solid var(--ink-muted);border-top:4px solid transparent;border-bottom:4px solid transparent;}
+  .seq-msg.l .line::before{content:'';position:absolute;left:0;top:-4px;border-right:7px solid var(--ink-muted);border-top:4px solid transparent;border-bottom:4px solid transparent;}
+  .seq-msg.note .line{display:none;}
+  .seq-msg.note .lbl{font-style:italic;color:var(--ink-muted);font-size:.8rem;margin-bottom:0;}
+  .seq-divider{text-align:center;font-size:.74rem;font-weight:700;color:var(--accent);margin:20px 0;position:relative;}
+  .seq-divider::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--border);}
+  .seq-divider span{background:var(--bg-subtle);padding:0 10px;position:relative;z-index:1;}
+
+  /* private key no-transfer diagram */
+  .no-transfer{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap;}
+  .no-transfer .item{border:1px solid var(--border);background:#fff;border-radius:6px;padding:9px 14px;font-size:.86rem;}
+  .no-transfer .cross{color:var(--bad);font-weight:700;font-size:1.15rem;}
+
+  /* tables */
+  table.dtable{width:100%;border-collapse:collapse;margin:18px 0;font-size:.87rem;}
+  table.dtable th,table.dtable td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top;}
+  table.dtable th{background:var(--bg-subtle);font-weight:700;}
+  table.dtable tr:nth-child(even) td{background:var(--bg-panel);}
+
+  /* state cards */
+  .state-card{border:1px solid var(--border);border-left:4px solid var(--ink-muted);border-radius:6px;padding:14px 16px;margin:12px 0;background:#fff;}
+  .state-card.warn{border-left-color:var(--warn);}
+  .state-card.good{border-left-color:var(--good);}
+  .state-card h4{margin:0 0 6px;font-size:.92rem;}
+  .state-card p{margin:0;color:var(--ink-muted);font-size:.88rem;}
+
+  /* code blocks */
+  .code{background:var(--code-bg);color:var(--code-ink);font-family:var(--font-mono);font-size:.8rem;padding:15px 17px;border-radius:6px;border-left:3px solid var(--accent);overflow-x:auto;margin:14px 0;white-space:pre;line-height:1.55;}
+  .mono{font-family:var(--font-mono);font-size:.85em;background:var(--code-bg);padding:1px 5px;border-radius:3px;}
+
+  /* checklists */
+  .checklist{list-style:none;padding:0;margin:14px 0;}
+  .checklist li{padding-left:24px;position:relative;margin-bottom:8px;font-size:.9rem;}
+  .checklist li::before{content:'\2610';position:absolute;left:0;color:var(--accent);}
+  .checklist.no li::before{content:'\2715';color:var(--ink-muted);font-size:.85em;}
+
+  .badge{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+  .badge.good{background:var(--good-soft);color:var(--good);}
+  .badge.bad{background:var(--bad-soft);color:var(--bad);}
+  .badge.warn{background:var(--warn-soft);color:var(--warn);}
+
+  /* nav bar */
+  nav.controls{position:fixed;bottom:0;left:0;width:100%;height:58px;background:#fff;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:22px;z-index:30;}
+  nav.controls button{font-family:var(--font-sans);font-size:.9rem;font-weight:600;padding:8px 18px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--ink);cursor:pointer;}
+  nav.controls button:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+  nav.controls button:disabled{opacity:.35;cursor:default;}
+  nav.controls .counter{font-size:.84rem;color:var(--ink-muted);font-variant-numeric:tabular-nums;min-width:66px;text-align:center;}
+  button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  @media (max-width:760px){
+    .two-col,.cols3{grid-template-columns:1fr;}
+    .identity-row{flex-direction:column;}
+    .slide-inner{padding:34px 20px 60px;}
+    .slide-title{font-size:1.5rem;}
+    .title-slide .slide-title{font-size:1.8rem;}
+    .flow-step{min-width:0;width:100%;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .progress-fill{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<main class="deck" id="deck">
+
+<!-- SLIDE 1 : TITLE -->
+<section class="slide title-slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Genesys Cloud Mutual TLS — How It Works and How to Prove It</h1>
+    <p class="slide-sub">Web Services Data Action — mTLS behavior, certificate ownership, and the AWS test approach.</p>
+    <div class="hero-diagram">
+      <div class="hero-line">
+        <div class="hero-box">Genesys Cloud</div>
+        <div class="hero-arrow">&#8644;<span class="lbl">mTLS</span></div>
+        <div class="hero-box">Customer Web Service</div>
+      </div>
+    </div>
+    <p class="muted-note" style="margin-top:14px;">Two-way TLS identity</p>
+  </div>
+</section>
+
+<!-- SLIDE 2 : EXECUTIVE SUMMARY -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Executive summary</h1>
+    <div class="slide-body">
+      <ul>
+        <li>Normal TLS authenticates the server to Genesys.</li>
+        <li>Mutual TLS adds authentication of the client.</li>
+        <li>For an mTLS-enabled Genesys Web Services Data Action, the customer endpoint requests a client certificate during the TLS handshake.</li>
+        <li>The customer endpoint must be able to validate and trust the certificate presented by Genesys.</li>
+      </ul>
+      <div class="two-col">
+        <div class="col-box">
+          <div class="col-heading">Genesys authenticates to the customer</div>
+          <div class="flow">
+            <div class="flow-step">Genesys Cloud</div>
+            <div class="flow-arrow">&darr; &ldquo;Prove who you are&rdquo;</div>
+            <div class="flow-step">Customer endpoint</div>
+          </div>
+        </div>
+        <div class="col-box">
+          <div class="col-heading">The customer authenticates to Genesys</div>
+          <div class="flow">
+            <div class="flow-step">Customer endpoint</div>
+            <div class="flow-arrow">&darr; &ldquo;Prove who YOU are&rdquo;</div>
+            <div class="flow-step">Genesys Cloud</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="takeaway">mTLS establishes identity before the HTTP request is processed.</div>
+  </div>
+</section>
+
+<!-- SLIDE 3 : NORMAL TLS VS MUTUAL TLS -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Normal TLS vs. mutual TLS</h1>
+    <div class="slide-body">
+      <div class="two-col">
+        <div class="col-box">
+          <h4>Normal HTTPS</h4>
+          <div class="flow" style="margin:8px 0 14px;">
+            <div class="flow-step">Genesys Cloud</div>
+            <div class="flow-arrow">&rarr;</div>
+            <div class="flow-step">Customer server</div>
+          </div>
+          <ol>
+            <li>Customer server presents its server certificate.</li>
+            <li>Genesys validates the server certificate.</li>
+            <li>A secure, encrypted TLS session is established.</li>
+            <li>The HTTP request is sent.</li>
+          </ol>
+        </div>
+        <div class="col-box">
+          <h4>Mutual TLS <span class="badge good">adds client auth</span></h4>
+          <div class="flow" style="margin:8px 0 14px;">
+            <div class="flow-step">Genesys Cloud</div>
+            <div class="flow-arrow">&#8644;</div>
+            <div class="flow-step">Customer server</div>
+          </div>
+          <ol>
+            <li>Customer server presents its server certificate.</li>
+            <li>Genesys validates the server certificate.</li>
+            <li><strong>Customer endpoint requests a client certificate.</strong></li>
+            <li><strong>Genesys presents its client certificate.</strong></li>
+            <li><strong>Customer validates and trusts the Genesys client certificate.</strong></li>
+            <li>The TLS session is established.</li>
+            <li>The HTTP request is sent.</li>
+          </ol>
+        </div>
+      </div>
+      <div class="callout">mTLS adds client-certificate authentication on top of everything normal HTTPS already does. It does not replace HTTP-level authentication such as an API key or OAuth token.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4 : TLS HANDSHAKE IN PLAIN ENGLISH -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">The TLS handshake, in plain English</h1>
+    <div class="slide-body">
+      <div class="seq">
+        <div class="seq-heads"><span>Genesys Cloud</span><span>Customer endpoint</span></div>
+        <div class="seq-msg r"><div class="lbl">ClientHello</div><div class="line"></div></div>
+        <div class="seq-msg l"><div class="lbl">Server certificate</div><div class="line"></div></div>
+        <div class="seq-msg note"><div class="lbl">Genesys validates the server&rsquo;s identity</div><div class="line"></div></div>
+        <div class="seq-msg l"><div class="lbl">Requests a client certificate</div><div class="line"></div></div>
+        <div class="seq-msg r"><div class="lbl">Client certificate</div><div class="line"></div></div>
+        <div class="seq-msg note"><div class="lbl">Genesys proves possession of the matching private key</div><div class="line"></div></div>
+        <div class="seq-divider"><span>TLS established</span></div>
+      </div>
+      <div class="seq-divider" style="margin-top:-6px;"><span>HTTP request / response</span></div>
+      <p>The certificate exchange and validation happen at the TLS layer, before the application HTTP request is processed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5 : GENESYS DATA ACTION SEQUENCE -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Inside a Genesys Web Services Data Action call</h1>
+    <div class="slide-body">
+      <div class="flow-step" style="width:100%;max-width:none;margin-bottom:16px;">1. Architect flow invokes the Web Services Data Action</div>
+      <div class="seq">
+        <div class="seq-heads"><span>Genesys Cloud (Data Action)</span><span>Customer HTTPS endpoint</span></div>
+        <div class="seq-divider"><span>TLS handshake</span></div>
+        <div class="seq-msg r"><div class="lbl">2&ndash;4. Connect &amp; begin TLS</div><div class="line"></div></div>
+        <div class="seq-msg l"><div class="lbl">5. Server certificate presented</div><div class="line"></div></div>
+        <div class="seq-msg note"><div class="lbl">6. Genesys validates the server certificate</div><div class="line"></div></div>
+        <div class="seq-msg l"><div class="lbl">7. Client certificate requested</div><div class="line"></div></div>
+        <div class="seq-msg r"><div class="lbl">8. Genesys presents its mTLS client certificate</div><div class="line"></div></div>
+        <div class="seq-msg note"><div class="lbl">9. Customer validates &amp; trusts the client certificate</div><div class="line"></div></div>
+        <div class="seq-msg note"><div class="lbl">10. TLS session established</div><div class="line"></div></div>
+        <div class="seq-divider"><span>HTTP request / response</span></div>
+        <div class="seq-msg r"><div class="lbl">11. HTTP request sent</div><div class="line"></div></div>
+        <div class="seq-msg note"><div class="lbl">12. Customer endpoint processes the request</div><div class="line"></div></div>
+        <div class="seq-msg l"><div class="lbl">13. HTTP response returned</div><div class="line"></div></div>
+      </div>
+      <div class="flow-step" style="width:100%;max-width:none;margin-top:8px;">14&ndash;15. Data Action processes the response and returns the result to the flow</div>
+      <div class="callout"><strong>If client-certificate authentication fails, the failure can occur before HTTP authentication (API keys, OAuth) is ever evaluated.</strong></div>
+      <div class="callout">A successful TLS handshake does not automatically mean the application request is authorized.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6 : CERTIFICATE OWNERSHIP MODEL -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Who owns which certificate?</h1>
+    <div class="slide-body">
+      <table class="dtable">
+        <thead><tr><th>Genesys Cloud</th><th>Customer / API owner</th></tr></thead>
+        <tbody>
+          <tr><td>Genesys client certificate</td><td>Customer server certificate</td></tr>
+          <tr><td>Genesys client private key</td><td>Customer server private key</td></tr>
+          <tr><td>Presents the client certificate</td><td>Presents the server certificate</td></tr>
+          <tr><td>Uses client identity to authenticate to the customer</td><td>Uses server identity to authenticate to Genesys</td></tr>
+          <tr><td>Protects the client private key</td><td>Protects the server private key</td></tr>
+        </tbody>
+      </table>
+
+      <div class="identity-row">
+        <div class="identity-col">
+          <div class="col-heading">Genesys side</div>
+          <div class="stack">
+            <div class="item">Client certificate</div>
+            <div class="item">Client private key</div>
+          </div>
+        </div>
+        <div class="identity-link">&#8644;<br>TLS</div>
+        <div class="identity-col">
+          <div class="col-heading">Customer side</div>
+          <div class="stack">
+            <div class="item">Server certificate</div>
+            <div class="item">Server private key</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="flow">
+          <div class="flow-step">Genesys</div>
+          <div class="flow-arrow">&darr; presents client certificate</div>
+          <div class="flow-step">Customer endpoint</div>
+        </div>
+        <div class="flow">
+          <div class="flow-step">Customer endpoint</div>
+          <div class="flow-arrow">&darr; presents server certificate</div>
+          <div class="flow-step">Genesys</div>
+        </div>
+      </div>
+
+      <div class="no-transfer">
+        <div class="item">Genesys client private key</div><span class="cross">&#10007;</span><div class="item">never sent to the customer</div>
+      </div>
+      <div class="no-transfer">
+        <div class="item">Customer server private key</div><span class="cross">&#10007;</span><div class="item">never sent to Genesys</div>
+      </div>
+
+      <div class="callout"><strong>Each side protects its own private key.</strong> Each side presents a certificate that proves possession of the corresponding private key.</div>
+      <div class="callout">The customer does not need the Genesys private key &mdash; only the trust configuration to validate the Genesys client certificate. Genesys does not need the customer&rsquo;s private key &mdash; only the ability to trust and validate the customer&rsquo;s server certificate.</div>
+      <p class="muted-note">Specific Genesys certificate storage, provisioning, and rotation mechanisms should be verified against current official Genesys Cloud documentation.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7 : OWNERSHIP VS TRUST -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Ownership &ne; trust</h1>
+    <div class="slide-body">
+      <h3>Who owns it?</h3>
+      <div class="two-col">
+        <div class="col-box"><div class="col-heading">Genesys</div>Client certificate + private key</div>
+        <div class="col-box"><div class="col-heading">Customer</div>Server certificate + private key</div>
+      </div>
+      <h3>Who trusts it?</h3>
+      <div class="two-col">
+        <div class="col-box"><div class="col-heading">Customer</div>Trusts / validates the Genesys client certificate</div>
+        <div class="col-box"><div class="col-heading">Genesys</div>Trusts / validates the customer server certificate</div>
+      </div>
+      <ul>
+        <li>The party that owns a certificate does not validate it themselves &mdash; the receiving side does.</li>
+        <li>Each side keeps its own private key secret.</li>
+        <li>Each side is responsible for validating the certificate presented by the other side.</li>
+        <li>Trust is normally established using a configured trusted CA or certificate chain, depending on the endpoint architecture.</li>
+      </ul>
+    </div>
+    <div class="takeaway">Certificate ownership tells us who controls the identity. Trust configuration tells us who is willing to accept that identity.</div>
+  </div>
+</section>
+
+<!-- SLIDE 8 : THE CERTIFICATE MODEL -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Three pieces of the certificate model</h1>
+    <div class="slide-body">
+      <div class="cols3">
+        <div class="col-box">
+          <h4>Customer server certificate</h4>
+          <p>Proves the customer&rsquo;s endpoint identity.</p>
+        </div>
+        <div class="col-box">
+          <h4>Genesys client certificate</h4>
+          <p>Proves the client identity presented by Genesys.</p>
+        </div>
+        <div class="col-box">
+          <h4>Trusted CA / certificate chain</h4>
+          <p>Used by the receiving side to determine whether the presented certificate is trusted.</p>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="col-box"><div class="col-heading">Genesys trusts</div>Customer server certificate / trusted CA chain</div>
+        <div class="col-box"><div class="col-heading">Customer trusts</div>Genesys client certificate / trusted CA chain</div>
+      </div>
+      <div class="callout">Typically the receiving system uses a trusted CA or certificate chain to validate the presented leaf certificate, although the exact implementation depends on the server or gateway configuration.</div>
+      <p class="muted-note">Do not assume specific Genesys CA details without verifying against current Genesys Cloud documentation.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9 : GATES -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Every gate has to pass</h1>
+    <div class="slide-body">
+      <div class="gate-chain">
+        <div class="gate">1. DNS / network connectivity</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">2. Customer server certificate valid &amp; trusted by Genesys</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">3. Customer endpoint requests client authentication</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">4. Genesys presents a client certificate</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">5. Customer trusts &amp; validates the client certificate</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">6. TLS handshake succeeds</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">7. HTTP request is sent</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">8. App authentication/authorization succeeds, if configured</div>
+      </div>
+      <h3>The layers, simplified</h3>
+      <div class="gate-chain">
+        <div class="gate">Network</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">TLS server identity</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">TLS client identity</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">Encrypted session</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">HTTP authentication</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate final">Application authorization</div>
+      </div>
+    </div>
+    <div class="takeaway">mTLS and API authentication are different layers.</div>
+  </div>
+</section>
+
+<!-- SLIDE 10 : THE KEY TEST QUESTION -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">How do we prove Genesys actually sends the client certificate?</h1>
+    <div class="slide-body">
+      <div class="flow">
+        <div class="flow-step">Genesys Data Action</div>
+        <div class="flow-arrow">&darr; TLS handshake</div>
+        <div class="flow-step">Test HTTPS server</div>
+      </div>
+      <ul class="checklist">
+        <li>Did a client certificate arrive?</li>
+        <li>What certificate was presented?</li>
+        <li>Was it considered authorized?</li>
+        <li>Did the TLS handshake complete?</li>
+      </ul>
+      <p>The cleanest test is a purpose-built HTTPS server that:</p>
+      <ul>
+        <li>requests a client certificate,</li>
+        <li>initially does not reject an untrusted certificate,</li>
+        <li>logs the presented certificate,</li>
+        <li>reports whether a certificate was received,</li>
+        <li>reports whether it was authorized, and</li>
+        <li>can later be switched to strict certificate validation.</li>
+      </ul>
+    </div>
+    <div class="takeaway">First prove certificate presentation. Then prove certificate trust.</div>
+  </div>
+</section>
+
+<!-- SLIDE 11 : TEST STRATEGY -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">A three-stage test strategy</h1>
+    <div class="slide-body">
+      <div class="state-card">
+        <h4>Stage 1 &mdash; HTTPS only</h4>
+        <p><strong>Goal:</strong> prove Genesys can reach the AWS endpoint.</p>
+        <div class="flow" style="margin:10px 0;">
+          <div class="flow-step">Genesys</div><div class="flow-arrow">&rarr; HTTPS &rarr;</div><div class="flow-step">Node.js</div>
+        </div>
+        <p style="margin:0;"><strong>Expected:</strong> HTTP 200</p>
+      </div>
+
+      <div class="state-card warn">
+        <h4>Stage 2 &mdash; request the client certificate</h4>
+        <div class="code">requestCert = true
+rejectUnauthorized = false</div>
+        <p><strong>Goal:</strong> determine whether Genesys presents a client certificate.</p>
+        <p><strong>Capture:</strong> certificate present? subject, issuer, serial number, validity dates, fingerprint, authorization result.</p>
+        <p style="margin:0;"><em>rejectUnauthorized = false</em> lets the test server observe the certificate before certificate trust validation is enforced.</p>
+      </div>
+
+      <div class="state-card good">
+        <h4>Stage 3 &mdash; enforce trust</h4>
+        <div class="code">requestCert = true
+rejectUnauthorized = true
+trusted CA configured</div>
+        <p><strong>Goal:</strong> prove full mTLS authentication.</p>
+        <div class="two-col" style="margin:10px 0;">
+          <div class="col-box">Trusted client certificate &rarr; TLS succeeds &rarr; HTTP request &rarr; HTTP 200</div>
+          <div class="col-box">Missing / invalid / untrusted certificate &rarr; TLS handshake failure</div>
+        </div>
+      </div>
+
+      <div class="gate-chain">
+        <div class="gate">Reachability</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">Certificate presentation</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">Certificate trust</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate final">Data Action success</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12 : AWS TEST ARCHITECTURE -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">AWS test architecture</h1>
+    <div class="slide-body">
+      <div class="flow">
+        <div class="flow-step">Internet</div>
+        <div class="flow-arrow">&darr; TCP 443</div>
+        <div class="flow-step">Public DNS name</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">AWS EC2 instance</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">Node.js HTTPS server</div>
+        <div class="flow-arrow">&darr;</div>
+      </div>
+      <div class="cols3">
+        <div class="col-box" style="text-align:center;">Server certificate</div>
+        <div class="col-box" style="text-align:center;">Client-certificate request</div>
+        <div class="col-box" style="text-align:center;">Test endpoint (/test)</div>
+      </div>
+      <div class="flow">
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">Certificate logging</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">Console / logs</div>
+      </div>
+      <p>EC2 is recommended for the first diagnostic because it offers:</p>
+      <ul>
+        <li>direct TLS termination in Node.js,</li>
+        <li>the easiest way to inspect the peer certificate,</li>
+        <li>no hidden TLS behavior behind a load balancer, and</li>
+        <li>straightforward control of Node.js TLS settings.</li>
+      </ul>
+      <div class="callout">An ALB, API Gateway, or other managed architecture may be appropriate for production &mdash; direct TLS termination on EC2 makes the diagnostic behavior easier to observe.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 13 : AWS BUILD STEPS -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Build steps, at a glance</h1>
+    <div class="slide-body">
+      <div class="two-col">
+        <ol>
+          <li>Create EC2 instance.</li>
+          <li>Install Node.js.</li>
+          <li>Obtain a DNS name.</li>
+          <li>Obtain / install a server certificate.</li>
+          <li>Open TCP 443 in the AWS security group.</li>
+          <li>Confirm the host firewall permits 443.</li>
+          <li>Create the Node.js HTTPS server.</li>
+        </ol>
+        <ol start="8">
+          <li>Configure it to request a client certificate.</li>
+          <li>Log certificate information.</li>
+          <li>Start the server.</li>
+          <li>Configure the Genesys Web Services Data Action to call it.</li>
+          <li>Execute the Data Action.</li>
+          <li>Inspect the server logs.</li>
+          <li>Inspect the Data Action result.</li>
+        </ol>
+      </div>
+      <p class="muted-note">Detailed technical implementation is provided in the Technical Appendix.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 14 : DNS, TCP 443, HTTPS -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">DNS, TCP 443, and HTTPS</h1>
+    <div class="slide-body">
+      <div class="flow">
+        <div class="flow-step mono">mtls-test.example.com</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">Public AWS endpoint</div>
+        <div class="flow-arrow">&darr; 443</div>
+        <div class="flow-step">Node.js HTTPS server</div>
+      </div>
+      <ul class="checklist">
+        <li>Public DNS name</li>
+        <li>Publicly reachable TCP 443</li>
+        <li>AWS security group allows inbound 443</li>
+        <li>EC2 host firewall allows 443</li>
+        <li>Node.js is listening on 443, or is correctly port-mapped</li>
+        <li>Server certificate matches the hostname</li>
+        <li>Certificate chain is correctly installed</li>
+      </ul>
+      <div class="callout">The test server does not need to run on a laptop &mdash; AWS provides the publicly reachable HTTPS endpoint.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 15 : SERVER CERT VS CLIENT CERT -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Two certificates, opposite directions</h1>
+    <div class="slide-body">
+      <div class="two-col">
+        <div class="col-box">
+          <div class="col-heading">Customer server</div>
+          <div class="stack">
+            <div class="item">Server private key</div>
+            <div class="item">Server certificate</div>
+          </div>
+          <p style="margin-top:10px;text-align:center;">proves server identity &rarr; Genesys</p>
+        </div>
+        <div class="col-box">
+          <div class="col-heading">Genesys</div>
+          <div class="stack">
+            <div class="item">Client private key</div>
+            <div class="item">Client certificate</div>
+          </div>
+          <p style="margin-top:10px;text-align:center;">proves client identity &rarr; customer server</p>
+        </div>
+      </div>
+      <div class="callout">The server certificate and the Genesys client certificate serve opposite directions.</div>
+      <div class="callout strong-warn">Private keys must remain secret and must never be transferred between the parties.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 16 : MINIMAL NODE.JS SERVER -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">A minimal Node.js HTTPS test server</h1>
+    <div class="slide-body">
+      <div class="two-col">
+        <div class="col-box"><h4><span class="mono">requestCert</span></h4><p style="margin:0;">Request that the client provide a certificate.</p></div>
+        <div class="col-box"><h4><span class="mono">rejectUnauthorized</span></h4><p style="margin:0;">Do not reject the connection solely because the certificate is not yet trusted.</p></div>
+      </div>
+      <div class="callout">Use this relaxed setting only during the diagnostic phase. Production configurations should enforce certificate validation.</div>
+      <div class="code">const options = {
+  key: fs.readFileSync('server-key.pem'),
+  cert: fs.readFileSync('server-cert.pem'),
+  requestCert: true,
+  rejectUnauthorized: false  // diagnostic only
+};
+
+const server = https.createServer(options, (req, res) => {
+  const cert = req.socket.getPeerCertificate(true);
+  const authorized = req.client.authorized;
+  // ... build &amp; log a JSON diagnostic response
+});</div>
+      <p>Returns JSON similar to:</p>
+      <div class="code">{
+  "clientCertificatePresented": true,
+  "authorized": true,
+  "subject": "...",
+  "issuer": "...",
+  "serialNumber": "...",
+  "validFrom": "...",
+  "validTo": "...",
+  "fingerprint256": "..."
+}</div>
+      <p class="muted-note">Placeholder values only &mdash; never invent actual Genesys certificate values. Full runnable source is in Appendix A.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 17 : PRESENTED VS TRUSTED -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Presented vs. trusted: two different questions</h1>
+    <div class="slide-body">
+      <div class="state-card">
+        <h4>State 1 &mdash; no client certificate</h4>
+        <p>No client certificate was observed by the server.</p>
+      </div>
+      <div class="state-card warn">
+        <h4>State 2 &mdash; presented, but not trusted</h4>
+        <p>The server saw a certificate, but certificate validation failed.</p>
+      </div>
+      <div class="state-card good">
+        <h4>State 3 &mdash; presented and trusted</h4>
+        <p>The TLS client identity was successfully validated under the configured trust policy.</p>
+      </div>
+
+      <div class="diagram">
+        <div class="diagram-label">Decision path</div>
+        <div class="gate-chain">
+          <div class="gate">Certificate present?</div><span class="gate-arrow">&rarr;</span>
+          <div class="gate">NO &rarr; State 1</div>
+        </div>
+        <div class="gate-chain">
+          <div class="gate">Certificate present?</div><span class="gate-arrow">&rarr;</span>
+          <div class="gate">YES &rarr; certificate trusted?</div><span class="gate-arrow">&rarr;</span>
+          <div class="gate">NO &rarr; State 2</div>
+        </div>
+        <div class="gate-chain">
+          <div class="gate">Certificate present?</div><span class="gate-arrow">&rarr;</span>
+          <div class="gate">YES &rarr; certificate trusted?</div><span class="gate-arrow">&rarr;</span>
+          <div class="gate final">YES &rarr; State 3</div>
+        </div>
+      </div>
+    </div>
+    <div class="takeaway">Certificate presentation and certificate trust are separate test questions.</div>
+  </div>
+</section>
+
+<!-- SLIDE 18 : CONFIGURE THE DATA ACTION -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Configure the Data Action for the test</h1>
+    <div class="slide-body">
+      <div class="code">Endpoint:
+  https://mtls-test.example.com/test
+
+Method:
+  GET or POST
+
+Headers:
+  Optional diagnostic headers
+
+Authentication:
+  Use the authentication required for the experiment
+
+TLS / mTLS:
+  Enable the applicable Genesys client-certificate configuration</div>
+      <div class="callout strong-warn"><strong>The exact Genesys Cloud UI field names, certificate provisioning method, and lifecycle process must be verified against current Genesys Cloud product documentation.</strong> Do not fabricate UI field names or unverified provisioning details.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 19 : EVIDENCE TO CAPTURE -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Evidence to capture at each layer</h1>
+    <div class="slide-body">
+      <div class="cols3">
+        <div class="col-box">
+          <h4>From the Node.js server</h4>
+          <ul class="checklist" style="margin:0;">
+            <li>Client certificate presented: YES/NO</li>
+            <li>Subject</li>
+            <li>Issuer</li>
+            <li>Serial number</li>
+            <li>Validity period</li>
+            <li>SHA-256 fingerprint</li>
+            <li><span class="mono">req.client.authorized</span></li>
+            <li>Timestamp</li>
+            <li>Source IP, if useful</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>From Genesys</h4>
+          <ul class="checklist" style="margin:0;">
+            <li>Data Action invocation result</li>
+            <li>HTTP status</li>
+            <li>HTTP response body</li>
+            <li>TLS / connection error, if any</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>From AWS</h4>
+          <ul class="checklist" style="margin:0;">
+            <li>EC2 server logs</li>
+            <li>Security group configuration</li>
+            <li>DNS record</li>
+            <li>Server certificate configuration</li>
+            <li>Listening port / process</li>
+          </ul>
+        </div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Genesys Data Action</div><div class="flow-arrow">&darr;</div>
+        <div class="flow-step">TLS handshake</div><div class="flow-arrow">&darr;</div>
+        <div class="flow-step">Client certificate observed</div><div class="flow-arrow">&darr;</div>
+        <div class="flow-step">Certificate validated</div><div class="flow-arrow">&darr;</div>
+        <div class="flow-step">TLS session established</div><div class="flow-arrow">&darr;</div>
+        <div class="flow-step">HTTP request</div><div class="flow-arrow">&darr;</div>
+        <div class="flow-step">HTTP 200</div><div class="flow-arrow">&darr;</div>
+        <div class="flow-step">Data Action success</div>
+      </div>
+    </div>
+    <div class="takeaway">Evidence should demonstrate each layer independently.</div>
+  </div>
+</section>
+
+<!-- SLIDE 20 : TROUBLESHOOTING MATRIX -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Troubleshooting matrix</h1>
+    <div class="slide-body">
+      <table class="dtable">
+        <thead><tr><th>Symptom</th><th>Likely layer</th><th>What it means</th><th>What to inspect</th></tr></thead>
+        <tbody>
+          <tr><td>Cannot resolve hostname</td><td>DNS</td><td>Endpoint cannot be resolved.</td><td>DNS record</td></tr>
+          <tr><td>Connection timeout</td><td>Network</td><td>Port 443 cannot be reached.</td><td>AWS security group, firewall, routing</td></tr>
+          <tr><td>TLS server certificate error</td><td>TLS server authentication</td><td>Genesys does not accept the customer server certificate.</td><td>Certificate chain, hostname, validity, trust</td></tr>
+          <tr><td>Client certificate not present</td><td>TLS client authentication</td><td>No peer certificate was observed by the test server.</td><td>Server <span class="mono">requestCert</span> behavior and Genesys mTLS configuration</td></tr>
+          <tr><td>Client certificate present but unauthorized</td><td>Certificate trust</td><td>Server received a client certificate but could not validate it under its trust policy.</td><td>Trusted CA / certificate chain / TLS configuration</td></tr>
+          <tr><td>TLS succeeds but HTTP 401</td><td>Application authentication</td><td>TLS succeeded; application authentication failed.</td><td>OAuth, API key, Authorization header</td></tr>
+          <tr><td>TLS succeeds but HTTP 403</td><td>Application authorization</td><td>Identity was recognized but application authorization denied the request.</td><td>Application permissions / authorization policy</td></tr>
+          <tr><td>HTTP 200</td><td>End-to-end</td><td>Network + TLS + HTTP + application path succeeded.</td><td>Capture the evidence</td></tr>
+        </tbody>
+      </table>
+      <div class="callout"><strong>Do not immediately conclude that Genesys does not support or provide a certificate.</strong> First verify that the endpoint is actually requesting a client certificate and that the TLS connection reached the intended server.</div>
+    </div>
+    <div class="takeaway">TLS failure occurs before the HTTP request. An HTTP 401/403 means TLS already succeeded.</div>
+  </div>
+</section>
+
+<!-- SLIDE 21 : WHAT SUCCESS LOOKS LIKE -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">What success looks like, end-to-end</h1>
+    <div class="slide-body">
+      <div class="flow">
+        <div class="flow-step">Genesys Cloud</div>
+        <div class="flow-arrow">&darr; 1. TLS handshake</div>
+        <div class="flow-step">Customer Node.js endpoint</div>
+        <div class="flow-arrow">&darr; 2. Server certificate validated</div>
+        <div class="flow-arrow">&darr; 3. Client certificate requested</div>
+        <div class="flow-arrow">&darr; 4. Genesys client certificate presented</div>
+        <div class="flow-arrow">&darr; 5. Client certificate trusted</div>
+        <div class="flow-arrow">&darr; 6. TLS session established</div>
+        <div class="flow-arrow">&darr; 7. HTTP request</div>
+        <div class="flow-step mono">/test</div>
+        <div class="flow-arrow">&darr; 8. HTTP 200</div>
+        <div class="flow-step">Genesys Data Action success</div>
+      </div>
+    </div>
+    <div class="takeaway">At this point, we have evidence &mdash; not an assumption &mdash; that mTLS is functioning.</div>
+  </div>
+</section>
+
+<!-- SLIDE 22 : PROVES / DOES NOT PROVE -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">What this test proves &mdash; and what it doesn&rsquo;t</h1>
+    <div class="slide-body">
+      <div class="two-col">
+        <div class="col-box">
+          <h4>This test proves</h4>
+          <ul class="checklist">
+            <li>AWS endpoint is reachable.</li>
+            <li>Genesys can establish TLS with the endpoint.</li>
+            <li>The customer endpoint can observe whether a client certificate is presented.</li>
+            <li>The presented certificate&rsquo;s metadata can be captured.</li>
+            <li>The customer can validate trust in the presented certificate.</li>
+            <li>The Data Action can complete an HTTP request.</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>This test does not automatically prove</h4>
+          <ul class="checklist no">
+            <li>Production certificate lifecycle is correctly managed.</li>
+            <li>Production certificate rotation behavior.</li>
+            <li>High availability.</li>
+            <li>Production gateway behavior.</li>
+            <li>Every possible Genesys region / path.</li>
+            <li>Application authorization policy.</li>
+            <li>Security of the entire production integration.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 23 : TEST TO PRODUCTION -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">From test to production</h1>
+    <div class="slide-body">
+      <div class="two-col">
+        <div class="col-box">
+          <h4>Test</h4>
+          <ul>
+            <li>EC2</li>
+            <li>Node.js diagnostic server</li>
+            <li>Direct TLS termination</li>
+            <li>Diagnostic certificate logging</li>
+            <li>Temporary relaxed certificate validation during initial observation</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>Production</h4>
+          <ul>
+            <li>Managed certificate lifecycle</li>
+            <li>Protected private keys</li>
+            <li>Strict trust policy &amp; certificate validation</li>
+            <li>Certificate rotation</li>
+            <li>Monitoring &amp; audit logging</li>
+            <li>High availability, controlled ingress</li>
+            <li>API gateway / load balancer where appropriate</li>
+            <li>Least-privilege authorization</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout strong-warn"><strong>Do not carry <span class="mono">rejectUnauthorized = false</span> into production.</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 24 : EXECUTIVE CONCLUSION -->
+<section class="slide">
+  <div class="slide-inner">
+    <h1 class="slide-title">Executive conclusion</h1>
+    <div class="slide-body">
+      <ol>
+        <li>mTLS adds client authentication to HTTPS.</li>
+        <li>For a Genesys Web Services Data Action, the customer endpoint can validate the client certificate presented by Genesys during the TLS handshake.</li>
+        <li>The fastest way to remove uncertainty is to run a controlled AWS HTTPS endpoint that observes the client certificate and then progressively enforces trust.</li>
+      </ol>
+      <div class="gate-chain">
+        <div class="gate">Prove connectivity</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">Prove certificate presentation</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate">Prove certificate trust</div><span class="gate-arrow">&rarr;</span>
+        <div class="gate final">Prove Data Action success</div>
+      </div>
+    </div>
+    <div class="takeaway">The AWS test converts an assumption about mTLS into observable evidence.</div>
+  </div>
+</section>
+
+<!-- SLIDE 25 : APPENDIX DIVIDER -->
+<section class="slide divider-slide">
+  <div class="slide-inner">
+    <div class="kicker">Part two</div>
+    <h1 class="slide-title">Technical appendix</h1>
+    <p class="slide-sub">Implementation-level detail for engineers building and running the AWS mTLS test.</p>
+    <div class="slide-body">
+      <ul>
+        <li><strong>A</strong> &mdash; full Node.js server source</li>
+        <li><strong>B</strong> &mdash; Node.js runtime requirements</li>
+        <li><strong>C</strong> &mdash; AWS EC2 setup</li>
+        <li><strong>D</strong> &mdash; AWS security group</li>
+        <li><strong>E</strong> &mdash; DNS and the server certificate</li>
+        <li><strong>F</strong> &mdash; independent testing with curl</li>
+        <li><strong>G</strong> &mdash; OpenSSL diagnostic commands</li>
+        <li><strong>H</strong> &mdash; example server logs</li>
+        <li><strong>I</strong> &mdash; certificate rotation</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 26 : APPENDIX A -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="kicker">Appendix A</div>
+    <h1 class="slide-title">Full Node.js server source</h1>
+    <div class="slide-body">
+      <div class="code">// mtls-test-server.js
+// Minimal diagnostic HTTPS server for observing and validating
+// TLS client-certificate presentation from Genesys Cloud.
+//
+// Stage 2 (observe presentation):
+//   STRICT_TLS unset or "false"  -&gt; rejectUnauthorized: false
+// Stage 3 (enforce trust):
+//   STRICT_TLS=true, CA_FILE set -&gt; rejectUnauthorized: true
+
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+
+const PORT = process.env.PORT || 443;
+const STRICT_TLS = process.env.STRICT_TLS === 'true';
+const CERT_DIR = process.env.CERT_DIR || path.join(__dirname, 'certs');
+
+const options = {
+  // Customer server certificate and private key.
+  // The private key never leaves this host.
+  key: fs.readFileSync(path.join(CERT_DIR, 'server-key.pem')),
+  cert: fs.readFileSync(path.join(CERT_DIR, 'server-cert.pem')),
+
+  // Ask the connecting client (Genesys Cloud) for a certificate.
+  requestCert: true,
+
+  // Stage 2: false -&gt; observe the certificate without rejecting the
+  //          connection while trust is not yet configured.
+  // Stage 3: true  -&gt; reject connections whose client certificate is
+  //          not signed by a CA listed in `ca` below.
+  rejectUnauthorized: STRICT_TLS,
+};
+
+// Stage 3 only: the CA (or chain) used to validate the Genesys client
+// certificate. Point this at the appropriate trust anchor once known.
+if (STRICT_TLS) {
+  const caFile = process.env.CA_FILE || path.join(CERT_DIR, 'ca.pem');
+  options.ca = fs.readFileSync(caFile);
+}
+
+function logLine(fields) {
+  console.log(JSON.stringify({ time: new Date().toISOString(), ...fields }));
+}
+
+const server = https.createServer(options, (req, res) =&gt; {
+  // true -&gt; include the full certificate chain, not just the leaf.
+  const peerCert = req.socket.getPeerCertificate(true);
+  const presented = peerCert &amp;&amp; Object.keys(peerCert).length &gt; 0;
+  const authorized = req.client.authorized === true;
+
+  const diagnostic = {
+    clientCertificatePresented: presented,
+    authorized,
+    authorizationError: req.client.authorizationError || null,
+    subject: presented ? peerCert.subject : null,
+    issuer: presented ? peerCert.issuer : null,
+    serialNumber: presented ? peerCert.serialNumber : null,
+    validFrom: presented ? peerCert.valid_from : null,
+    validTo: presented ? peerCert.valid_to : null,
+    fingerprint256: presented ? peerCert.fingerprint256 : null,
+    timestamp: new Date().toISOString(),
+  };
+
+  logLine({
+    event: 'request',
+    path: req.url,
+    remoteAddress: req.socket.remoteAddress,
+    ...diagnostic,
+  });
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(diagnostic, null, 2));
+});
+
+server.on('tlsClientError', (err, socket) =&gt; {
+  logLine({
+    event: 'tlsClientError',
+    message: err.message,
+    remoteAddress: socket.remoteAddress,
+  });
+});
+
+server.listen(PORT, () =&gt; {
+  logLine({
+    event: 'listening',
+    port: PORT,
+    strictTls: STRICT_TLS,
+  });
+});</div>
+      <p>The code separates <span class="mono">requestCert</span> from <span class="mono">rejectUnauthorized</span> and controls both through a single <span class="mono">STRICT_TLS</span> flag, so the same file carries the server from Stage 2 (observe) through to Stage 3 (enforce) without a rewrite.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 27 : APPENDIX B -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="kicker">Appendix B</div>
+    <h1 class="slide-title">Node.js runtime requirements</h1>
+    <div class="slide-body">
+      <p>Use a current Node.js LTS release. The built-in <span class="mono">https</span> / <span class="mono">tls</span> modules are sufficient &mdash; no extra dependencies are required.</p>
+      <div class="code">mtls-test/
+├── mtls-test-server.js
+└── certs/
+    ├── server-cert.pem
+    ├── server-key.pem
+    └── ca.pem        (Stage 3 only)</div>
+      <table class="dtable">
+        <thead><tr><th>Environment variable</th><th>Purpose</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">PORT</td><td>Listening port</td><td>443</td></tr>
+          <tr><td class="mono">STRICT_TLS</td><td>Toggles Stage 2 vs. Stage 3</td><td>false</td></tr>
+          <tr><td class="mono">CERT_DIR</td><td>Location of certificate files</td><td>./certs</td></tr>
+          <tr><td class="mono">CA_FILE</td><td>Trusted CA file, Stage 3 only</td><td>certs/ca.pem</td></tr>
+        </tbody>
+      </table>
+      <p>Startup command:</p>
+      <div class="code">sudo PORT=443 STRICT_TLS=false node mtls-test-server.js</div>
+      <p class="muted-note">Avoid adding dependencies unless they are genuinely needed for the diagnostic.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 28 : APPENDIX C -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="kicker">Appendix C</div>
+    <h1 class="slide-title">AWS EC2 setup</h1>
+    <div class="slide-body">
+      <ol>
+        <li>Select a small Linux EC2 instance.</li>
+        <li>Configure networking.</li>
+        <li>Configure the security group.</li>
+        <li>Install Node.js.</li>
+        <li>Copy / configure certificates securely.</li>
+        <li>Start the server.</li>
+        <li>Verify local HTTPS connectivity.</li>
+        <li>Verify external HTTPS connectivity.</li>
+      </ol>
+      <p class="muted-note">Do not expose private keys in examples unnecessarily. Copy certificate material over a secure channel (for example, <span class="mono">scp</span> with key-based SSH authentication) and restrict file permissions on the private key (<span class="mono">chmod 600</span>).</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 29 : APPENDIX D -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="kicker">Appendix D</div>
+    <h1 class="slide-title">AWS security group</h1>
+    <div class="slide-body">
+      <div class="code">Inbound:
+  TCP 443
+  Source: 0.0.0.0/0</div>
+      <div class="callout">Suitable only as an initial public HTTPS test. Production ingress should be appropriately restricted.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 30 : APPENDIX E -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="kicker">Appendix E</div>
+    <h1 class="slide-title">DNS and the server certificate</h1>
+    <div class="slide-body">
+      <div class="flow">
+        <div class="flow-step mono">mtls-test.example.com</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">AWS public endpoint</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step mono">Node.js :443</div>
+      </div>
+      <ul>
+        <li>DNS</li>
+        <li>Hostname matching</li>
+        <li>Server certificate</li>
+        <li>Private key</li>
+        <li>Certificate chain</li>
+      </ul>
+      <div class="callout">The server private key remains on the customer-controlled AWS host.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 31 : APPENDIX F -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="kicker">Appendix F</div>
+    <h1 class="slide-title">Independent testing with curl</h1>
+    <div class="slide-body">
+      <div class="code">curl https://mtls-test.example.com/test</div>
+      <p>A successful response proves the endpoint is publicly reachable, TLS server-certificate validation succeeds against curl&rsquo;s trust store, and the endpoint is responding to HTTP requests.</p>
+      <p>curl without a client certificate is useful for verifying the server itself. A client-certificate test can reproduce a full client-authentication scenario where appropriate:</p>
+      <div class="code">curl --cert client-cert.pem --key client-key.pem \
+  https://mtls-test.example.com/test</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 32 : APPENDIX G -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="kicker">Appendix G</div>
+    <h1 class="slide-title">OpenSSL diagnostic commands</h1>
+    <div class="slide-body">
+      <div class="code">openssl s_client -connect mtls-test.example.com:443 -showcerts</div>
+      <p>Look for:</p>
+      <ul>
+        <li>the server certificate</li>
+        <li>the certificate chain</li>
+        <li>the negotiated TLS version</li>
+        <li>a client-certificate request (for example, &ldquo;Acceptable client certificate CA names&rdquo; or a <span class="mono">CertificateRequest</span> message)</li>
+        <li>the overall handshake result</li>
+      </ul>
+      <p class="muted-note">An OpenSSL test does not reproduce Genesys&rsquo; exact TLS client behavior &mdash; it verifies the server side of the handshake.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 33 : APPENDIX H -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="kicker">Appendix H</div>
+    <h1 class="slide-title">Example server logs</h1>
+    <div class="slide-body">
+      <div class="state-card">
+        <h4>Case 1 &mdash; no client certificate</h4>
+        <div class="code">{
+  "clientCertificatePresented": false,
+  "authorized": false
+}</div>
+      </div>
+      <div class="state-card warn">
+        <h4>Case 2 &mdash; presented, but not trusted</h4>
+        <div class="code">{
+  "clientCertificatePresented": true,
+  "authorized": false,
+  "authorizationError": "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+  "subject": { "CN": "example-client" }
+}</div>
+      </div>
+      <div class="state-card good">
+        <h4>Case 3 &mdash; trusted client certificate</h4>
+        <div class="code">{
+  "clientCertificatePresented": true,
+  "authorized": true,
+  "subject": { "CN": "example-client" },
+  "issuer": { "CN": "Example Issuing CA" }
+}</div>
+      </div>
+      <p class="muted-note">Placeholder values shown for illustration only &mdash; never invent actual Genesys certificate values.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 34 : APPENDIX I -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="kicker">Appendix I</div>
+    <h1 class="slide-title">Certificate rotation</h1>
+    <div class="slide-body">
+      <ul>
+        <li>Client certificate expiration</li>
+        <li>Server certificate expiration</li>
+        <li>Trust-chain changes</li>
+        <li>Rotation planning</li>
+        <li>Overlapping validity, where appropriate</li>
+        <li>Monitoring</li>
+      </ul>
+      <div class="callout strong-warn"><strong>Verify the current Genesys Cloud certificate provisioning and rotation process against official product documentation.</strong></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="controls">
+  <button id="prevBtn" type="button">&larr; Prev</button>
+  <div class="counter"><span id="curNum">1</span> / <span id="totalNum">1</span></div>
+  <button id="nextBtn" type="button">Next &rarr;</button>
+</nav>
+
+<script>
+(function(){
+  var slides = document.querySelectorAll('.slide');
+  var total = slides.length;
+  var idx = 0;
+
+  var curNum = document.getElementById('curNum');
+  var totalNum = document.getElementById('totalNum');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var fill = document.getElementById('progressFill');
+
+  totalNum.textContent = total;
+
+  function render(){
+    for (var i = 0; i < total; i++){
+      var active = (i === idx);
+      slides[i].classList.toggle('active', active);
+      slides[i].setAttribute('aria-hidden', active ? 'false' : 'true');
+    }
+    curNum.textContent = idx + 1;
+    prevBtn.disabled = (idx === 0);
+    nextBtn.disabled = (idx === total - 1);
+    fill.style.width = ((idx + 1) / total * 100) + '%';
+    slides[idx].scrollTop = 0;
+  }
+
+  function go(n){
+    idx = Math.max(0, Math.min(total - 1, n));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(idx - 1); });
+  nextBtn.addEventListener('click', function(){ go(idx + 1); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown'){
+      go(idx + 1); e.preventDefault();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp'){
+      go(idx - 1); e.preventDefault();
+    } else if (e.key === 'Home'){
+      go(0); e.preventDefault();
+    } else if (e.key === 'End'){
+      go(total - 1); e.preventDefault();
+    }
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
