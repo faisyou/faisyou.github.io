@@ -378,15 +378,26 @@
       </div>
     </div>
 
-    <!-- config.js must load before Genesys configure (same folder as index.html). -->
-    <script src="./config.js"></script>
-    <script src="./demo-accounts.js"></script>
-    <script
-      type="text/javascript"
-      src="https://apps.mypurecloud.de/genesys-bootstrap/genesys.min.js"
-      charset="utf-8"
-    ></script>
-    <script src="./genesys-init.js"></script>
-    <script src="./genesys-launcher.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      (function (g, e, n, es, ys) {
+        g["_genesysJs"] = e;
+        g[e] =
+          g[e] ||
+          function () {
+            (g[e].q = g[e].q || []).push(arguments);
+          };
+        g[e].t = 1 * new Date();
+        g[e].c = es;
+        ys = document.createElement("script");
+        ys.async = 1;
+        ys.src = n;
+        ys.charset = "utf-8";
+        document.head.appendChild(ys);
+      })(window, "Genesys", "https://apps.mypurecloud.de/genesys-bootstrap/genesys.min.js", {
+        environment: "prod-euc1",
+        deploymentId: "b6d540d6-eaa6-43d0-9939-83dbe60489ad",
+      });
+    </script>
+    <script src="./gomo-billing-demo.js"></script>
   </body>
 </html>

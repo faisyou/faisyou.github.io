@@ -1,48 +1,39 @@
 # GoMo billing — Web Messaging demo (static site)
 
-This folder is **plain static HTML/JS/CSS**. No build step, no Python, no Node server in production.
+Plain static HTML + one JavaScript file. No build step.
 
-Copy these files into your **Git WebIO** (or any static host) repository and publish:
+## Copy to Git WebIO (minimum)
 
-| File | Required |
+| File | Purpose |
 | --- | --- |
-| `index.html` | Yes |
-| `genesys-init.js` | Yes (configure Genesys immediately after bootstrap) |
-| `genesys-launcher.js` | Yes |
-| `demo-accounts.js` | Yes (mock bill data for the page) |
-| `config.js` | Yes (`deploymentId` already set for this demo) |
-| `config.example.js` | Optional template |
+| `index.html` | Page + **official Genesys bootstrap snippet** (`deploymentId` / `environment` in snippet) |
+| `gomo-billing-demo.js` | Bill UI, plugin, `Database.set`, `Messenger.open` |
 
-Genesys loads from `https://apps.mypurecloud.de/genesys-bootstrap/genesys.min.js` in the browser. Your site only needs to be served over **https://** (or **http://** on localhost)—not as `file://` on disk.
+**Do not** deploy old files `genesys-init.js`, `genesys-launcher.js`, or a second copy of the plugin — that causes “Name is already taken”.
 
-## WebIO / static hosting
+Optional (not loaded by `index.html`): `demo-accounts.js`, `config.js`, `config.example.js`.
 
-1. Copy the four files above into the WebIO repo (often repo root, or a folder that becomes the site root).
-2. Edit `config.js` with your Messenger **deployment ID** and `environment` (`prod-euc1` for EU).
-3. Commit and push; open the WebIO URL (e.g. `https://<your-org>.webio.../index.html` or `/` if `index.html` is the default document).
-4. In Architect, map participant data key **`account_id`** (from `Database.set`) into the AVA / inbound flow start context.
+## Change deployment
 
-If the site is published in a **subpath** (e.g. `https://host/demo/billing/`), keep `index.html`, `config.js`, and `genesys-launcher.js` in the **same directory** so relative `./config.js` and `./genesys-launcher.js` still resolve.
+Edit the object at the bottom of `index.html` (inside the Genesys IIFE):
 
-## Behaviour
-
-1. Visitor picks a demo `account_id` (`1108842001`–`1108842004`).
-2. **Start chat** runs `Database.set` with `customAttributes.account_id`, then `Messenger.open`.
-3. Default Genesys launcher is hidden; toaster + custom panel are used instead.
-
-## Local preview (optional)
-
-Python is **not required** for WebIO—only if you want to preview on your laptop without pushing:
-
-```bash
-cd billing-tools/web-messaging-demo
-python3 -m http.server 8080
+```javascript
+{
+  environment: "prod-euc1",
+  deploymentId: "b6d540d6-eaa6-43d0-9939-83dbe60489ad",
+}
 ```
 
-Any static server (VS Code Live Server, `npx serve`, nginx, WebIO itself) works the same way.
+Do **not** add a separate `<script src="genesys.min.js">` or `Genesys('configure', …)` — the snippet loads and configures in one step.
+
+## Flow
+
+1. Account dropdown (header) → bill summary on page.
+2. **Start chat** → `Database.set` with `account_id` → `Messenger.open`.
+
+Architect: **Get Participant Data** key `account_id`.
 
 ## References
 
-- [Messenger SDK plugin examples](https://developer.genesys.cloud/commdigital/digital/webmessaging/messengersdk/pluginExamples)
 - [Database plugin](https://developer.genesys.cloud/commdigital/digital/webmessaging/messengersdk/SDKCommandsEvents/databasePlugin)
 - Test account meanings: [`../ACCOUNTS.md`](../ACCOUNTS.md)
