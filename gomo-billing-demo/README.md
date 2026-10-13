@@ -29,7 +29,9 @@ Do **not** add a separate `<script src="genesys.min.js">` or `Genesys('configure
 ## Flow
 
 1. Account dropdown (header) → bill summary on page.
-2. **Start chat** → `Database.set` with `account_id` → `Messenger.open`.
+2. **Start chat** (enabled after `Database.ready` + `Launcher.ready`) → `Database.set` with `account_id` → `Messenger.open` or `Launcher.open`.
+
+If the console shows **Could not load plugin file: messenger.min.js**, you clicked before the SDK was ready or the host blocks Genesys plugin scripts — wait for “Ready to chat”, disable ad blockers, and add your WebIO URL to the deployment **Allowed domains** in Genesys Admin.
 
 Architect: **Get Participant Data** key `account_id`.
 
