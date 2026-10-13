@@ -378,6 +378,7 @@
       </div>
     </div>
 
+    <!-- config.js must load before Genesys configure (same folder as index.html). -->
     <script src="./config.js"></script>
     <script src="./demo-accounts.js"></script>
     <script
@@ -385,6 +386,7 @@
       src="https://apps.mypurecloud.de/genesys-bootstrap/genesys.min.js"
       charset="utf-8"
     ></script>
+    <script src="./genesys-init.js"></script>
     <script src="./genesys-launcher.js"></script>
   </body>
 </html>

@@ -1,5 +1,5 @@
 /**
- * Header account picker, bill summary UI, Database.set(account_id), Messenger.open.
+ * Bill UI + Database.set(account_id) + Messenger.open.
  */
 (function () {
   const ACCOUNT_ORDER = ["1108842001", "1108842002", "1108842003", "1108842004"];
@@ -35,11 +35,9 @@
 
   function renderBillDetails(accountId) {
     const account = getAccount(accountId);
-    const panel = $("gomo-bill-panel");
-    if (!account || !panel) return;
+    if (!account) return;
 
     const latest = account.bills[0];
-    const currency = window.GOMO_DEMO_ACCOUNTS.currency || "EUR";
 
     $("gomo-bill-profile").textContent = account.profile;
     $("gomo-bill-description").textContent = account.description;
@@ -65,8 +63,7 @@
       .join("");
 
     $("gomo-bill-table-body").innerHTML = rows;
-    $("gomo-bill-currency").textContent = currency;
-    panel.hidden = false;
+    $("gomo-bill-currency").textContent = window.GOMO_DEMO_ACCOUNTS.currency || "EUR";
   }
 
   function onAccountChange(accountId) {
@@ -136,40 +133,6 @@
     );
   }
 
-  function registerGenesysPlugin() {
-    window.Genesys("registerPlugin", "GomoBillingLauncherPlugin", function (Plugin) {
-      Plugin.subscribe([
-        {
-          topic: "Launcher.ready",
-          callback: function () {
-            window.Genesys("command", "Launcher.hide", {});
-          },
-        },
-        {
-          topic: "Messenger.ready",
-          callback: function () {
-            state.messengerReady = true;
-            setMessengerStatus("Ready to chat about the selected account.");
-          },
-        },
-      ]);
-    });
-  }
-
-  function configureGenesys() {
-    const cfg = window.GOMO_MESSENGER_CONFIG;
-    if (!cfg?.deploymentId) {
-      setMessengerStatus("Missing deploymentId in config.js");
-      return;
-    }
-    registerGenesysPlugin();
-    window.Genesys("configure", {
-      deploymentId: cfg.deploymentId,
-      environment: cfg.environment || "prod-euc1",
-      debug: Boolean(cfg.debug),
-    });
-  }
-
   function bindUi() {
     bindHeaderAccountSelect();
     $("gomo-start-chat")?.addEventListener("click", startChat);
@@ -179,12 +142,18 @@
     });
   }
 
+  function onMessengerReady() {
+    state.messengerReady = true;
+    setMessengerStatus("Ready to chat about the selected account.");
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     bindUi();
-    if (typeof window.Genesys === "function") {
-      configureGenesys();
+    if (window.GomoMessenger?.ready) {
+      onMessengerReady();
     } else {
-      setMessengerStatus("Genesys bootstrap failed to load.");
+      setMessengerStatus("Loading messenger…");
+      window.addEventListener("gomo-messenger-ready", onMessengerReady, { once: true });
     }
     window.setTimeout(() => {
       $("gomo-chat-toast")?.classList.add("is-visible");

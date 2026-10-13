@@ -7,6 +7,7 @@ Copy these files into your **Git WebIO** (or any static host) repository and pub
 | File | Required |
 | --- | --- |
 | `index.html` | Yes |
+| `genesys-init.js` | Yes (configure Genesys immediately after bootstrap) |
 | `genesys-launcher.js` | Yes |
 | `demo-accounts.js` | Yes (mock bill data for the page) |
 | `config.js` | Yes (`deploymentId` already set for this demo) |
