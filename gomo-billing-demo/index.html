@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GoMo — Billing help demo</title>
+    <meta
+      name="description"
+      content="Demo landing page — view bill summary and chat with GoMo billing assistant."
+    />
+    <link rel="preconnect" href="https://apps.mypurecloud.de" crossorigin />
+    <style>
+      :root {
+        --gomo-pink: #e4007c;
+        --gomo-pink-dark: #c4006a;
+        --gomo-ink: #1a1a1a;
+        --gomo-muted: #5c5c5c;
+        --gomo-bg: #ffffff;
+        --gomo-surface: #f7f7f8;
+        --gomo-border: #e8e8ea;
+        --gomo-yellow: #ffe44d;
+        --radius: 12px;
+        --shadow: 0 12px 40px rgba(26, 26, 26, 0.12);
+        --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--font);
+        color: var(--gomo-ink);
+        background: var(--gomo-bg);
+        line-height: 1.5;
+      }
+
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gomo-border);
+        background: var(--gomo-bg);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        flex-wrap: wrap;
+      }
+
+      .logo {
+        font-weight: 800;
+        font-size: 1.75rem;
+        letter-spacing: -0.03em;
+        color: var(--gomo-pink);
+      }
+
+      .logo span {
+        color: var(--gomo-ink);
+      }
+
+      .header-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin-left: auto;
+      }
+
+      .header-controls label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--gomo-muted);
+        white-space: nowrap;
+      }
+
+      .header-controls select {
+        min-width: 220px;
+        max-width: min(360px, 70vw);
+        padding: 0.5rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid var(--gomo-border);
+        font-size: 0.88rem;
+        background: #fff;
+      }
+
+      .btn-primary {
+        background: var(--gomo-pink);
+        color: #fff;
+        border: none;
+        padding: 0.55rem 1rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .btn-primary:hover {
+        background: var(--gomo-pink-dark);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .hero {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 1rem;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        background: var(--gomo-yellow);
+        color: var(--gomo-ink);
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.65rem;
+        border-radius: 4px;
+        margin-bottom: 0.75rem;
+      }
+
+      h1 {
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+        line-height: 1.15;
+        margin: 0 0 0.75rem;
+      }
+
+      .lead {
+        font-size: 1.05rem;
+        color: var(--gomo-muted);
+        max-width: 52ch;
+        margin: 0;
+      }
+
+      .bill-panel {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 1rem 1.5rem 2.5rem;
+      }
+
+      .bill-card {
+        border: 1px solid var(--gomo-border);
+        border-radius: var(--radius);
+        background: #fff;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+      }
+
+      .bill-card-header {
+        padding: 1.25rem 1.5rem;
+        background: var(--gomo-surface);
+        border-bottom: 1px solid var(--gomo-border);
+      }
+
+      .bill-card-header h2 {
+        margin: 0 0 0.35rem;
+        font-size: 1.25rem;
+      }
+
+      .bill-card-header p {
+        margin: 0;
+        color: var(--gomo-muted);
+        font-size: 0.92rem;
+      }
+
+      .bill-highlight {
+        display: grid;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+
+      .stat-block span {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--gomo-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .stat-block strong {
+        display: block;
+        font-size: 1.35rem;
+        margin-top: 0.2rem;
+      }
+
+      .stat-block .sub {
+        font-size: 0.85rem;
+        color: var(--gomo-muted);
+        font-weight: 500;
+      }
+
+      .bill-table-wrap {
+        overflow-x: auto;
+        padding: 0 1.5rem 1.25rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 0.65rem 0.5rem;
+        border-bottom: 1px solid var(--gomo-border);
+      }
+
+      th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--gomo-muted);
+      }
+
+      .bill-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.5rem 1.25rem;
+        border-top: 1px solid var(--gomo-border);
+        background: var(--gomo-surface);
+      }
+
+      .messenger-status {
+        font-size: 0.85rem;
+        color: var(--gomo-muted);
+        margin: 0;
+      }
+
+      .site-footer {
+        border-top: 1px solid var(--gomo-border);
+        padding: 1.5rem;
+        text-align: center;
+        color: var(--gomo-muted);
+        font-size: 0.85rem;
+      }
+
+      .chat-toast {
+        position: fixed;
+        bottom: 1.25rem;
+        right: 1.25rem;
+        left: 1.25rem;
+        max-width: 400px;
+        margin-left: auto;
+        background: #fff;
+        border: 1px solid var(--gomo-border);
+        border-left: 4px solid var(--gomo-pink);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1rem 1.1rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        transform: translateY(120%);
+        opacity: 0;
+        transition: transform 0.35s ease, opacity 0.35s ease;
+        z-index: 1000;
+      }
+
+      .chat-toast.is-visible {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .chat-toast p {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--gomo-muted);
+      }
+
+      .toast-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        flex-shrink: 0;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--gomo-muted);
+        border: none;
+        font-size: 0.8rem;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="logo">go<span>mo</span></div>
+      <div class="header-controls">
+        <label for="gomo-header-account-select">Account</label>
+        <select id="gomo-header-account-select" aria-label="Select demo account"></select>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <span class="eyebrow">Billing demo</span>
+        <h1>Your bill at a glance</h1>
+        <p class="lead">
+          Choose a demo account in the top right to view mock bill details, then start chat to
+          talk to the billing assistant with that <code>account_id</code> in participant data.
+        </p>
+      </section>
+
+      <section class="bill-panel" id="gomo-bill-panel">
+        <article class="bill-card">
+          <div class="bill-card-header">
+            <h2 id="gomo-bill-profile">—</h2>
+            <p id="gomo-bill-description">Select an account to load bill details.</p>
+          </div>
+
+          <div class="bill-highlight">
+            <div class="stat-block">
+              <span>Latest bill</span>
+              <strong id="gomo-bill-latest-total">—</strong>
+              <span class="sub" id="gomo-bill-latest-id">—</span>
+            </div>
+            <div class="stat-block">
+              <span>Statement date</span>
+              <strong id="gomo-bill-latest-date">—</strong>
+              <span class="sub">Currency: <span id="gomo-bill-currency">EUR</span></span>
+            </div>
+            <div class="stat-block">
+              <span>Change</span>
+              <strong class="sub" id="gomo-bill-latest-delta">—</strong>
+            </div>
+          </div>
+
+          <div class="bill-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Bill ID</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Plan</th>
+                  <th>Usage</th>
+                  <th>Vs previous</th>
+                </tr>
+              </thead>
+              <tbody id="gomo-bill-table-body"></tbody>
+            </table>
+          </div>
+
+          <div class="bill-actions">
+            <button type="button" class="btn-primary" id="gomo-start-chat">Start chat about this bill</button>
+            <p class="messenger-status" id="gomo-messenger-status">Loading messenger…</p>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      Static demo — Genesys Web Messaging + GoMo Billing AVA. Not the live gomo.ie site.
+    </footer>
+
+    <div class="chat-toast" id="gomo-chat-toast" role="status" aria-live="polite">
+      <div>
+        <strong>Need help understanding a charge?</strong>
+        <p>Start chat to connect with the billing assistant for the account you selected.</p>
+      </div>
+      <div class="toast-actions">
+        <button type="button" class="btn-primary" id="gomo-toast-cta">Start chat</button>
+        <button type="button" class="btn-ghost" id="gomo-toast-dismiss">Dismiss</button>
+      </div>
+    </div>
+
+    <script src="./config.js"></script>
+    <script src="./demo-accounts.js"></script>
+    <script
+      type="text/javascript"
+      src="https://apps.mypurecloud.de/genesys-bootstrap/genesys.min.js"
+      charset="utf-8"
+    ></script>
+    <script src="./genesys-launcher.js"></script>
+  </body>
+</html>
