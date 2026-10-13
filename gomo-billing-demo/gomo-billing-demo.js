@@ -76,6 +76,17 @@
     selectedAccountId: ACCOUNT_ORDER[0],
   };
 
+  function genesys() {
+    return window.Genesys;
+  }
+
+  function markMessengerReady(source) {
+    if (state.messengerReady) return;
+    state.messengerReady = true;
+    setMessengerStatus("Ready to chat (" + source + ").");
+    console.info("[GoMo demo] Messenger ready:", source);
+  }
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -164,50 +175,80 @@
     onAccountChange(state.selectedAccountId);
   }
 
+  function openMessengerUi(accountId) {
+    var g = genesys();
+    if (!g) {
+      setMessengerStatus("Genesys SDK not loaded — check the bootstrap snippet.");
+      return;
+    }
+    setMessengerStatus("Opening chat…");
+    g(
+      "command",
+      "Messenger.open",
+      {},
+      function onOpenSuccess() {
+        setMessengerStatus("Chat open for account " + accountId + ".");
+        var toast = $("gomo-chat-toast");
+        if (toast) toast.classList.remove("is-visible");
+      },
+      function onOpenFail(err) {
+        console.error("Messenger.open failed", err);
+        g("command", "Launcher.open", {});
+        setMessengerStatus("Tried Messenger.open and Launcher.open — check deployment.");
+      }
+    );
+  }
+
   function startChat() {
     var accountId = state.selectedAccountId;
+    console.info("[GoMo demo] Start chat clicked, account_id=", accountId);
     if (!accountId) {
       setMessengerStatus("Select an account first.");
       return;
     }
-    if (!state.messengerReady) {
-      setMessengerStatus("Messenger is still loading…");
+    var g = genesys();
+    if (!g) {
+      setMessengerStatus("Genesys SDK not loaded.");
       return;
     }
 
-    setMessengerStatus("Setting participant data…");
-    Genesys(
-      "command",
-      "Database.set",
-      {
-        messaging: {
-          customAttributes: {
-            account_id: String(accountId),
-          },
+    setMessengerStatus("Setting participant data for " + accountId + "…");
+
+    var payload = {
+      messaging: {
+        customAttributes: {
+          account_id: String(accountId),
         },
       },
+    };
+
+    var openScheduled = false;
+    function scheduleOpenOnce(reason) {
+      if (openScheduled) return;
+      openScheduled = true;
+      console.info("[GoMo demo] Scheduling Messenger.open (" + reason + ")");
+      window.setTimeout(function () {
+        openMessengerUi(accountId);
+      }, 150);
+    }
+
+    g(
+      "command",
+      "Database.set",
+      payload,
       function onSetSuccess() {
-        setMessengerStatus("Opening chat…");
-        Genesys(
-          "command",
-          "Messenger.open",
-          {},
-          function onOpenSuccess() {
-            setMessengerStatus("Chat open for account " + accountId + ".");
-            var toast = $("gomo-chat-toast");
-            if (toast) toast.classList.remove("is-visible");
-          },
-          function onOpenFail(err) {
-            console.error("Messenger.open failed", err);
-            setMessengerStatus("Could not open messenger.");
-          }
-        );
+        console.info("[GoMo demo] Database.set OK", payload);
+        scheduleOpenOnce("Database.set success");
       },
       function onSetFail(err) {
-        console.error("Database.set failed", err);
-        setMessengerStatus("Could not set account_id participant data.");
+        console.warn("[GoMo demo] Database.set failed, opening anyway", err);
+        scheduleOpenOnce("Database.set fail");
       }
     );
+
+    window.setTimeout(function () {
+      scheduleOpenOnce("fallback timer");
+    }, 1200);
   }
 
   function bindUi() {
@@ -225,28 +266,52 @@
     }
   }
 
-  /** Queued on Genesys stub — runs once SDK loads. Do not call Genesys('configure') here. */
-  Genesys("registerPlugin", "GomoBillingLauncherPlugin", function (Plugin) {
-    Plugin.subscribe([
-      {
-        topic: "Launcher.ready",
-        callback: function () {
-          Genesys("command", "Launcher.hide", {});
+  function registerGenesysHandlers() {
+    var g = genesys();
+    if (!g || window.__GOMO_GENESYS_HANDLERS__) return;
+    window.__GOMO_GENESYS_HANDLERS__ = true;
+
+    g("subscribe", "Launcher.ready", function () {
+      markMessengerReady("Launcher.ready");
+    });
+    g("subscribe", "Database.ready", function () {
+      markMessengerReady("Database.ready");
+    });
+    g("subscribe", "Messenger.ready", function () {
+      markMessengerReady("Messenger.ready");
+    });
+
+    g("registerPlugin", "GomoBillingLauncherPlugin", function (Plugin) {
+      Plugin.subscribe([
+        {
+          topic: "Launcher.ready",
+          callback: function () {
+            markMessengerReady("plugin.Launcher.ready");
+          },
         },
-      },
-      {
-        topic: "Messenger.ready",
-        callback: function () {
-          state.messengerReady = true;
-          setMessengerStatus("Ready to chat about the selected account.");
+        {
+          topic: "Messenger.ready",
+          callback: function () {
+            markMessengerReady("plugin.Messenger.ready");
+          },
         },
-      },
-    ]);
-  });
+      ]);
+    });
+  }
+
+  registerGenesysHandlers();
 
   document.addEventListener("DOMContentLoaded", function () {
     bindUi();
-    setMessengerStatus("Loading messenger…");
+    setMessengerStatus("Loading messenger… (you can still click Start chat)");
+    if (state.messengerReady) {
+      setMessengerStatus("Ready to chat about the selected account.");
+    }
+    window.setTimeout(function () {
+      if (!state.messengerReady) {
+        markMessengerReady("timeout");
+      }
+    }, 10000);
     window.setTimeout(function () {
       var toast = $("gomo-chat-toast");
       if (toast) toast.classList.add("is-visible");
