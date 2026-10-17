@@ -1,0 +1,541 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Shot Curve Basics</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one 820px column of short lessons. Each lesson has 2 to 3 plain sentences and one thing to play with.
+   Colour roles match the full lab: orange = ball and bend (a), blue = steepness (b), violet = start height (c). */
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --ink:#0F1B2A; --muted:#52606F; --line:#D5DDE6; --floor:#B8C4D0;
+  --ball:#E8590C; --ball-text:#B93A05; --court:#1B5FD6; --court-soft:#E3ECFB; --violet:#7A3FD1;
+  --good:#237032; --good-soft:#E1F3E5; --bad:#C2255C; --bad-soft:#FBE3EC;
+  --btn-bg:#B93A05; --btn-fg:#FFFFFF;
+  --f-display:'Barlow Condensed','Arial Narrow',sans-serif;
+  --f-body:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-data:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C141D; --surface:#131E2A; --ink:#E8EEF5; --muted:#9BA9B8; --line:#26364A; --floor:#34465C;
+    --ball:#FF8A4C; --ball-text:#FFA070; --court:#7FA8FF; --court-soft:#172A4A; --violet:#B79CFF;
+    --good:#5FD17A; --good-soft:#15301E; --bad:#FF7BA5; --bad-soft:#3B1827;
+    --btn-bg:#FF8A4C; --btn-fg:#1B0F07; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C141D; --surface:#131E2A; --ink:#E8EEF5; --muted:#9BA9B8; --line:#26364A; --floor:#34465C;
+  --ball:#FF8A4C; --ball-text:#FFA070; --court:#7FA8FF; --court-soft:#172A4A; --violet:#B79CFF;
+  --good:#5FD17A; --good-soft:#15301E; --bad:#FF7BA5; --bad-soft:#3B1827;
+  --btn-bg:#FF8A4C; --btn-fg:#1B0F07; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:17px/1.6 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:20px 56px}
+.wrap{max-width:820px;margin:0 auto}
+h1,h2,h3,p,ul,ol,dl,dd,figure{margin:0}
+h1{font:700 clamp(2.8rem,11vw,4.6rem)/.92 var(--f-display);text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+h2{font:700 clamp(1.8rem,6vw,2.3rem)/1.05 var(--f-display);text-wrap:balance}
+h3{font:600 1.05rem/1.3 var(--f-body)}
+.eyebrow{font:600 .78rem/1.2 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.eyebrow.step{color:var(--ball-text)}
+.hero{display:grid;gap:14px;padding-top:8px}
+.lead{font-size:1.18rem;max-width:58ch}
+.toc{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:.95rem}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--line);padding-bottom:1px}
+.toc a:hover,.toc a:focus-visible{border-color:var(--ball)}
+.lesson{display:grid;gap:14px;margin-top:52px;scroll-margin-top:16px}
+.lesson>p{max-width:60ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:14px;min-width:0}
+.cv{display:block;width:100%;aspect-ratio:16/10;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+@media (max-width:540px){.cv{aspect-ratio:4/3}}
+.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 22px}
+.ctrl{display:grid;gap:2px;min-width:0}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.95rem}
+.row label{font-weight:500}
+.hint{color:var(--muted);font-weight:400;font-size:.84rem}
+output{font:500 .92rem var(--f-data);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;height:30px;margin:0;accent-color:var(--ball)}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--ball)}
+.chk{display:flex;align-items:center;gap:8px;font-size:.95rem}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:600 .95rem var(--f-body);background:var(--btn-bg);color:var(--btn-fg);border:0;border-radius:8px;padding:10px 16px;min-height:44px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.small{min-height:38px;padding:7px 12px;font-size:.9rem}
+.btn:focus-visible,summary:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--court);outline-offset:2px}
+.ca{color:var(--ball-text)}.cb{color:var(--court)}.cc{color:var(--violet)}
+.ok{color:var(--good);font-weight:600}.no{color:var(--bad);font-weight:600}
+.words{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 18px;font-size:.95rem}
+.eq{font-size:1.15rem;line-height:2;padding:10px 16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow-x:auto;white-space:nowrap}
+.eq.sm{background:var(--bg)}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .2em}
+.frac>span{padding:0 .25em;line-height:1.4}
+.frac>span:first-child{border-bottom:1.4px solid currentColor}
+.rad .ri{border-top:1.4px solid currentColor;padding:0 .15em}
+.steps{display:grid;gap:14px;padding-left:1.3em}
+.steps li{padding-left:4px}
+.steps li>p{max-width:58ch;margin-bottom:6px}
+.fine{font-size:.9rem;color:var(--muted);max-width:64ch}
+.badge{display:inline-block;padding:4px 12px;border-radius:999px;font-weight:600;font-size:.95rem}
+.badge.ok{background:var(--good-soft);color:var(--good)}
+.badge.bad{background:var(--bad-soft);color:var(--bad)}
+.badge.n{background:var(--court-soft);color:var(--court)}
+.resline{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px}
+.stats>div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+.stats dt{font-size:.78rem;color:var(--muted)}
+.stats dd{font:500 1.05rem var(--f-data);font-variant-numeric:tabular-nums}
+.work{font:400 .85rem/1.8 var(--f-data);background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto}
+.work div{white-space:nowrap}
+.warn{color:var(--bad);font-weight:500}
+.scroll{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:.92rem}
+.tbl th,.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.tbl th{font-weight:600;color:var(--muted);font-size:.8rem}
+.tbl td.num{font-family:var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
+.tbl th.num{text-align:right}
+.ex{display:grid;gap:10px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.ex+.ex{margin-top:12px}
+.ex p{max-width:58ch}
+summary{cursor:pointer;font-weight:600;font-size:.95rem;min-height:32px;padding:4px 0}
+details>p,details>div{margin-top:8px}
+.refs{display:grid;gap:22px}
+.refs h3{margin-bottom:6px}
+.refs ul{list-style:none;padding:0;display:grid;gap:8px}
+.refs li{max-width:64ch}
+.refs a{color:var(--court);font-weight:600}
+.refs span{color:var(--muted);font-size:.92rem}
+.foot{margin-top:8px;padding-top:16px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <p class="eyebrow">Maths and physics on the court</p>
+  <h1>Shot Curve Basics</h1>
+  <p class="lead">When a player shoots, the ball flies in a curve shaped like a hill. Maths has a name for that curve and an equation for it. Here you will see why, and then use it to work out how to make a shot go in.</p>
+  <ul class="words">
+    <li><b class="cc">h</b> height of the ball when it leaves the hand</li>
+    <li><b>d</b> distance from the player to the hoop</li>
+    <li><b class="cb">u</b> sideways speed of the ball</li>
+    <li><b class="cb">w</b> upward speed of the ball at the start</li>
+  </ul>
+  <nav class="toc" aria-label="Lessons">
+    <a href="#step1">1 Two motions</a><a href="#step2">2 The equation</a><a href="#step3">3 Try to score</a><a href="#step4">4 Make it go in</a><a href="#step5">5 Force</a><a href="#step6">6 Check yourself</a><a href="#sources">Read more</a>
+  </nav>
+</header>
+
+<!-- STEP 1 -->
+<section class="lesson" id="step1">
+  <p class="eyebrow step">Step 1</p>
+  <h2>Two motions at the same time</h2>
+  <p>A flying ball does two things at once. Sideways it keeps a steady speed. Up and down, gravity slows it on the way up and speeds it on the way down. Drag the time slider and watch the two shadows.</p>
+  <div class="panel">
+    <canvas id="c1" class="cv" aria-label="A ball flying in a curve. A shadow on the floor shows its sideways position and a shadow on the left shows its height."></canvas>
+    <div class="ctl">
+      <div class="ctrl"><div class="row"><label for="t1">Time since release</label><output id="t1-o"></output></div><input id="t1" type="range" min="0" max="1.45" step="0.05" value="0.5"></div>
+    </div>
+    <div class="btns"><button class="btn" id="play1" type="button">Play</button></div>
+    <p id="r1" aria-live="polite"></p>
+    <p class="fine">The dots are 0.1 s apart. On the floor they are evenly spaced, so the sideways speed is steady. On the left they bunch together near the top, because the ball is slow there.</p>
+  </div>
+</section>
+
+<!-- STEP 2 -->
+<section class="lesson" id="step2">
+  <p class="eyebrow step">Step 2</p>
+  <h2>Where the quadratic comes from</h2>
+  <p>Write each motion as a formula. Here t is the time in seconds, and we use g = 10 m/s² for gravity, a little rounded.</p>
+  <ol class="steps">
+    <li><p>Sideways: distance equals speed times time.</p><div class="eq sm"><i>x</i> = <span class="cb"><i>u</i></span> <i>t</i></div></li>
+    <li><p>Height: start at h, go up at w, and gravity takes away 5t². The 5 is half of g.</p><div class="eq sm"><i>y</i> = <span class="cc"><i>h</i></span> + <span class="cb"><i>w</i></span> <i>t</i> − 5<i>t</i>²</div></li>
+    <li><p>From the first formula, t = x / u. Put that into the second formula. Time disappears, and you get the curve itself.</p>
+      <div class="eq sm"><i>y</i> = <span class="cc"><i>h</i></span> + <span class="cb"><span class="frac"><span><i>w</i></span><span><i>u</i></span></span> <i>x</i></span> − <span class="ca"><span class="frac"><span>5</span><span><i>u</i>²</span></span> <i>x</i>²</span></div></li>
+    <li><p>This has the form y = c + bx + ax², a quadratic. The three numbers mean:</p>
+      <div class="eq sm"><span class="cc"><i>c</i> = <i>h</i></span> &nbsp; <span class="cb"><i>b</i> = <i>w</i> / <i>u</i></span> &nbsp; <span class="ca"><i>a</i> = −5 / <i>u</i>²</span></div>
+      <ul class="words" style="margin-top:8px">
+        <li><b class="cc">c</b> is the start height.</li>
+        <li><b class="cb">b</b> is the steepness: metres up for every metre sideways at the start.</li>
+        <li><b class="ca">a</b> is the bend. It is negative, so the curve is a hill. A faster sideways speed makes it smaller and the hill flatter.</li>
+      </ul></li>
+  </ol>
+</section>
+
+<!-- STEP 3 -->
+<section class="lesson" id="step3">
+  <p class="eyebrow step">Step 3</p>
+  <h2>Try to score</h2>
+  <p>The hoop is 3 m high. The shot starts a little low. Change the speeds until the result turns green. Close enough means within 15 cm of the hoop height, with the ball coming down.</p>
+  <div class="panel">
+    <canvas id="c3" class="cv" aria-label="Side view of a shot at a hoop 3 metres high"></canvas>
+    <div class="resline"><span id="res-badge" class="badge n"></span><span id="res-text" aria-live="polite"></span></div>
+    <div class="ctl">
+      <div class="ctrl"><div class="row"><label for="i-d">Distance to hoop <b>d</b></label><output id="o-d"></output></div><input id="i-d" type="range" min="2" max="8" step="0.1" value="4.2"></div>
+      <div class="ctrl"><div class="row"><label for="i-h">Release height <b class="cc">h</b> <span class="hint">reach + jump</span></label><output id="o-h"></output></div><input id="i-h" type="range" min="2" max="3" step="0.05" value="2.4"></div>
+      <div class="ctrl"><div class="row"><label for="i-u">Sideways speed <b class="cb">u</b></label><output id="o-u"></output></div><input id="i-u" type="range" min="2" max="9" step="0.05" value="4"></div>
+      <div class="ctrl"><div class="row"><label for="i-w">Upward speed <b class="cb">w</b></label><output id="o-w"></output></div><input id="i-w" type="range" min="3" max="11" step="0.05" value="5.4"></div>
+    </div>
+    <label class="chk"><input id="dots" type="checkbox" checked> Show a dot every 0.1 s</label>
+    <div class="btns">
+      <button class="btn" id="shoot" type="button">Shoot</button>
+      <button class="btn ghost" id="reset" type="button">Reset</button>
+      <button class="btn ghost preset" type="button" data-d="4.2">Free throw (about 4.2 m)</button>
+      <button class="btn ghost preset" type="button" data-d="7">Three-pointer (about 7 m)</button>
+    </div>
+    <dl class="stats">
+      <div><dt>Steepness b = w / u</dt><dd id="st-b"></dd></div>
+      <div><dt>Angle at the start</dt><dd id="st-ang"></dd></div>
+      <div><dt>Highest point</dt><dd id="st-peak"></dd></div>
+      <div><dt>Time to the hoop</dt><dd id="st-t"></dd></div>
+      <div><dt>Coming down at about</dt><dd id="st-in"></dd></div>
+    </dl>
+    <div>
+      <h3>Your curve right now</h3>
+      <div id="live" style="display:grid;gap:8px;margin-top:8px"></div>
+    </div>
+    <p class="fine">Tip: a ball that comes down steeply, near 45° or more, has a bigger target to land in, because the hoop looks wider from above.</p>
+  </div>
+</section>
+
+<!-- STEP 4 -->
+<section class="lesson" id="step4">
+  <p class="eyebrow step">Step 4</p>
+  <h2>Make it go in</h2>
+  <p>Instead of guessing, use the equation. Choose how steep you want the shot, and the maths gives the sideways speed that hits the hoop. It uses the distance and release height from Step 3.</p>
+  <div class="panel">
+    <div class="ctl"><div class="ctrl"><div class="row"><label for="i-b">Steepness <b class="cb">b</b> you want</label><output id="o-b"></output></div><input id="i-b" type="range" min="0.8" max="2" step="0.05" value="1.2"></div></div>
+    <div class="eq sm">Put <i>x</i> = <i>d</i> and <i>y</i> = 3 into the curve: &nbsp; 3 = <span class="cc"><i>h</i></span> + <span class="cb"><i>b</i></span><i>d</i> − <span class="ca"><span class="frac"><span>5<i>d</i>²</span><span><i>u</i>²</span></span></span></div>
+    <div class="eq sm">Rearrange for u: &nbsp; <i>u</i> = <span class="rad">√<span class="ri"><span class="frac"><span>5<i>d</i>²</span><span><span class="cc"><i>h</i></span> + <span class="cb"><i>b</i></span><i>d</i> − 3</span></span></span></span> &nbsp; and then &nbsp; <i>w</i> = <span class="cb"><i>b</i></span> × <i>u</i></div>
+    <div id="solve" style="display:grid;gap:12px"></div>
+    <div class="scroll"><table class="tbl" id="jump-table"></table></div>
+    <p id="apply-note" class="fine" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- STEP 5 -->
+<section class="lesson" id="step5">
+  <p class="eyebrow step">Step 5</p>
+  <h2>How hard do you push?</h2>
+  <p>The curve needs the speed at release. To get that speed, the hand pushes the ball for a short time. Use F = m × a, where the acceleration is the speed gained divided by the push time.</p>
+  <div class="panel">
+    <div class="ctl"><div class="ctrl"><div class="row"><label for="i-t">Push time <span class="hint">hand on ball</span></label><output id="o-t"></output></div><input id="i-t" type="range" min="0.06" max="0.3" step="0.01" value="0.15"></div></div>
+    <div id="force" style="display:grid;gap:10px"></div>
+    <p class="fine">The ball has a mass of about 0.6 kg. This is an average force, and the push times are example values, not measurements.</p>
+  </div>
+</section>
+
+<!-- STEP 6 -->
+<section class="lesson" id="step6">
+  <p class="eyebrow step">Step 6</p>
+  <h2>Check yourself</h2>
+  <p>Try each one on paper first, then open the answer.</p>
+  <div id="ex-list"></div>
+</section>
+
+<!-- SOURCES -->
+<section class="lesson" id="sources">
+  <p class="eyebrow step">Read more</p>
+  <h2>Where to learn more</h2>
+  <div class="refs">
+    <div><h3>The maths</h3><ul>
+      <li><a href="https://en.wikipedia.org/wiki/Quadratic_function" target="_blank" rel="noopener noreferrer">Wikipedia: Quadratic function</a> <span>The graph of y = ax² + bx + c and what a, b and c do.</span></li>
+      <li><a href="https://en.wikipedia.org/wiki/Parabola" target="_blank" rel="noopener noreferrer">Wikipedia: Parabola</a> <span>The name of the hill-shaped curve.</span></li>
+      <li><a href="https://www.khanacademy.org/math/algebra" target="_blank" rel="noopener noreferrer">Khan Academy: Algebra</a> <span>Practice with quadratics and rearranging formulas.</span></li>
+    </ul></div>
+    <div><h3>The physics</h3><ul>
+      <li><a href="https://en.wikipedia.org/wiki/Projectile_motion" target="_blank" rel="noopener noreferrer">Wikipedia: Projectile motion</a> <span>The full version of what you did in Step 2, with angles.</span></li>
+      <li><a href="https://www.physicsclassroom.com/class/vectors" target="_blank" rel="noopener noreferrer">The Physics Classroom: Vectors and projectiles</a> <span>Clear explanations with worked examples.</span></li>
+      <li><a href="https://www.khanacademy.org/science/physics/two-dimensional-motion" target="_blank" rel="noopener noreferrer">Khan Academy: Two-dimensional motion</a> <span>Video lessons on splitting motion into sideways and up-down parts.</span></li>
+    </ul></div>
+    <div><h3>Play and explore</h3><ul>
+      <li><a href="https://phet.colorado.edu/en/simulations/projectile-motion" target="_blank" rel="noopener noreferrer">PhET: Projectile Motion</a> <span>A free simulation where you can fire different objects.</span></li>
+      <li><a href="https://www.desmos.com/calculator" target="_blank" rel="noopener noreferrer">Desmos graphing calculator</a> <span>Type y = h + b x − a x² with sliders for h, b and a.</span></li>
+      <li><a href="https://en.wikipedia.org/wiki/Basketball_court" target="_blank" rel="noopener noreferrer">Wikipedia: Basketball court</a> <span>Real hoop height and shooting distances.</span></li>
+    </ul></div>
+  </div>
+  <p class="fine foot">How approximate is this? We used g = 10 m/s² (really about 9.8), a 3 m hoop (really 3.05 m), no air drag, no spin, and the ball as a single dot. The numbers are a few percent off, but the shape and the reasoning are the real thing.</p>
+</section>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+/*PHYSICS_START*/
+const HOOP=3, TOL=0.15;
+function heightAt(u,w,h,x){const t=x/u;return h+w*t-5*t*t;}
+function slopeAt(u,w,x){return w/u-10*x/(u*u);}
+function xFloor(u,w,h){return u*(w+Math.sqrt(w*w+20*h))/10;}
+function judge(u,w,h,d){
+  const r={t:d/u,peak:h+w*w/20,y:heightAt(u,w,h,d),b:w/u};
+  r.vy=w-10*r.t;
+  r.slope=slopeAt(u,w,d);
+  r.entry=Math.atan(-r.slope)*180/Math.PI;
+  r.diff=r.y-HOOP;
+  if(r.peak<HOOP-TOL) r.kind='weak';
+  else if(Math.abs(r.diff)<=TOL) r.kind=r.vy<0?'in':'rising';
+  else r.kind=r.diff<0?'low':'high';
+  return r;
+}
+function solveU(d,h,b){
+  const inner=h+b*d-HOOP;
+  if(inner<=0) return null;
+  const u=Math.sqrt(5*d*d/inner);
+  return {u:u,w:b*u,v:Math.sqrt(u*u+b*u*b*u),inner:inner};
+}
+/*PHYSICS_END*/
+
+const $=function(id){return document.getElementById(id);};
+const nf=function(x,dp){const s=Math.abs(x).toFixed(dp);return (x<0&&Number(s)!==0?'−':'')+s;};
+const n1=function(x){return nf(x,1);}, n2=function(x){return nf(x,2);}, n3=function(x){return nf(x,3);};
+const FB="Barlow, system-ui, sans-serif", FM="'IBM Plex Mono', ui-monospace, monospace";
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function palette(){
+  const s=getComputedStyle(document.documentElement), g=function(n){return s.getPropertyValue(n).trim();};
+  return {ink:g('--ink'),muted:g('--muted'),line:g('--line'),floor:g('--floor'),surface:g('--surface'),
+    ball:g('--ball'),court:g('--court'),violet:g('--violet'),good:g('--good'),bad:g('--bad')};
+}
+function fit(cv){
+  const r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  const w=Math.max(200,Math.round(r.width)), h=Math.max(120,Math.round(r.height));
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx:ctx,w:w,h:h};
+}
+function drawBall(ctx,P,cx,cy,r){
+  ctx.fillStyle=P.ball; ctx.beginPath(); ctx.arc(cx,cy,r,0,6.2832); ctx.fill();
+  ctx.strokeStyle=P.ink; ctx.lineWidth=1.2; ctx.beginPath(); ctx.arc(cx,cy,r,0,6.2832); ctx.stroke();
+  ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(cx-r,cy); ctx.lineTo(cx+r,cy); ctx.moveTo(cx,cy-r); ctx.lineTo(cx,cy+r); ctx.stroke();
+}
+
+/* ---------- Step 1: two motions ---------- */
+const E1={u:4,w:6,h:2,tmax:1.45};
+let play1=0;
+function drawC1(){
+  const cv=$('c1'), f=fit(cv), ctx=f.ctx, w=f.w, h=f.h, P=palette();
+  const t=+$('t1').value;
+  const ml=46, mt=10, yF=h-40, xr=6.8, sc=(w-ml-10)/xr, yr=(yF-mt)/sc;
+  const X=function(x){return ml+x*sc;}, Y=function(y){return yF-y*sc;};
+  ctx.clearRect(0,0,w,h); ctx.fillStyle=P.surface; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle=P.floor; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(ml-10,yF); ctx.lineTo(w-6,yF); ctx.stroke();
+  const sy=yF+22, sx=22;
+  ctx.strokeStyle=P.line; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ml-10,sy); ctx.lineTo(w-6,sy); ctx.moveTo(sx,mt); ctx.lineTo(sx,yF); ctx.stroke();
+  ctx.font='11px '+FM; ctx.fillStyle=P.muted; ctx.textAlign='left'; ctx.fillText('floor shadow: sideways',ml,h-4);
+  ctx.save(); ctx.translate(11,yF); ctx.rotate(-Math.PI/2); ctx.fillText('height shadow',0,0); ctx.restore();
+  const pos=function(tt){return {x:E1.u*tt,y:E1.h+E1.w*tt-5*tt*tt};};
+  ctx.strokeStyle=P.ball; ctx.globalAlpha=0.35; ctx.lineWidth=2; ctx.beginPath();
+  for(let tt=0;tt<=E1.tmax+1e-9;tt+=0.02){const p=pos(tt); if(tt===0)ctx.moveTo(X(p.x),Y(p.y)); else ctx.lineTo(X(p.x),Y(p.y));}
+  ctx.stroke(); ctx.globalAlpha=1;
+  for(let k=0;k<=14;k++){
+    const tt=k*0.1, p=pos(tt);
+    ctx.fillStyle=P.muted; ctx.globalAlpha=0.55;
+    ctx.beginPath(); ctx.arc(X(p.x),Y(p.y),2.5,0,6.2832); ctx.fill();
+    ctx.beginPath(); ctx.arc(X(p.x),sy,2.5,0,6.2832); ctx.fill();
+    ctx.beginPath(); ctx.arc(sx,Y(p.y),2.5,0,6.2832); ctx.fill();
+    ctx.globalAlpha=1;
+  }
+  const p=pos(t);
+  ctx.setLineDash([4,4]); ctx.strokeStyle=P.court; ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.moveTo(X(p.x),Y(p.y)); ctx.lineTo(X(p.x),sy); ctx.moveTo(X(p.x),Y(p.y)); ctx.lineTo(sx,Y(p.y)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=P.court; ctx.beginPath(); ctx.arc(X(p.x),sy,5,0,6.2832); ctx.fill();
+  ctx.fillStyle=P.violet; ctx.beginPath(); ctx.arc(sx,Y(p.y),5,0,6.2832); ctx.fill();
+  drawBall(ctx,P,X(p.x),Y(p.y),Math.max(6,0.12*sc));
+  $('t1-o').textContent=n2(t)+' s';
+  $('r1').innerHTML='At t = '+n2(t)+' s the ball is <b class="cb">x = '+E1.u+' × '+n2(t)+' = '+n2(p.x)+' m</b> sideways and <b class="cc">y = '+E1.h+' + '+E1.w+' × '+n2(t)+' − 5 × '+n2(t)+'² = '+n2(p.y)+' m</b> high.';
+}
+
+/* ---------- Step 3: simulator ---------- */
+const S={d:4.2,h:2.4,u:4,w:5.4};
+const SL={d:'i-d',h:'i-h',u:'i-u',w:'i-w'};
+const DEF={d:4.2,h:2.4,u:4,w:5.4};
+let R=null, anim=null, raf=0;
+function readS(){for(const k in SL){S[k]=+$(SL[k]).value;}}
+function pathEnd(){
+  const bb=S.d+0.4, yb=heightAt(S.u,S.w,S.h,bb), xf=xFloor(S.u,S.w,S.h);
+  if(bb<xf&&yb>=2.9&&yb<=3.9) return bb;
+  return xf;
+}
+function showResult(){
+  let cls='bad', b='', t='';
+  switch(R.kind){
+    case 'in': cls='ok'; b='In'; t='The ball reaches the hoop at '+n2(R.y)+' m, close enough to 3 m, and it is coming down.'; break;
+    case 'rising': cls='bad'; b='Going up'; t='The ball is at the right height but still rising, so it cannot drop into the hoop.'; break;
+    case 'low': cls='bad'; b='Too low'; t='When the ball gets to the hoop it is only '+n2(R.y)+' m high, which is '+n2(-R.diff)+' m under the rim.'; break;
+    case 'high': cls='bad'; b='Too high'; t='When the ball gets to the hoop it is '+n2(R.y)+' m high, which is '+n2(R.diff)+' m over the rim.'; break;
+    default: cls='bad'; b='Too weak'; t='The highest point is only '+n2(R.peak)+' m. The ball never gets up to the 3 m hoop.';
+  }
+  $('res-badge').className='badge '+cls; $('res-badge').textContent=b; $('res-text').textContent=t;
+  $('st-b').textContent=n2(R.b);
+  $('st-ang').textContent='≈ '+Math.round(Math.atan(R.b)*180/Math.PI)+'°';
+  $('st-peak').textContent=n2(R.peak)+' m';
+  $('st-t').textContent=n2(R.t)+' s';
+  $('st-in').textContent=R.entry>0?Math.round(R.entry)+'°':'going up';
+  const a=5/(S.u*S.u);
+  $('live').innerHTML='<div class="eq sm"><i>y</i> = <span class="cc">'+n2(S.h)+'</span> + <span class="cb">'+n2(R.b)+'</span><i>x</i> − <span class="ca">'+n3(a)+'</span><i>x</i>²</div>'
+    +'<div class="work"><div>c = h = '+n2(S.h)+'</div><div>b = w / u = '+n2(S.w)+' / '+n2(S.u)+' = '+n2(R.b)+'</div><div>a = −5 / u² = −5 / '+n2(S.u*S.u)+' = −'+n3(a)+'</div><div>At x = d = '+n1(S.d)+': y = '+n2(S.h)+' + '+n2(R.b)+' × '+n1(S.d)+' − '+n3(a)+' × '+n2(S.d*S.d)+' = '+n2(R.y)+' m</div></div>';
+}
+function drawC3(){
+  if(!R) return;
+  const cv=$('c3'), f=fit(cv), ctx=f.ctx, w=f.w, h=f.h, P=palette();
+  const d=S.d, xr=Math.max(d+2.4,7), sc=w/xr, x0=1.0*sc, yF=h-26;
+  const X=function(x){return x0+x*sc;}, Y=function(y){return yF-y*sc;};
+  const L=function(a,b,c,e){ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,e);ctx.stroke();};
+  ctx.clearRect(0,0,w,h); ctx.fillStyle=P.surface; ctx.fillRect(0,0,w,h);
+  ctx.fillStyle=P.line; ctx.fillRect(0,yF,w,h-yF);
+  ctx.strokeStyle=P.floor; ctx.lineWidth=2; ctx.setLineDash([]); L(0,yF,w,yF);
+  ctx.setLineDash([4,5]); ctx.lineWidth=1.5; L(X(0),Y(HOOP),X(d-0.23),Y(HOOP)); ctx.setLineDash([]);
+  ctx.font='11px '+FM; ctx.fillStyle=P.muted; ctx.textAlign='left'; ctx.fillText('3 m',X(d+0.55),Y(HOOP)+4);
+  ctx.strokeStyle=P.muted; ctx.lineWidth=1.5; L(X(0),yF+9,X(d),yF+9); L(X(0),yF+5,X(0),yF+13); L(X(d),yF+5,X(d),yF+13);
+  ctx.fillStyle=P.ink; ctx.textAlign='center'; ctx.fillText('d = '+n1(d)+' m',X(d/2),yF+22);
+  const xb=d+0.4;
+  ctx.lineCap='round'; ctx.strokeStyle=P.ink; ctx.globalAlpha=0.75; ctx.lineWidth=Math.max(4,0.05*sc); L(X(xb),Y(2.9),X(xb),Y(3.9)); ctx.globalAlpha=1;
+  ctx.strokeStyle=P.muted; ctx.lineWidth=1;
+  L(X(d-0.23),Y(HOOP),X(d-0.12),Y(HOOP-0.45)); L(X(d+0.23),Y(HOOP),X(d+0.12),Y(HOOP-0.45)); L(X(d-0.12),Y(HOOP-0.45),X(d+0.12),Y(HOOP-0.45)); L(X(d-0.18),Y(HOOP-0.22),X(d+0.18),Y(HOOP-0.22));
+  ctx.strokeStyle=P.ball; ctx.lineWidth=Math.max(4,0.04*sc); L(X(d-0.23),Y(HOOP),X(xb),Y(HOOP));
+  // player
+  const k=(S.h-0.2)/2.2, fx=-0.2, foot=Math.max(0,S.h-2.2), hip=foot+0.98*k, sh=foot+1.58*k, hd=foot+1.78*k;
+  ctx.strokeStyle=P.ink; ctx.lineWidth=Math.max(3,0.07*sc); ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(X(fx-0.14),Y(foot)); ctx.lineTo(X(fx),Y(hip)); ctx.lineTo(X(fx+0.12),Y(foot)); ctx.stroke();
+  L(X(fx),Y(hip),X(fx),Y(sh)); L(X(fx),Y(sh),X(0),Y(S.h));
+  ctx.fillStyle=P.surface; ctx.beginPath(); ctx.arc(X(fx),Y(hd),0.11*sc,0,6.2832); ctx.fill(); ctx.stroke();
+  ctx.lineCap='butt';
+  // path
+  const xe=pathEnd(), upto=anim?anim.x:xe, moving=anim&&!anim.done;
+  const trace=function(xTo){ctx.beginPath();for(let x=0;x<=xTo+1e-9;x+=0.02){const y=heightAt(S.u,S.w,S.h,x);if(x===0)ctx.moveTo(X(x),Y(y));else ctx.lineTo(X(x),Y(y));}ctx.stroke();};
+  ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle=P.ball;
+  if(moving){ctx.globalAlpha=0.35; ctx.setLineDash([5,5]); ctx.lineWidth=2; trace(xe); ctx.setLineDash([]); ctx.globalAlpha=1;}
+  ctx.lineWidth=3; trace(upto); ctx.lineCap='butt';
+  // dots
+  if($('dots').checked){
+    ctx.fillStyle=P.ink; ctx.globalAlpha=0.6;
+    for(let tt=0.1;tt*S.u<=xe;tt+=0.1){
+      const x=S.u*tt; if(x>upto) break;
+      const y=heightAt(S.u,S.w,S.h,x);
+      ctx.beginPath(); ctx.arc(X(x),Y(y),2.6,0,6.2832); ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  }
+  // marker at hoop distance
+  if(R.kind!=='weak'){
+    ctx.strokeStyle=R.kind==='in'?P.good:P.bad; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(X(d),Y(R.y),6,0,6.2832); ctx.stroke();
+  }
+  const bx=anim?anim.x:0, by=heightAt(S.u,S.w,S.h,bx);
+  drawBall(ctx,P,X(bx),Y(by),Math.max(4,0.12*sc));
+}
+function shoot(){
+  cancelAnimationFrame(raf);
+  const xe=pathEnd();
+  if(reduce){anim={x:xe,done:true};drawC3();return;}
+  const t0=performance.now(), slow=0.5;
+  anim={x:0,done:false};
+  const step=function(now){
+    const x=S.u*((now-t0)/1000)*slow;
+    if(x>=xe){anim={x:xe,done:true};drawC3();return;}
+    anim.x=x; drawC3(); raf=requestAnimationFrame(step);
+  };
+  raf=requestAnimationFrame(step);
+}
+function update(){
+  cancelAnimationFrame(raf); anim=null; readS();
+  R=judge(S.u,S.w,S.h,S.d);
+  $('o-d').textContent=n1(S.d)+' m'; $('o-h').textContent=n2(S.h)+' m'; $('o-u').textContent=n2(S.u)+' m/s'; $('o-w').textContent=n2(S.w)+' m/s';
+  showResult(); drawC3(); renderSolve(); renderForce();
+}
+function applySet(o){
+  for(const k in o){$(SL[k]).value=o[k];}
+  update(); shoot();
+  $('c3').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
+}
+
+/* ---------- Step 4: solver ---------- */
+function renderSolve(){
+  const b=+$('i-b').value; $('o-b').textContent=n2(b)+' (about '+Math.round(Math.atan(b)*180/Math.PI)+'°)';
+  const s=solveU(S.d,S.h,b);
+  let h='';
+  if(!s){
+    h='<p class="warn">With b = '+n2(b)+' the line d × b is too low. Even a very fast ball would land under the hoop. Choose a steeper shot.</p>';
+  } else {
+    h='<div class="work">'
+      +'<div>h + b·d − 3 = '+n2(S.h)+' + '+n2(b)+' × '+n1(S.d)+' − 3 = '+n2(s.inner)+'</div>'
+      +'<div>u² = 5 × '+n2(S.d*S.d)+' / '+n2(s.inner)+' = '+n2(5*S.d*S.d/s.inner)+'</div>'
+      +'<div>u = √'+n2(5*S.d*S.d/s.inner)+' = '+n2(s.u)+' m/s</div>'
+      +'<div>w = b × u = '+n2(b)+' × '+n2(s.u)+' = '+n2(s.w)+' m/s</div></div>'
+      +'<p>Throw it with <b class="cb">u = '+n2(s.u)+' m/s</b> sideways and <b class="cb">w = '+n2(s.w)+' m/s</b> upward. The total launch speed is about '+n1(s.v)+' m/s.</p>'
+      +'<div class="btns"><button class="btn" type="button" id="apply">Try these speeds</button></div>';
+  }
+  $('solve').innerHTML=h;
+  let t='<thead><tr><th>What if you jump?</th><th class="num">Release height</th><th class="num">Sideways speed needed</th></tr></thead><tbody>';
+  [['No extra jump',0],['Jump 20 cm higher',0.2],['Jump 40 cm higher',0.4]].forEach(function(r){
+    const q=solveU(S.d,S.h+r[1],b);
+    t+='<tr><td>'+r[0]+'</td><td class="num">'+n2(S.h+r[1])+' m</td><td class="num">'+(q?n2(q.u)+' m/s':'no speed works')+'</td></tr>';
+  });
+  $('jump-table').innerHTML=t+'</tbody>';
+}
+
+/* ---------- Step 5: force ---------- */
+const MASS=0.6;
+function renderForce(){
+  const t=+$('i-t').value; $('o-t').textContent=n2(t)+' s';
+  const v=Math.sqrt(S.u*S.u+S.w*S.w), a=v/t, F=MASS*a;
+  $('force').innerHTML='<div class="work"><div>launch speed v = √(u² + w²) = √('+n2(S.u*S.u)+' + '+n2(S.w*S.w)+') = '+n1(v)+' m/s</div><div>acceleration a = v / t = '+n1(v)+' / '+n2(t)+' = '+n1(a)+' m/s²</div><div>force F = m × a = '+MASS+' × '+n1(a)+' = '+n1(F)+' N</div></div>'
+    +'<p>The ball weighs about '+n1(MASS*10)+' N, so the hand pushes with about <b>'+n1(F/(MASS*10))+' times</b> its weight. A farther shot needs a faster ball, so it needs more force or a longer push.</p>';
+}
+
+/* ---------- Step 6: check yourself ---------- */
+const EX=[
+  {q:'A ball moves sideways at 5 m/s. How long does it take to travel 4 m sideways?',a:function(){return 'time = distance / speed = 4 / 5 = '+n1(4/5)+' s.';}},
+  {q:'Using y = h + w·t − 5t², find the height when h = 2 m, w = 6 m/s and t = 1 s.',a:function(){return 'y = 2 + 6 × 1 − 5 × 1² = '+(2+6-5)+' m.';}},
+  {q:'The sideways speed u doubles from 3 m/s to 6 m/s. What happens to the bend a = −5/u²?',a:function(){return 'At u = 3: a = −'+n3(5/9)+'. At u = 6: a = −'+n3(5/36)+'. The bend becomes 4 times smaller, so the hill is flatter.';}},
+  {q:'A player releases at h = 2.5 m, 4 m from the hoop, with steepness b = 1.25. What sideways speed u is needed?',a:function(){const s=solveU(4,2.5,1.25);return 'u = √(5 × 16 / (2.5 + 1.25 × 4 − 3)) = √(80 / 4.5) = '+n2(s.u)+' m/s, so about 4.2 m/s. Then w = 1.25 × '+n2(s.u)+' = '+n2(s.w)+' m/s.';}}
+];
+function buildEx(){
+  let h='';
+  EX.forEach(function(e,i){h+='<div class="ex"><h3>Question '+(i+1)+'</h3><p>'+e.q+'</p><details><summary>Show answer</summary><p>'+e.a()+'</p></details></div>';});
+  $('ex-list').innerHTML=h;
+}
+
+/* ---------- wiring ---------- */
+$('t1').addEventListener('input',drawC1);
+$('play1').addEventListener('click',function(){
+  cancelAnimationFrame(play1);
+  if(reduce){$('t1').value=E1.tmax;drawC1();return;}
+  const t0=performance.now();
+  const step=function(now){
+    const t=((now-t0)/1000)*0.5;
+    if(t>=E1.tmax){$('t1').value=E1.tmax;drawC1();return;}
+    $('t1').value=t; drawC1(); play1=requestAnimationFrame(step);
+  };
+  play1=requestAnimationFrame(step);
+});
+Object.keys(SL).forEach(function(k){$(SL[k]).addEventListener('input',update);});
+$('i-b').addEventListener('input',renderSolve);
+$('i-t').addEventListener('input',renderForce);
+$('dots').addEventListener('change',drawC3);
+$('shoot').addEventListener('click',shoot);
+$('reset').addEventListener('click',function(){for(const k in DEF){$(SL[k]).value=DEF[k];}update();$('apply-note').textContent='';});
+document.querySelectorAll('.preset').forEach(function(b){b.addEventListener('click',function(){$('i-d').value=b.dataset.d;update();shoot();});});
+$('solve').addEventListener('click',function(e){
+  if(!e.target.closest('#apply')) return;
+  const s=solveU(S.d,S.h,+$('i-b').value); if(!s) return;
+  const off=s.u<2||s.u>9||s.w<3||s.w>11;
+  applySet({u:s.u.toFixed(2),w:s.w.toFixed(2)});
+  $('apply-note').textContent=off?'One speed is outside the slider range, so a slider stopped at its limit.':'';
+});
+function redraw(){drawC1();drawC3();}
+let pending=0;
+const schedule=function(){if(pending)return;pending=requestAnimationFrame(function(){pending=0;redraw();});};
+if(window.ResizeObserver){const ro=new ResizeObserver(schedule);['c1','c3'].forEach(function(id){ro.observe($(id));});}
+else{window.addEventListener('resize',schedule);}
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',schedule);}catch(err){}
+new MutationObserver(schedule).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(schedule);}
+
+buildEx(); drawC1(); update();
+})();
+</script>
+
+</body></html>
