@@ -1,7 +1,7 @@
 {
-  "clientId": "16b2a307-1d18-4492-bb61-e38f86560fd9",
-  "region": "mypurecloud.de",
-  "redirectUri": "https://localhost:8443/examples/bot-summaries/index.html",
+  "clientId": "d82b7977-50c3-4811-b899-158d935810ef",
+  "region": "mypurecloud.ie",
+  "redirectUri": "https://faisyou.github.io/botsummaries/index.html",
   "logLevel": "debug",
   "notifications": {
     "pingIntervalMs": 30000,
