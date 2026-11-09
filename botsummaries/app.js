@@ -6,7 +6,7 @@
  * Optional: &topicId=<id>  overrides the {id} used in the topic name if it
  *           differs from the conversation ID in your org (see README).
  */
-import { AuthError, ConnectionState, Topics, createGenesysCloudClient, loadConfig } from '../src/index.js';
+import { AuthError, ConnectionState, Topics, createGenesysCloudClient, loadConfig } from './src/index.js';
 import { fromNotification, fromRestResponse } from './summary-model.js';
 import * as view from './view.js';
 
