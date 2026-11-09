@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Summaries</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Virtual agent summary</h1>
+        <p class="context">
+          <span id="agent"></span>
+          <span class="sep">·</span>
+          <span id="conversation" class="mono"></span>
+        </p>
+      </div>
+      <div class="status-wrap">
+        <span id="status" class="status" data-state="idle">Not connected</span>
+        <span id="status-detail" class="status-detail"></span>
+      </div>
+    </header>
+
+    <div id="banner" class="banner" role="alert" hidden></div>
+
+    <form id="picker" class="picker" hidden>
+      <label for="conversationId">Conversation ID</label>
+      <input id="conversationId" name="conversationId" placeholder="e.g. 3f1c9a52-…" autocomplete="off" required>
+      <button type="submit">Watch</button>
+      <p class="hint">Opened outside an interaction widget. Enter a conversation ID to follow its bot summaries.</p>
+    </form>
+
+    <main id="summaries" class="summaries" aria-live="polite">
+      <p class="empty">Connecting…</p>
+    </main>
+
+    <footer class="footer">
+      <span class="mono" id="topic"></span>
+      <span id="topic-info"></span>
+    </footer>
+  </body>
+</html>

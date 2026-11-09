@@ -1,0 +1,15 @@
+{
+  "clientId": "16b2a307-1d18-4492-bb61-e38f86560fd9",
+  "region": "mypurecloud.de",
+  "redirectUri": "https://localhost:8443/examples/bot-summaries/index.html",
+  "logLevel": "debug",
+  "notifications": {
+    "pingIntervalMs": 30000,
+    "pongTimeoutMs": 10000,
+    "reconnect": {
+      "initialDelayMs": 1000,
+      "maxDelayMs": 30000,
+      "maxAttempts": null
+    }
+  }
+}
