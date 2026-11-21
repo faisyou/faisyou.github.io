@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Umer’s Science Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#F5F8FB;--card:#FFFFFF;--ink:#37424D;--soft:#5F6C79;--line:#C9D7E3;
+  --blue:#3F7BA6;--blueL:#E4EFF7;--green:#2E9E5B;--greenL:#E2F4E9;
+  --gold:#E3A92B;--lav:#ECEAF8;--ring:#6C63C9;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",Verdana,Tahoma,"Segoe UI",sans-serif;
+  font-size:22px;line-height:1.4;-webkit-text-size-adjust:100%}
+#app{max-width:720px;margin:0 auto;padding:16px 16px 48px}
+h1{font-size:32px;line-height:1.2;margin:8px 0 6px;text-align:center}
+.sub{font-size:22px;color:var(--soft);text-align:center;margin:0 0 20px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:64px;margin-bottom:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.btn{min-height:64px;padding:10px 22px;border-radius:20px;border:3px solid var(--blue);background:var(--blue);
+  color:#fff;font:inherit;font-size:24px;font-weight:700;cursor:pointer}
+.btn.alt{background:#fff;color:var(--blue)}
+.btn.soft{background:var(--lav);border-color:var(--lav);color:var(--ink)}
+.btn.big{min-width:200px}
+.btn:focus-visible,.card:focus-visible,.choice:focus-visible{outline:4px solid var(--ring);outline-offset:3px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.card{background:var(--card);border:3px solid var(--line);border-radius:24px;padding:16px;text-align:center;
+  font:inherit;color:inherit;cursor:pointer;min-height:64px}
+.card .pic{height:130px}
+.card .label{font-size:26px;font-weight:700;margin-top:8px}
+.card .line{font-size:22px;margin-top:6px}
+.card.still{cursor:default}
+.pic svg{width:100%;height:100%;display:block}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+/* quiz */
+.progress{text-align:center}
+.stars{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.stars svg{width:30px;height:30px}
+.count{font-size:20px;color:var(--soft);margin-top:4px}
+.q{font-size:28px;font-weight:700;text-align:center;min-height:2.9em;display:flex;align-items:center;justify-content:center;margin:10px 0 6px}
+.stage{height:210px;background:#fff;border:3px solid var(--line);border-radius:24px;padding:10px;margin:6px 0 14px}
+.stage svg{width:100%;height:100%}
+.choices{display:grid;gap:12px}
+.choice{min-height:72px;display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;
+  background:#fff;border:3px solid var(--line);border-radius:20px;font:inherit;font-size:24px;font-weight:700;
+  color:var(--ink);cursor:pointer;text-align:center}
+.choices.pics .choice{flex-direction:column;gap:4px;padding:8px}
+.choice .cp{width:100%;height:96px}
+.choice .cp svg{width:100%;height:100%}
+.choice:disabled{cursor:default;color:var(--ink)}
+.choice.faded{opacity:.4}
+.choice.right{background:var(--greenL);border-color:var(--green)}
+.choice.gold{border-color:var(--gold);border-width:6px}
+.tick{width:34px;height:34px;flex:none}
+.fb{min-height:116px;margin:14px 0 6px}
+.fb p{margin:0 0 6px}
+.fb.ok{display:flex;gap:12px;align-items:center;background:var(--greenL);border-radius:20px;padding:12px 16px;font-weight:700}
+.hint{background:var(--blueL);border-radius:16px;padding:8px 14px}
+.nextrow{min-height:72px;display:flex;justify-content:center}
+.hidden{visibility:hidden}
+details{margin-top:24px;background:#fff;border:3px solid var(--line);border-radius:20px;padding:12px 16px}
+summary{font-weight:700;cursor:pointer;min-height:44px;display:flex;align-items:center}
+details li{margin:6px 0}
+/* break */
+.breakwrap{text-align:center;padding-top:30px}
+.breath{width:200px;height:200px;border-radius:50%;background:var(--lav);margin:30px auto;
+  animation:breathe 9s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(.7)}50%{transform:scale(1.05)}}
+@media (prefers-reduced-motion:reduce){.breath{animation:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ---------- Palette and drawing helpers ---------- */
+const C={leaf:'#7CC59B',leafD:'#4E9F74',soil:'#D8BC94',root:'#A67C52',petal:'#F4A9BE',sun:'#F6D366',ray:'#F2B705',
+  blue:'#A9D3EE',blueD:'#5B9CC9',grey:'#C3CAD1',greyD:'#8793A0',ink:'#4A5560',ring:'#6C63C9',seed:'#B98B5E',
+  orange:'#F2A65A',cream:'#FBF1D3',dark:'#5C6672',ball:'#F08A7E'};
+const svg=b=>`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${b}</svg>`;
+const ring=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${C.ring}" stroke-width="3.5" stroke-dasharray="7 6" stroke-linecap="round"/>`;
+const hl=(h,k,x,y,r)=>h===k?ring(x,y,r):'';
+const fh=(x,y,r)=>[0,72,144,216,288].map(a=>`<circle cx="${(x+r*.85*Math.cos(a*Math.PI/180)).toFixed(1)}" cy="${(y+r*.85*Math.sin(a*Math.PI/180)).toFixed(1)}" r="${(r*.6).toFixed(1)}" fill="${C.petal}"/>`).join('')+`<circle cx="${x}" cy="${y}" r="${(r*.45).toFixed(1)}" fill="${C.sun}"/>`;
+const leafP=(x,y,rot,l=14)=>`<ellipse cx="${x}" cy="${y}" rx="${l}" ry="7" transform="rotate(${rot} ${x} ${y})" fill="${C.leaf}"/>`;
+const rays=(x,y,a,b,n,col,w)=>[...Array(n)].map((_,i)=>{const t=i*2*Math.PI/n;return `<path d="M${(x+a*Math.cos(t)).toFixed(1)} ${(y+a*Math.sin(t)).toFixed(1)}L${(x+b*Math.cos(t)).toFixed(1)} ${(y+b*Math.sin(t)).toFixed(1)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`}).join('');
+const soilBand=`<rect x="0" y="84" width="120" height="36" fill="${C.soil}"/>`;
+const lampSmall=`<path d="M8 14H42L50 36H0Z" fill="${C.cream}" stroke="${C.ray}" stroke-width="3" stroke-linejoin="round"/><rect x="22" y="36" width="6" height="14" fill="${C.greyD}"/>`;
+
+/* ---------- ALL CONTENT LIVES HERE ---------- */
+const DATA={
+  title:'Umer’s Science Quiz',
+  subtitle:'Tap a picture to start.',
+  subjects:[
+   {id:'science',name:'Science',pic:'sci',topics:[
+
+    /* ===== PLANTS ===== */
+    {id:'plant-parts',name:'Parts of a plant',pic:'plant',date:'3 Sep (year unclear)',
+     look:[
+      {p:'plant:roots',t:'Roots hold the plant in the soil.'},
+      {p:'plant:stem',t:'The stem holds the plant up.'},
+      {p:'plant:leaf',t:'Leaves make food.'},
+      {p:'plant:flower',t:'The flower helps make new plants.'}],
+     questions:[
+      {q:'What is this part called?',pic:'plant:flower',ch:[{t:'Flower'},{t:'Roots'}],a:0,hint:'It is the colourful part at the top.',fact:'Yes! This is the flower.'},
+      {q:'What is this part called?',pic:'plant:roots',ch:[{t:'Stem'},{t:'Roots'},{t:'Leaf'}],a:1,hint:'It is the part under the soil.',fact:'Yes! These are the roots.'},
+      {q:'What is this part called?',pic:'plant:stem',ch:[{t:'Roots'},{t:'Stem'}],a:1,hint:'It is the long part in the middle.',fact:'Yes! This is the stem.'},
+      {q:'What do the roots do?',pic:'plant:roots',ch:[{t:'They hold the plant in the soil.'},{t:'They make food.'}],a:0,hint:'Roots are under the soil.',fact:'Yes! The roots hold the plant in the soil.'},
+      {q:'Which part takes in water from the soil?',pic:'ask',ch:[{t:'Roots',p:'roots'},{t:'Leaf',p:'leaf'},{t:'Flower',p:'flower'}],a:0,hint:'It is under the soil.',fact:'Yes! The roots take in water from the soil.'},
+      {q:'What do leaves do?',pic:'plant:leaf',ch:[{t:'They make food.'},{t:'They hold the plant in the soil.'}],a:0,hint:'Leaves are green.',fact:'Yes! Leaves make food for the plant.'},
+      {q:'What does the stem do?',pic:'plant:stem',ch:[{t:'It makes food.'},{t:'It holds the plant up.'}],a:1,hint:'The stem is tall and strong.',fact:'Yes! The stem holds the plant up. It carries water too.'},
+      {q:'Plants have different parts. Each part has a different...',pic:'plant',ch:[{t:'Function'},{t:'Colour'},{t:'Size'}],a:0,hint:'A function is a job.',fact:'Yes! Each part has a different function. A function is a job.'},
+      {q:'Which part holds the plant in place and takes in water?',pic:'plant',ch:[{t:'Roots'},{t:'Leaves'},{t:'Stem'},{t:'Flower'}],a:0,hint:'It is under the soil.',fact:'Yes! The roots hold the plant and take in water.'},
+      {q:'The stem carries water. Where does the water go?',pic:'plant:stem',ch:[{t:'To different parts of the plant'},{t:'Only to the roots'}],a:0,hint:'The stem joins the parts together.',fact:'Yes! The stem carries water to different parts of the plant.'},
+      {q:'Which job does a leaf do?',pic:'plant:leaf',ch:[{t:'Holds the plant in the soil'},{t:'Makes food for the plant'},{t:'Carries water to the flower'}],a:1,hint:'Leaves are green.',fact:'Yes! A leaf makes food for the plant.'},
+      {type:'order',q:'Put the parts in order. Start at the top of the plant.',pic:'plant',items:[{t:'Flower',p:'flower'},{t:'Stem',p:'stem'},{t:'Roots',p:'roots'}],show:[2,0,1],hint:'The flower is at the top.',fact:'Yes! The flower is at the top and the roots are at the bottom.'},
+      {q:'Tap the leaf.',pic:'ask',ch:[{t:'Flower',p:'flower'},{t:'Leaf',p:'leaf'},{t:'Roots',p:'roots'}],a:1,hint:'A leaf is flat and green.',fact:'Yes! This is a leaf.'}]},
+
+    {id:'flower-parts',name:'Parts of a flower',pic:'flowerD',date:'undated',
+     look:[
+      {p:'flowerD:petals',t:'Petals are the colourful outer part.'},
+      {p:'flowerD:stamen',t:'The stamen is the male part. It makes pollen.'},
+      {p:'flowerD:pistil',t:'The pistil is the female part.'},
+      {p:'flowerD:sepals',t:'Sepals are small and green. They protect the bud.'}],
+     questions:[
+      {q:'What is this part called?',pic:'flowerD:petals',ch:[{t:'Petals'},{t:'Stamen'},{t:'Pistil'}],a:0,hint:'It is the colourful outer part.',fact:'Yes! These are the petals.'},
+      {q:'What is this part called?',pic:'flowerD:stamen',ch:[{t:'Pistil'},{t:'Stamen'},{t:'Petals'}],a:1,hint:'It is the male part. It makes pollen.',fact:'Yes! This is the stamen.'},
+      {q:'What is this part called?',pic:'flowerD:pistil',ch:[{t:'Stamen'},{t:'Petals'},{t:'Pistil'}],a:2,hint:'It is the female part.',fact:'Yes! This is the pistil.'},
+      {q:'What is this part called?',pic:'flowerD:sepals',ch:[{t:'Sepals'},{t:'Petals'}],a:0,hint:'It is small and green.',fact:'Yes! These are sepals. They protect the flower bud.'},
+      {q:'Which part is the male part?',pic:'flowerD',ch:[{t:'Pistil'},{t:'Stamen'}],a:1,hint:'The male part makes pollen.',fact:'Yes! The stamen is the male part.'},
+      {q:'Which part is the female part?',pic:'flowerD',ch:[{t:'Stamen'},{t:'Pistil'}],a:1,hint:'It is in the middle of the flower.',fact:'Yes! The pistil is the female part.'},
+      {q:'The stamen is the male part. What does it make?',pic:'flowerD:stamen',ch:[{t:'Pollen'},{t:'Sepals'},{t:'Petals'}],a:0,hint:'It is tiny powdery grains.',fact:'Yes! The stamen makes pollen.'},
+      {q:'Which part protects the flower bud before it opens?',pic:'flowerD:sepals',ch:[{t:'Petals'},{t:'Sepals'},{t:'Stamen'}],a:1,hint:'It is small and green.',fact:'Yes! Sepals protect the flower bud.'},
+      {q:'Which sentence is true?',pic:'flowerD',ch:[{t:'The pistil is the female part.'},{t:'The stamen is the female part.'}],a:0,hint:'The stamen is the male part.',fact:'Yes! The pistil is the female part of a flower.'},
+      {q:'What does reproduce mean?',pic:'flowerD',ch:[{t:'To make new plants of the same kind.'},{t:'To change colour.'},{t:'To fall down.'}],a:0,hint:'Flowers help plants make new plants.',fact:'Yes! Reproduce means to make new plants of the same kind.'},
+      {q:'Sepals are the colourful outer part of a flower.',pic:'flowerD:sepals',ch:[{t:'True'},{t:'False'}],a:1,hint:'Sepals are green. Petals are colourful.',fact:'Yes! Sepals are green. The petals are colourful.'},
+      {q:'Petals are the colourful part of a flower.',pic:'flowerD:petals',ch:[{t:'True'},{t:'False'}],a:0,hint:'Look at the pink petals.',fact:'Yes! Petals are the colourful part.'}]},
+
+    {id:'pollination',name:'Pollination',pic:'pollination',date:'8 Oct',
+     look:[
+      {p:'pollen',t:'Pollen is made by the stamen.'},
+      {p:'bee',t:'A bee carries pollen. It is a pollinator.'},
+      {p:'pollination',t:'Pollination moves pollen from the stamen to the pistil.'}],
+     questions:[
+      {q:'Which part makes pollen?',pic:'flowerD',ch:[{t:'Pistil'},{t:'Stamen'}],a:1,hint:'It is the male part.',fact:'Yes! The stamen makes pollen.'},
+      {q:'What is pollen?',pic:'pollen',ch:[{t:'Tiny powdery grains'},{t:'Big green leaves'}],a:0,hint:'Pollen is very small.',fact:'Yes! Pollen is tiny powdery grains.'},
+      {q:'A bee carries pollen. What is a bee called?',pic:'bee',ch:[{t:'Pollinator'},{t:'Sepal'}],a:0,hint:'A pollinator is an animal that carries pollen.',fact:'Yes! A bee is a pollinator.'},
+      {q:'What does transfer mean?',pic:'pollination',ch:[{t:'To move something to another place.'},{t:'To keep something still.'}],a:0,hint:'Transfer means moving.',fact:'Yes! Transfer means to move something from one place to another.'},
+      {q:'Pollen moves from the stamen to the...',pic:'pollination',ch:[{t:'Petals'},{t:'Pistil'}],a:1,hint:'The pistil is the female part.',fact:'Yes! Pollen moves from the stamen to the pistil.'},
+      {q:'Which part receives pollen?',pic:'pollination',ch:[{t:'Stamen'},{t:'Pistil'}],a:1,hint:'It is the female part.',fact:'Yes! The pistil receives pollen.'},
+      {type:'order',q:'Put pollination in order. Tap step 1 first.',pic:'pollination',items:[{t:'The stamen makes pollen.',p:'pollen'},{t:'A bee carries the pollen.',p:'bee'},{t:'Pollen lands on the pistil.',p:'pollination'}],show:[1,2,0],hint:'First the stamen makes the pollen.',fact:'Yes! The stamen makes pollen, a bee carries it, and it lands on the pistil.'},
+      {q:'A bee visits a flower and pollen sticks to it. What happens next?',pic:'bee',ch:[{t:'It carries the pollen to another flower.'},{t:'It drops the pollen in the soil.'},{t:'It eats the stamen.'}],a:0,hint:'A bee is a pollinator.',fact:'Yes! The bee carries the pollen to another flower.'},
+      {q:'Which word means to move something from one place to another?',pic:'pollination',ch:[{t:'Transfer'},{t:'Sepal'},{t:'Pollen'}],a:0,hint:'Pollen is moved in pollination.',fact:'Yes! Transfer means to move something from one place to another.'},
+      {q:'What is a pollinator?',pic:'bee',ch:[{t:'An animal that carries pollen.'},{t:'A part of the flower.'}],a:0,hint:'A bee is one.',fact:'Yes! A pollinator is an animal, like a bee, that carries pollen.'},
+      {q:'Bees can carry pollen.',pic:'bee',ch:[{t:'True'},{t:'False'}],a:0,hint:'A bee is a pollinator.',fact:'Yes! Bees carry pollen from flower to flower.'}]},
+
+    {id:'life-cycle',name:'Plant life cycle',pic:'mature',date:'undated',
+     look:[
+      {p:'seed',t:'A plant begins as a seed.'},
+      {p:'germ',t:'The seed gets water and warmth. It grows.'},
+      {p:'seedling',t:'A seedling has its first leaves.'},
+      {p:'young',t:'A young plant grows more leaves and roots.'},
+      {p:'mature',t:'A mature plant is fully grown.'},
+      {p:'dispersal',t:'Seed dispersal spreads seeds away from the plant.'}],
+     questions:[
+      {q:'A plant begins as a...',pic:'seed',ch:[{t:'Seed'},{t:'Leaf'}],a:0,hint:'It is small and sits in the soil.',fact:'Yes! A plant begins as a seed.'},
+      {q:'A seed gets water and warmth. What happens?',pic:'germ',ch:[{t:'It starts to grow.'},{t:'It stays the same.'}],a:0,hint:'Water and warmth help seeds grow.',fact:'Yes! The seed starts to grow. This is germination.'},
+      {q:'A seed grows into a new plant. This is called...',pic:'germ',ch:[{t:'Pollination'},{t:'Germination'}],a:1,hint:'The seed grows a root and a shoot.',fact:'Yes! This is called germination.'},
+      {q:'What is this stage called?',pic:'seedling',ch:[{t:'Seedling'},{t:'Mature plant'}],a:0,hint:'It is a young plant with its first leaves.',fact:'Yes! A seedling has its first leaves.'},
+      {q:'Which plant is fully grown?',pic:'ask',ch:[{t:'Seed',p:'seed'},{t:'Seedling',p:'seedling'},{t:'Mature plant',p:'mature'}],a:2,hint:'It has a flower.',fact:'Yes! A mature plant is fully grown. It can have flowers.'},
+      {q:'What is seed dispersal?',pic:'dispersal',ch:[{t:'Spreading seeds away from the parent plant.'},{t:'Making pollen.'}],a:0,hint:'Look at the seeds moving away.',fact:'Yes! Seed dispersal spreads seeds away from the parent plant.'},
+      {type:'order',q:'Put the plant life cycle in order. Start with the seed.',pic:'ask',items:[{t:'Seed',p:'seed'},{t:'Germination',p:'germ'},{t:'Seedling',p:'seedling'},{t:'Young plant',p:'young'},{t:'Mature plant',p:'mature'}],show:[3,0,4,2,1],hint:'A plant begins as a seed.',fact:'Yes! Seed, germination, seedling, young plant, mature plant.'},
+      {q:'What is inside a seed?',pic:'seed',ch:[{t:'A tiny baby plant'},{t:'Pollen'},{t:'A flower'}],a:0,hint:'It will grow into a new plant.',fact:'Yes! A seed has a tiny baby plant inside.'},
+      {q:'During germination, the root grows down. The shoot grows...',pic:'germ',ch:[{t:'Upward'},{t:'Downward'}],a:0,hint:'Look at the green shoot.',fact:'Yes! The root grows down and the shoot grows upward.'},
+      {q:'The shoot grows taller and has its first leaves. What is it now called?',pic:'seedling',ch:[{t:'Seedling'},{t:'Seed'},{t:'Pollinator'}],a:0,hint:'It is a very young plant.',fact:'Yes! It is now called a seedling.'},
+      {q:'A young plant keeps growing. What does it develop?',pic:'young',ch:[{t:'More leaves, a stronger stem and more roots'},{t:'Only pollen'}],a:0,hint:'Look at the leaves.',fact:'Yes! It develops more leaves, a stronger stem and more roots.'},
+      {q:'Tap the seed.',pic:'ask',ch:[{t:'Mature plant',p:'mature'},{t:'Seed',p:'seed'}],a:1,hint:'The seed is small.',fact:'Yes! This is a seed.'}]},
+
+    {id:'plant-needs',name:'What plants need',pic:'water',date:'undated',
+     look:[
+      {p:'water',t:'Plants need water.'},
+      {p:'sun',t:'Plants need light.'},
+      {p:'air',t:'Plants need air.'},
+      {p:'soil',t:'Plants need soil. It gives nutrients.'},
+      {p:'plant:leaf',t:'Leaves make food. This is photosynthesis.'}],
+     questions:[
+      {q:'Is water a plant part or a plant need?',pic:'water',ch:[{t:'Plant part'},{t:'Plant need'}],a:1,hint:'A plant need helps the plant grow.',fact:'Yes! Water is a plant need.'},
+      {q:'Is sunlight a plant part or a plant need?',pic:'sun',ch:[{t:'Plant need'},{t:'Plant part'}],a:0,hint:'A plant need helps the plant grow.',fact:'Yes! Sunlight is a plant need.'},
+      {q:'Are leaves a plant part or a plant need?',pic:'plant:leaf',ch:[{t:'Plant part'},{t:'Plant need'}],a:0,hint:'A plant part is on the plant.',fact:'Yes! Leaves are a plant part.'},
+      {q:'Is air a plant part or a plant need?',pic:'air',ch:[{t:'Plant part'},{t:'Plant need'}],a:1,hint:'A plant need helps the plant grow.',fact:'Yes! Air is a plant need.'},
+      {q:'Are seeds a plant part or a plant need?',pic:'seed',ch:[{t:'Plant need'},{t:'Plant part'}],a:1,hint:'A plant part is on the plant.',fact:'Yes! Seeds are a plant part.'},
+      {q:'Is soil a plant part or a plant need?',pic:'soil',ch:[{t:'Plant need'},{t:'Plant part'}],a:0,hint:'Soil gives the plant nutrients.',fact:'Yes! Soil is a plant need. It gives nutrients.'},
+      {q:'Leaves use light to make food. This is called...',pic:'plant:leaf',ch:[{t:'Photosynthesis'},{t:'Pollination'}],a:0,hint:'It is how leaves make food.',fact:'Yes! Making food in leaves is called photosynthesis.'},
+      {q:'A plant has water and light. What else does it need?',pic:'plant',ch:[{t:'Air and soil'},{t:'Fruit and seeds'},{t:'Petals'}],a:0,hint:'Plant needs are water, light, air and soil.',fact:'Yes! Plants also need air and soil.'},
+      {q:'Which of these is a plant need?',pic:'ask',ch:[{t:'Light',p:'sun'},{t:'Petals',p:'flower'},{t:'Stem',p:'stem'}],a:0,hint:'A plant need helps the plant grow.',fact:'Yes! Light is a plant need.'},
+      {q:'Without light, the leaves cannot make...',pic:'plant:leaf',ch:[{t:'Food'},{t:'Soil'},{t:'Roots'}],a:0,hint:'Leaves use light to make food.',fact:'Yes! Leaves use light to make food.'},
+      {q:'Which two things do roots take in from the soil?',pic:'plant:roots',ch:[{t:'Water and nutrients'},{t:'Light and air'},{t:'Pollen and seeds'}],a:0,hint:'The soil gives the plant these.',fact:'Yes! Roots take in water and nutrients from the soil.'},
+      {q:'Plants need room to grow.',pic:'plant',ch:[{t:'True'},{t:'False'}],a:0,hint:'Room to grow is one of the plant needs.',fact:'Yes! Plants need room to grow.'},
+      {q:'Plants need water to grow.',pic:'water',ch:[{t:'True'},{t:'False'}],a:0,hint:'Think about watering a plant.',fact:'Yes! Plants need water to grow.'}]},
+
+    {id:'plant-jobs',name:'Plant parts and their jobs',pic:'plant',date:'7 Sep and 8 Oct',
+     look:[
+      {p:'plant:stem',t:'The stem carries water to the whole plant.'},
+      {p:'plant:roots',t:'Roots take in water and nutrients from the soil.'},
+      {p:'plant:leaf',t:'Leaves use light from the sun to make food.'},
+      {p:'plant:flower',t:'The flower helps the plant make new life.'}],
+     questions:[
+      {q:'Which part carries water to the whole plant?',pic:'ask',ch:[{t:'Stem',p:'stem'},{t:'Leaf',p:'leaf'},{t:'Flower',p:'flower'}],a:0,hint:'It is tall and in the middle.',fact:'Yes! The stem carries water to different parts of the plant.'},
+      {q:'Which part takes in water and nutrients from the soil?',pic:'plant',ch:[{t:'Leaves'},{t:'Roots'},{t:'Petals'}],a:1,hint:'It is under the soil.',fact:'Yes! The roots take in water and nutrients.'},
+      {q:'Which part uses light from the sun to make food?',pic:'sun',ch:[{t:'Stem'},{t:'Leaves'},{t:'Roots'}],a:1,hint:'It is flat and green.',fact:'Yes! Leaves use light to make food.'},
+      {q:'Where do plants get water and nutrients from?',pic:'ask',ch:[{t:'Sun',p:'sun'},{t:'Soil',p:'soil'},{t:'Leaf',p:'leaf'}],a:1,hint:'Roots grow in it.',fact:'Yes! Plants get water and nutrients from the soil.'},
+      {q:'Which part helps the plant make new life?',pic:'plant',ch:[{t:'Flower'},{t:'Roots'}],a:0,hint:'It is colourful.',fact:'Yes! The flower helps the plant make new life.'},
+      {q:'The stem is damaged. What cannot reach the leaves?',pic:'plant:stem',ch:[{t:'Water'},{t:'Soil'}],a:0,hint:'The stem carries this.',fact:'Yes! Water cannot reach the leaves and flowers.'},
+      {q:'Plants make their own food.',pic:'plant:leaf',ch:[{t:'True'},{t:'False'}],a:0,hint:'Leaves make food.',fact:'Yes! Leaves make food for the plant.'},
+      {q:'Which job matches the roots?',pic:'plant:roots',ch:[{t:'Absorb water from the soil and hold the plant in place.'},{t:'Absorb sunlight to make food.'},{t:'Help the plant make new life.'}],a:0,hint:'Absorb means to take in.',fact:'Yes! Roots absorb water from the soil and hold the plant in place.'},
+      {q:'Which job matches the leaves?',pic:'plant:leaf',ch:[{t:'Carry water to different parts.'},{t:'Absorb sunlight to make food.'},{t:'Hold the plant in place.'}],a:1,hint:'Leaves are green.',fact:'Yes! Leaves absorb sunlight to make food.'},
+      {q:'Which job matches the stem?',pic:'plant:stem',ch:[{t:'Absorb sunlight to make food.'},{t:'Help the plant make new life.'},{t:'Carry water to different parts of the plant.'}],a:2,hint:'The stem joins the parts together.',fact:'Yes! The stem carries water to different parts of the plant.'},
+      {q:'Which job matches the flower?',pic:'plant:flower',ch:[{t:'Carry water to different parts.'},{t:'Help the plant reproduce and make new life.'}],a:1,hint:'Flowers have pollen and a pistil.',fact:'Yes! The flower helps the plant make new life.'},
+      {q:'Which part holds the plant in the soil?',pic:'ask',ch:[{t:'Flower',p:'flower'},{t:'Roots',p:'roots'}],a:1,hint:'It is under the soil.',fact:'Yes! The roots hold the plant in the soil.'}]},
+
+    {id:'growing',name:'Growing a plant',pic:'pot',date:'undated',
+     look:[
+      {p:'pot',t:'Fill the pot with soil.'},
+      {p:'seeds',t:'Plant the seeds in the soil.'},
+      {p:'watercan',t:'Water the seeds.'},
+      {p:'germ',t:'The seeds sprout and grow.'},
+      {p:'mature',t:'The plant begins to flower.'},
+      {p:'fruit',t:'Fruit then grows on the plant.'}],
+     questions:[
+      {q:'First, we fill the pot with...',pic:'pot',ch:[{t:'Soil'},{t:'Water'}],a:0,hint:'Plants grow in soil.',fact:'Yes! First we fill the pot with soil.'},
+      {q:'Next, we plant the...',pic:'seeds',ch:[{t:'Seeds'},{t:'Fruit'}],a:0,hint:'A plant begins as a seed.',fact:'Yes! We plant the seeds into the soil.'},
+      {q:'What do we use to water the seeds?',pic:'watercan',ch:[{t:'A spoon'},{t:'A watering can'}],a:1,hint:'It is green and has a spout.',fact:'Yes! We use a watering can to water the seeds.'},
+      {q:'The seeds get water. Then they...',pic:'germ',ch:[{t:'Sprout and grow'},{t:'Stay the same'}],a:0,hint:'Look at the little shoot.',fact:'Yes! The seeds sprout and grow.'},
+      {q:'The plant grows. Then it begins to...',pic:'mature',ch:[{t:'Flower'},{t:'Shrink'}],a:0,hint:'Look at the top of the plant.',fact:'Yes! The plant begins to flower.'},
+      {q:'Fruit grows on the plant. Which picture shows fruit?',pic:'ask',ch:[{t:'Seedling',p:'seedling'},{t:'Fruit plant',p:'fruit'}],a:1,hint:'Look for the red fruit.',fact:'Yes! Fruit grows on the plant.'},
+      {type:'order',q:'Put the steps in order. Tap step 1 first.',pic:'ask',items:[{t:'Fill the pot with soil.',p:'pot'},{t:'Plant the seeds.',p:'seeds'},{t:'Water the seeds.',p:'watercan'},{t:'The seeds sprout and grow.',p:'germ'},{t:'The plant begins to flower.',p:'mature'},{t:'Fruit grows on the plant.',p:'fruit'}],show:[3,0,5,1,4,2],hint:'First we need a pot with soil.',fact:'Yes! Soil, seeds, water, sprout, flower, fruit.'},
+      {q:'Which two things help a seed start to grow?',pic:'germ',ch:[{t:'Water and warmth'},{t:'Petals and pollen'}],a:0,hint:'Think about what we gave the seeds.',fact:'Yes! The seed gets water and warmth.'},
+      {q:'The plant has flowers. What grows on it next?',pic:'mature',ch:[{t:'Fruit'},{t:'Soil'}],a:0,hint:'Look for the red fruit.',fact:'Yes! Fruit then grows on the plant.'},
+      {q:'Which step comes first?',pic:'ask',ch:[{t:'Fruit plant',p:'fruit'},{t:'Pot with soil',p:'pot'}],a:1,hint:'We start with the pot.',fact:'Yes! First we fill the pot with soil.'}]},
+
+        {id:'flower-detail',name:'Flower diagram (challenge)',pic:'flowerX',date:'Sep',
+     look:[
+      {p:'flowerX:anther',t:'This is the anther.'},
+      {p:'flowerX:filament',t:'This is the filament.'},
+      {p:'flowerX:stigma',t:'This is the stigma.'},
+      {p:'flowerX:style',t:'This is the style.'},
+      {p:'flowerX:ovary',t:'This is the ovary.'},
+      {p:'flowerX:ovule',t:'This is the ovule. It is inside the ovary.'}],
+     questions:[
+      {q:'What is this part called?',pic:'flowerX:petal',ch:[{t:'Petal'},{t:'Sepal'},{t:'Stem'}],a:0,hint:'It is the colourful outer part.',fact:'Yes! This is a petal.'},
+      {q:'What is this part called?',pic:'flowerX:anther',ch:[{t:'Filament'},{t:'Anther'},{t:'Stigma'}],a:1,hint:'It is the yellow part on top of a thin stalk.',fact:'Yes! This is the anther.'},
+      {q:'What is this part called?',pic:'flowerX:filament',ch:[{t:'Filament'},{t:'Style'},{t:'Anther'}],a:0,hint:'It is the thin stalk that holds the yellow part.',fact:'Yes! This is the filament.'},
+      {q:'What is this part called?',pic:'flowerX:stigma',ch:[{t:'Ovary'},{t:'Style'},{t:'Stigma'}],a:2,hint:'It is at the very top of the middle stalk.',fact:'Yes! This is the stigma.'},
+      {q:'What is this part called?',pic:'flowerX:style',ch:[{t:'Style'},{t:'Stigma'},{t:'Filament'}],a:0,hint:'It is the long stalk in the middle.',fact:'Yes! This is the style.'},
+      {q:'What is this part called?',pic:'flowerX:ovary',ch:[{t:'Ovule'},{t:'Ovary'},{t:'Anther'}],a:1,hint:'It is the round part at the bottom of the middle stalk.',fact:'Yes! This is the ovary.'},
+      {q:'What is this tiny part inside the ovary?',pic:'flowerX:ovule',ch:[{t:'Ovule'},{t:'Ovary'},{t:'Stigma'}],a:0,hint:'It is the little dot inside.',fact:'Yes! This is the ovule.'},
+      {q:'What is this part called?',pic:'flowerX:sepal',ch:[{t:'Petal'},{t:'Sepal'}],a:1,hint:'It is small and green.',fact:'Yes! This is a sepal.'},
+      {q:'What is this part called?',pic:'flowerX:stem',ch:[{t:'Stem'},{t:'Anther'}],a:0,hint:'It is the long green part at the bottom.',fact:'Yes! This is the stem.'}]},
+
+    /* ===== LIGHT ===== */
+    {id:'light-sources',name:'Light sources',pic:'sun',date:'9, 12, 18 and 19 Nov',
+     look:[
+      {p:'sun',t:'Natural means not made by humans.'},
+      {p:'lamp',t:'Artificial means made by humans.'},
+      {p:'star',t:'Stars are natural light sources.'},
+      {p:'candle',t:'A candle is an artificial light source.'}],
+     questions:[
+      {q:'Is this light natural or artificial?',pic:'sun',ch:[{t:'Natural'},{t:'Artificial'}],a:0,hint:'Natural means not made by humans.',fact:'Yes! The sun is a natural light source.'},
+      {q:'Is this light natural or artificial?',pic:'lamp',ch:[{t:'Natural'},{t:'Artificial'}],a:1,hint:'Artificial means made by humans.',fact:'Yes! A lamp is an artificial light source.'},
+      {q:'Is this light natural or artificial?',pic:'star',ch:[{t:'Artificial'},{t:'Natural'}],a:1,hint:'Natural means not made by humans.',fact:'Yes! Stars are natural light sources.'},
+      {q:'Is this light natural or artificial?',pic:'candle',ch:[{t:'Natural'},{t:'Artificial'}],a:1,hint:'Artificial means made by humans.',fact:'Yes! A candle is an artificial light source.'},
+      {q:'Is this light natural or artificial?',pic:'firefly',ch:[{t:'Natural'},{t:'Artificial'}],a:0,hint:'A firefly is an animal. Humans did not make it.',fact:'Yes! A firefly is a natural light source.'},
+      {q:'Which light is made by humans?',pic:'ask',ch:[{t:'Sun',p:'sun'},{t:'Lamp',p:'lamp'}],a:1,hint:'Artificial means made by humans.',fact:'Yes! A lamp is made by humans.'},
+      {q:'Is this light natural or artificial?',pic:'tablet',ch:[{t:'Artificial'},{t:'Natural'}],a:0,hint:'A tablet is made by humans.',fact:'Yes! A tablet is an artificial light source.'},
+      {q:'Which group has only natural light sources?',pic:'ask',ch:[{t:'Sun, stars and firefly'},{t:'Lamp, candle and tablet'},{t:'Sun, lamp and candle'}],a:0,hint:'Natural means not made by humans.',fact:'Yes! The sun, stars and firefly are all natural.'},
+      {q:'Which group has only artificial light sources?',pic:'ask',ch:[{t:'Sun, stars and firefly'},{t:'Lamp, candle and tablet'},{t:'Star, lamp and firefly'}],a:1,hint:'Artificial means made by humans.',fact:'Yes! A lamp, candle and tablet are all artificial.'},
+      {q:'What does natural mean?',pic:'sun',ch:[{t:'Exists in nature. Not made by humans.'},{t:'Made by humans.'}],a:0,hint:'The sun is natural.',fact:'Yes! Natural things exist in nature. Humans did not make them.'},
+      {q:'Which light can be switched on or off?',pic:'ask',ch:[{t:'Lamp',p:'lamp'},{t:'Sun',p:'sun'},{t:'Star',p:'star'}],a:0,hint:'Artificial lights are made by humans.',fact:'Yes! A lamp can be switched on or off.'},
+      {q:'The sun sends out UV rays. UV rays can damage our...',pic:'sun',ch:[{t:'Skin and eyes'},{t:'Lamps'},{t:'Candles'}],a:0,hint:'UV rays are invisible rays from the sun.',fact:'Yes! UV rays can damage our skin and eyes.'},
+      {q:'Natural and artificial light both help us see.',pic:'seeing',ch:[{t:'True'},{t:'False'}],a:0,hint:'Both kinds of light help us see.',fact:'Yes! Natural and artificial light both help us see.'},
+      {q:'Artificial light is made by humans.',pic:'lamp',ch:[{t:'True'},{t:'False'}],a:0,hint:'Think about a lamp.',fact:'Yes! Artificial light is made by humans.'}]},
+
+    {id:'seeing',name:'Light helps us see',pic:'seeing',date:'12 Nov',
+     look:[
+      {p:'lamp',t:'Light helps us see in the dark.'},
+      {p:'book',t:'Light helps us read, write and play safely.'},
+      {p:'seeing',t:'Light bounces off the ball and goes to our eyes.'},
+      {p:'ball',t:'Reflect means to bounce light back from a surface.'}],
+     questions:[
+      {q:'Light helps us see in the dark.',pic:'lamp',ch:[{t:'True'},{t:'False'}],a:0,hint:'Think of a lamp at night.',fact:'Yes! Light helps us see in the dark.'},
+      {q:'What helps us read and write safely?',pic:'book',ch:[{t:'Dark'},{t:'Light'}],a:1,hint:'A lamp gives us this.',fact:'Yes! Light helps us read, write and play safely.'},
+      {q:'The light travels from the lamp to the...',pic:'seeing',ch:[{t:'Ball'},{t:'Eye'}],a:0,hint:'Follow the first arrow from the lamp.',fact:'Yes! The light travels from the light source to the ball.'},
+      {q:'The light bounces off the ball. Then it goes to our...',pic:'seeing',ch:[{t:'Lamp'},{t:'Eyes'}],a:1,hint:'Follow the second arrow.',fact:'Yes! The light travels from the ball to our eyes.'},
+      {q:'What does reflect mean?',pic:'ball',ch:[{t:'To bounce light back.'},{t:'To make a shadow.'}],a:0,hint:'The ball bounces the light.',fact:'Yes! Reflect means to bounce light back from a surface.'},
+      {type:'order',q:'How do we see a ball? Put the steps in order.',pic:'seeing',items:[{t:'The lamp gives out light.',p:'seeing:lamp'},{t:'The ball reflects the light.',p:'seeing:ball'},{t:'The light travels to our eyes.',p:'seeing:eye'}],show:[2,0,1],hint:'The light starts at the lamp.',fact:'Yes! The light goes from the lamp to the ball and then to our eyes.'},
+      {q:'Why can we see the ball?',pic:'seeing',ch:[{t:'Light bounces off the ball into our eyes.'},{t:'The ball makes its own light.'},{t:'Our eyes make light.'}],a:0,hint:'Follow the arrows in the picture.',fact:'Yes! The light is reflected from the ball and travels to our eyes.'},
+      {q:'Light makes objects visible. Visible means we can...',pic:'seeing',ch:[{t:'See them'},{t:'Hear them'}],a:0,hint:'We use our eyes.',fact:'Yes! Visible means we can see them.'},
+      {q:'Light makes objects easy to see.',pic:'seeing',ch:[{t:'True'},{t:'False'}],a:0,hint:'We see the ball because of light.',fact:'Yes! Light makes objects visible.'}]},
+
+    {id:'materials',name:'Light and materials',pic:'glass',date:'17 and 19 Nov',
+     look:[
+      {p:'glass',t:'Transparent: almost all light passes through.'},
+      {p:'tissue',t:'Translucent: some light passes through.'},
+      {p:'tincan',t:'Opaque: no light passes through.'}],
+     questions:[
+      {q:'Is glass transparent or opaque?',pic:'glass',ch:[{t:'Transparent'},{t:'Opaque'}],a:0,hint:'Transparent lets almost all light through.',fact:'Yes! Glass is transparent. Light passes through it.'},
+      {q:'Is this clear bag transparent or opaque?',pic:'bag',ch:[{t:'Opaque'},{t:'Transparent'}],a:1,hint:'You can see through it.',fact:'Yes! A clear bag is transparent.'},
+      {q:'Is a tin can transparent or opaque?',pic:'tincan',ch:[{t:'Transparent'},{t:'Opaque'}],a:1,hint:'Opaque does not let light through.',fact:'Yes! A tin can is opaque. No light passes through.'},
+      {q:'Is a chair opaque or transparent?',pic:'chair',ch:[{t:'Opaque'},{t:'Transparent'}],a:0,hint:'You cannot see through a chair.',fact:'Yes! A chair is opaque.'},
+      {q:'Is tissue paper translucent or opaque?',pic:'tissue',ch:[{t:'Opaque'},{t:'Translucent'}],a:1,hint:'Translucent lets some light through.',fact:'Yes! Tissue paper is translucent. Some light passes through.'},
+      {q:'Is a lampshade translucent or transparent?',pic:'lamp:shade',ch:[{t:'Translucent'},{t:'Transparent'}],a:0,hint:'Translucent lets some light through.',fact:'Yes! A lampshade is translucent.'},
+      {q:'Which one is transparent?',pic:'ask',ch:[{t:'Woolly hat',p:'hat'},{t:'Metal spoon',p:'spoon'},{t:'Glass jar',p:'glass'}],a:2,hint:'Glass lets light through.',fact:'Yes! A glass jar is transparent.'},
+      {q:'Which word means almost all light passes through?',pic:'glass',ch:[{t:'Transparent'},{t:'Translucent'},{t:'Opaque'}],a:0,hint:'You can see clearly through glass.',fact:'Yes! Transparent means almost all light passes through.'},
+      {q:'Which word means some light passes through?',pic:'tissue',ch:[{t:'Opaque'},{t:'Translucent'},{t:'Transparent'}],a:1,hint:'Tissue paper lets some light through.',fact:'Yes! Translucent means some light passes through.'},
+      {q:'Which word means no light passes through?',pic:'tincan',ch:[{t:'Transparent'},{t:'Translucent'},{t:'Opaque'}],a:2,hint:'You cannot see through a tin can.',fact:'Yes! Opaque means no light passes through.'},
+      {q:'A tin can and a chair are both...',pic:'ask',ch:[{t:'Opaque'},{t:'Transparent'},{t:'Translucent'}],a:0,hint:'Light does not pass through them.',fact:'Yes! A tin can and a chair are both opaque.'},
+      {q:'Which one is translucent?',pic:'ask',ch:[{t:'Glass jar',p:'glass'},{t:'Tissue paper',p:'tissue'},{t:'Tin can',p:'tincan'}],a:1,hint:'Some light passes through it.',fact:'Yes! Tissue paper is translucent.'},
+      {q:'Which one is opaque?',pic:'ask',ch:[{t:'Glass jar',p:'glass'},{t:'Tin can',p:'tincan'}],a:1,hint:'Opaque does not let light through.',fact:'Yes! A tin can is opaque.'}]},
+
+    {id:'shadows',name:'Shadows',pic:'shadowScene',date:'17 Nov',
+     look:[
+      {p:'shadowScene',t:'A shadow is a dark area.'},
+      {p:'shadowScene:shadow',t:'It forms when an object blocks light.'},
+      {p:'tincan',t:'Opaque objects block light.'}],
+     questions:[
+      {q:'What is a shadow?',pic:'shadowScene:shadow',ch:[{t:'A dark area.'},{t:'A bright light.'}],a:0,hint:'It is dark.',fact:'Yes! A shadow is a dark area.'},
+      {q:'When an object blocks light, a ... forms.',pic:'shadowScene',ch:[{t:'Seed'},{t:'Shadow'}],a:1,hint:'Look at the dark shape.',fact:'Yes! A shadow forms when an object blocks light.'},
+      {q:'What does an opaque object do to light?',pic:'tincan',ch:[{t:'It blocks light.'},{t:'It lets all light through.'}],a:0,hint:'Opaque does not let light through.',fact:'Yes! An opaque object blocks light.'},
+      {q:'Objects that do not let light through are called...',pic:'tincan',ch:[{t:'Transparent'},{t:'Opaque'}],a:1,hint:'A tin can is one of these.',fact:'Yes! They are called opaque objects.'},
+      {q:'What makes the dark shape on the ground?',pic:'shadowScene:shadow',ch:[{t:'The ball blocks the light.'},{t:'The ball makes light.'}],a:0,hint:'The ball is opaque.',fact:'Yes! The ball blocks the light, so a shadow forms.'},
+      {q:'What does material mean?',pic:'ask',ch:[{t:'What something is made from.'},{t:'A dark area.'}],a:0,hint:'Glass is a material.',fact:'Yes! A material is what something is made from.'},
+      {q:'Which object will block light and make a shadow?',pic:'ask',ch:[{t:'Tin can',p:'tincan'},{t:'Clear bag',p:'bag'}],a:0,hint:'Opaque objects block light.',fact:'Yes! A tin can is opaque, so it blocks light.'},
+      {q:'Light cannot pass through an opaque object. The area behind it is...',pic:'shadowScene',ch:[{t:'Dark'},{t:'Bright'}],a:0,hint:'Look at the shadow on the ground.',fact:'Yes! The dark area behind it is a shadow.'},
+      {q:'Which sentence is true?',pic:'shadowScene',ch:[{t:'A shadow is a dark area formed when an object blocks light.'},{t:'A shadow is a bright area made by a lamp.'}],a:0,hint:'A shadow is dark.',fact:'Yes! A shadow is a dark area formed when an object blocks light.'},
+      {q:'A shadow forms when an object blocks light.',pic:'shadowScene',ch:[{t:'True'},{t:'False'}],a:0,hint:'Look at the ball and the shadow.',fact:'Yes! A shadow forms when an object blocks light.'}]}
+   ]}
+  ],
+
+  /* ---------- Pictures (flat SVG, drawn here). Each takes one optional "highlight" word. ---------- */
+  pictures:{
+   water:h=>svg(`<path d="M60 12C80 40 92 56 92 74A32 32 0 0 1 28 74C28 56 40 40 60 12Z" fill="${C.blue}" stroke="${C.blueD}" stroke-width="3" stroke-linejoin="round"/><path d="M44 76Q44 90 58 94" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/>`),
+   air:h=>svg(`<g fill="none" stroke="${C.blueD}" stroke-width="5" stroke-linecap="round"><path d="M14 40H74A14 14 0 1 0 60 26"/><path d="M14 62H96A14 14 0 1 1 82 76"/><path d="M14 84H58A12 12 0 1 1 46 96"/></g>`),
+   soil:h=>svg(`<path d="M8 104Q28 40 60 40T112 104Z" fill="#9C7B58"/><circle cx="48" cy="80" r="4" fill="#7C5E3E"/><circle cx="72" cy="70" r="4" fill="#7C5E3E"/><circle cx="62" cy="92" r="4" fill="#7C5E3E"/>`),
+   pot:h=>svg(`<path d="M30 58H90L82 108H38Z" fill="#D9825B"/><rect x="26" y="46" width="68" height="14" rx="4" fill="#C4694A"/><ellipse cx="60" cy="48" rx="30" ry="5" fill="#8B6B4A"/>`),
+   seeds:h=>svg([[40,50,20],[70,44,-15],[56,78,35],[84,76,-30],[34,84,-10]].map(s=>`<ellipse cx="${s[0]}" cy="${s[1]}" rx="9" ry="14" transform="rotate(${s[2]} ${s[0]} ${s[1]})" fill="${C.seed}"/>`).join('')),
+   watercan:h=>svg(`<rect x="28" y="52" width="48" height="44" rx="8" fill="${C.leaf}" stroke="${C.leafD}" stroke-width="3"/><path d="M74 64L100 40" stroke="${C.leafD}" stroke-width="7" stroke-linecap="round"/><ellipse cx="104" cy="38" rx="7" ry="10" transform="rotate(40 104 38)" fill="${C.leafD}"/><path d="M30 58Q8 58 12 80Q14 90 30 88" stroke="${C.leafD}" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="112" cy="62" r="4" fill="${C.blueD}"/><circle cx="104" cy="74" r="4" fill="${C.blueD}"/><circle cx="114" cy="84" r="4" fill="${C.blueD}"/>`),
+   fruit:h=>svg(`${soilBand}<rect x="56" y="34" width="8" height="54" rx="4" fill="${C.leafD}"/>${leafP(40,50,-25)}${leafP(80,46,25)}${fh(60,22,11)}<ellipse cx="40" cy="76" rx="10" ry="12" fill="#E85D5D"/><path d="M33 66H47" stroke="${C.leafD}" stroke-width="4" stroke-linecap="round"/><ellipse cx="82" cy="72" rx="10" ry="12" fill="#E85D5D"/><path d="M75 62H89" stroke="${C.leafD}" stroke-width="4" stroke-linecap="round"/>`),
+   flowerX:h=>svg(`<rect x="57" y="96" width="6" height="24" fill="${C.leafD}"/><ellipse cx="42" cy="96" rx="15" ry="6" transform="rotate(-20 42 96)" fill="${C.leaf}"/><ellipse cx="78" cy="96" rx="15" ry="6" transform="rotate(20 78 96)" fill="${C.leaf}"/><path d="M18 24Q14 84 60 98Q106 84 102 24Q82 52 60 40Q38 52 18 24Z" fill="${C.petal}"/><path d="M60 88L38 52M60 88L82 52" stroke="${C.ink}" stroke-width="2.5" fill="none"/><ellipse cx="36" cy="48" rx="5" ry="8" transform="rotate(-25 36 48)" fill="${C.ray}"/><ellipse cx="84" cy="48" rx="5" ry="8" transform="rotate(25 84 48)" fill="${C.ray}"/><rect x="58" y="44" width="4" height="38" fill="${C.leafD}"/><ellipse cx="60" cy="84" rx="10" ry="9" fill="${C.leafD}"/><circle cx="60" cy="84" r="3" fill="${C.ray}"/><ellipse cx="60" cy="40" rx="7" ry="4.5" fill="${C.orange}"/>${hl(h,'petal',22,36,15)}${hl(h,'anther',36,48,11)}${hl(h,'filament',49,70,11)}${hl(h,'stigma',60,40,11)}${hl(h,'style',60,62,10)}${hl(h,'ovary',60,84,15)}${hl(h,'ovule',60,84,7)}${hl(h,'sepal',42,96,15)}${hl(h,'stem',60,110,10)}`),
+   ask:h=>svg(`<circle cx="60" cy="60" r="44" fill="#ECEAF8"/><text x="60" y="80" text-anchor="middle" font-size="58" font-weight="700" fill="${C.blueD}" font-family="Verdana,sans-serif">?</text>`),
+   sci:h=>svg(`<circle cx="92" cy="28" r="13" fill="${C.sun}"/>${rays(92,28,18,25,8,C.ray,3)}<rect x="0" y="92" width="120" height="28" fill="${C.soil}"/><rect x="40" y="54" width="6" height="40" fill="${C.leafD}"/>${leafP(28,72,-25,12)}${leafP(58,66,25,12)}${fh(43,44,12)}`),
+   plant:h=>svg(`<rect x="0" y="80" width="120" height="40" fill="${C.soil}"/><path d="M60 82V96M60 92L46 110M60 92V114M60 92L74 110" stroke="${C.root}" stroke-width="4" fill="none" stroke-linecap="round"/><rect x="56" y="34" width="8" height="50" rx="4" fill="${C.leafD}"/>${leafP(40,56,-25)}${leafP(80,48,25)}${fh(60,24,13)}${hl(h,'flower',60,24,23)}${hl(h,'leaf',40,56,19)}${hl(h,'stem',60,72,11)}${hl(h,'roots',60,102,19)}`),
+   roots:h=>svg(`<rect x="0" y="10" width="120" height="30" fill="${C.soil}"/><path d="M60 38V56M60 52L38 86M60 52V104M60 52L82 86M49 68L30 70M71 68L90 70" stroke="${C.root}" stroke-width="5" fill="none" stroke-linecap="round"/>`),
+   leaf:h=>svg(`<ellipse cx="60" cy="60" rx="22" ry="44" transform="rotate(35 60 60)" fill="${C.leaf}"/><path d="M38 92L84 28" stroke="${C.leafD}" stroke-width="3" stroke-linecap="round"/>`),
+   flower:h=>svg(`<rect x="57" y="84" width="6" height="36" fill="${C.leafD}"/>${fh(60,56,32)}`),
+   stem:h=>svg(`<rect x="52" y="8" width="16" height="104" rx="8" fill="${C.leafD}"/>`),
+   flowerD:h=>svg(`<rect x="57" y="88" width="6" height="32" fill="${C.leafD}"/><ellipse cx="42" cy="92" rx="15" ry="6" transform="rotate(-20 42 92)" fill="${C.leaf}"/><ellipse cx="78" cy="92" rx="15" ry="6" transform="rotate(20 78 92)" fill="${C.leaf}"/><ellipse cx="26" cy="58" rx="14" ry="30" transform="rotate(-25 26 58)" fill="${C.petal}"/><ellipse cx="94" cy="58" rx="14" ry="30" transform="rotate(25 94 58)" fill="${C.petal}"/><path d="M60 90V42M60 90L40 48M60 90L80 48" stroke="${C.ink}" stroke-width="3" fill="none"/><ellipse cx="40" cy="45" rx="5" ry="8" fill="${C.ray}"/><ellipse cx="80" cy="45" rx="5" ry="8" fill="${C.ray}"/><circle cx="60" cy="38" r="8" fill="${C.leafD}"/>${hl(h,'petals',24,60,27)}${hl(h,'stamen',40,45,13)}${hl(h,'pistil',60,38,13)}${hl(h,'sepals',42,92,19)}`),
+   bee:h=>svg(`<ellipse cx="46" cy="52" rx="17" ry="11" transform="rotate(-30 46 52)" fill="${C.blue}" opacity=".85"/><ellipse cx="70" cy="46" rx="17" ry="11" transform="rotate(-10 70 46)" fill="${C.blue}" opacity=".85"/><ellipse cx="62" cy="72" rx="30" ry="19" fill="${C.sun}"/><path d="M52 56V88M64 54V90M76 57V87" stroke="${C.ink}" stroke-width="6"/><circle cx="94" cy="72" r="11" fill="${C.ink}"/><circle cx="97" cy="69" r="3" fill="#fff"/>`),
+   pollen:h=>svg([[45,50],[66,38],[82,58],[56,68],[74,82],[38,82],[92,84],[60,96],[28,62]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="8" fill="${C.ray}"/><circle cx="${p[0]-2}" cy="${p[1]-2}" r="3" fill="${C.sun}"/>`).join('')),
+   pollination:h=>svg(`<rect x="25" y="96" width="6" height="24" fill="${C.leafD}"/><rect x="89" y="96" width="6" height="24" fill="${C.leafD}"/>${fh(28,80,17)}${fh(92,80,17)}<path d="M40 56Q60 28 82 56" stroke="${C.ink}" stroke-width="3" fill="none" stroke-dasharray="6 5"/><path d="M84 58L72 56L78 46Z" fill="${C.ink}"/><circle cx="44" cy="52" r="5" fill="${C.ray}"/><circle cx="60" cy="38" r="5" fill="${C.ray}"/><circle cx="76" cy="46" r="5" fill="${C.ray}"/>`),
+   seed:h=>svg(`<ellipse cx="60" cy="62" rx="24" ry="34" transform="rotate(25 60 62)" fill="${C.seed}"/><path d="M50 40Q58 62 48 84" stroke="#8A6540" stroke-width="3" fill="none" opacity=".5" stroke-linecap="round"/>`),
+   germ:h=>svg(`<rect x="0" y="62" width="120" height="58" fill="${C.soil}"/><ellipse cx="60" cy="84" rx="12" ry="8" fill="${C.seed}"/><path d="M58 90Q52 102 58 114" stroke="${C.root}" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M60 78V46" stroke="${C.leafD}" stroke-width="5" fill="none" stroke-linecap="round"/><ellipse cx="60" cy="42" rx="5" ry="8" fill="${C.leaf}"/>`),
+   seedling:h=>svg(`${soilBand}<rect x="57" y="52" width="6" height="34" rx="3" fill="${C.leafD}"/>${leafP(46,52,-30,12)}${leafP(74,52,30,12)}`),
+   young:h=>svg(`${soilBand}<rect x="56" y="28" width="8" height="58" rx="4" fill="${C.leafD}"/>${leafP(42,40,-30)}${leafP(78,36,30)}${leafP(44,64,-25)}${leafP(76,60,25)}`),
+   mature:h=>svg(`${soilBand}<rect x="56" y="38" width="8" height="48" rx="4" fill="${C.leafD}"/>${leafP(42,62,-25)}${leafP(78,56,25)}${fh(60,24,13)}`),
+   dispersal:h=>svg(`<rect x="0" y="100" width="120" height="20" fill="${C.soil}"/><rect x="23" y="46" width="6" height="56" fill="${C.leafD}"/>${leafP(14,80,-25,10)}${fh(26,38,11)}<path d="M38 36Q62 8 92 28" stroke="${C.ink}" stroke-width="3" fill="none" stroke-dasharray="6 5"/><path d="M94 30L82 30L88 20Z" fill="${C.ink}"/><circle cx="62" cy="34" r="5" fill="${C.seed}"/><circle cx="84" cy="52" r="5" fill="${C.seed}"/><circle cx="102" cy="40" r="5" fill="${C.seed}"/><circle cx="72" cy="78" r="5" fill="${C.seed}"/><circle cx="98" cy="86" r="5" fill="${C.seed}"/>`),
+   sun:h=>svg(`<circle cx="60" cy="60" r="24" fill="${C.sun}"/>${rays(60,60,32,46,8,C.ray,5)}`),
+   star:h=>svg(`<circle cx="60" cy="60" r="52" fill="#DCE5F4"/><polygon points="60,18 71,46 102,47 78,66 87,96 60,78 33,96 42,66 18,47 49,46" fill="${C.sun}" stroke="${C.ray}" stroke-width="3" stroke-linejoin="round"/>`),
+   lamp:h=>svg(`<path d="M36 22H84L98 58H22Z" fill="${C.cream}" stroke="${C.ray}" stroke-width="4" stroke-linejoin="round"/><rect x="57" y="58" width="6" height="38" fill="${C.greyD}"/><ellipse cx="60" cy="100" rx="24" ry="7" fill="${C.greyD}"/><path d="M26 68L16 78M94 68L104 78" stroke="${C.ray}" stroke-width="4" stroke-linecap="round"/>${hl(h,'shade',60,40,40)}`),
+   candle:h=>svg(`<rect x="44" y="56" width="32" height="52" rx="4" fill="${C.cream}" stroke="${C.grey}" stroke-width="3"/><rect x="59" y="46" width="3" height="12" fill="${C.ink}"/><path d="M60 14C72 28 74 40 60 48C46 40 48 28 60 14Z" fill="${C.orange}"/><path d="M60 28C65 34 66 40 60 44C54 40 55 34 60 28Z" fill="${C.sun}"/>`),
+   firefly:h=>svg(`<circle cx="30" cy="66" r="18" fill="${C.ray}" opacity=".3"/><ellipse cx="46" cy="42" rx="20" ry="9" transform="rotate(-20 46 42)" fill="${C.blue}" opacity=".85"/><ellipse cx="56" cy="66" rx="26" ry="12" fill="${C.dark}"/><ellipse cx="32" cy="68" rx="12" ry="9" fill="${C.ray}"/><circle cx="86" cy="64" r="9" fill="${C.dark}"/><path d="M48 78L44 92M60 78V94M72 78L76 92" stroke="${C.dark}" stroke-width="3" stroke-linecap="round"/>`),
+   tablet:h=>svg(`<rect x="12" y="28" width="96" height="66" rx="10" fill="${C.dark}"/><rect x="20" y="35" width="80" height="52" rx="4" fill="${C.blue}"/><circle cx="60" cy="61" r="10" fill="#fff" opacity=".7"/>`),
+   glass:h=>svg(`<rect x="34" y="34" width="52" height="68" rx="12" fill="#DCEEFA" stroke="${C.blueD}" stroke-width="3"/><rect x="38" y="16" width="44" height="18" rx="4" fill="${C.grey}" stroke="${C.greyD}" stroke-width="2"/><path d="M44 50V86" stroke="#fff" stroke-width="5" stroke-linecap="round"/>`),
+   bag:h=>svg(`<rect x="20" y="26" width="80" height="74" rx="6" fill="#EAF5FC" stroke="${C.blueD}" stroke-width="3"/><path d="M20 40H100" stroke="${C.leafD}" stroke-width="5"/><path d="M32 56V86" stroke="#fff" stroke-width="5" stroke-linecap="round"/>`),
+   tincan:h=>svg(`<rect x="34" y="34" width="52" height="62" fill="${C.grey}"/><ellipse cx="60" cy="96" rx="26" ry="9" fill="${C.grey}"/><ellipse cx="60" cy="34" rx="26" ry="9" fill="${C.greyD}"/><path d="M34 52H86M34 76H86" stroke="${C.greyD}" stroke-width="3"/>`),
+   tissue:h=>svg(`<path d="M22 32Q40 22 60 32T98 32V92Q80 102 60 92T22 92Z" fill="#F9D3DE" opacity=".85" stroke="#EDB1C3" stroke-width="3"/><path d="M40 40V86M60 42V88M80 40V86" stroke="#EDB1C3" stroke-width="2" opacity=".7"/>`),
+   chair:h=>svg(`<rect x="34" y="22" width="52" height="38" rx="6" fill="${C.orange}"/><rect x="28" y="60" width="64" height="14" rx="5" fill="${C.orange}"/><rect x="34" y="74" width="7" height="36" fill="${C.greyD}"/><rect x="79" y="74" width="7" height="36" fill="${C.greyD}"/>`),
+   hat:h=>svg(`<path d="M26 82Q26 36 60 36Q94 36 94 82Z" fill="#E58A8A"/><rect x="22" y="78" width="76" height="18" rx="7" fill="#D56F6F"/><circle cx="60" cy="30" r="10" fill="#F4C7C7"/><path d="M40 82V48M60 82V40M80 82V48" stroke="#D56F6F" stroke-width="3"/>`),
+   spoon:h=>svg(`<ellipse cx="60" cy="34" rx="18" ry="25" fill="${C.grey}" stroke="${C.greyD}" stroke-width="3"/><rect x="55" y="56" width="10" height="56" rx="5" fill="${C.grey}" stroke="${C.greyD}" stroke-width="3"/>`),
+   book:h=>svg(`<path d="M10 34Q34 26 58 38V98Q34 88 10 96Z" fill="#fff" stroke="${C.blueD}" stroke-width="3"/><path d="M110 34Q86 26 62 38V98Q86 88 110 96Z" fill="#fff" stroke="${C.blueD}" stroke-width="3"/><path d="M20 52Q34 48 48 54M20 66Q34 62 48 68M20 80Q34 76 48 82M72 54Q86 48 100 52M72 68Q86 62 100 66M72 82Q86 76 100 80" stroke="${C.grey}" stroke-width="3" fill="none" stroke-linecap="round"/>`),
+   ball:h=>svg(`<circle cx="60" cy="60" r="38" fill="${C.ball}"/><path d="M28 48Q60 70 92 48" stroke="#fff" stroke-width="4" fill="none" opacity=".8"/><path d="M96 20L108 8M108 34L116 28M84 12L88 2" stroke="${C.ray}" stroke-width="4" stroke-linecap="round"/>`),
+   seeing:h=>svg(`${lampSmall}<circle cx="60" cy="96" r="14" fill="${C.ball}"/><ellipse cx="100" cy="26" rx="16" ry="10" fill="#fff" stroke="${C.ink}" stroke-width="3"/><circle cx="100" cy="26" r="6" fill="${C.ink}"/><path d="M30 52L49 76" stroke="${C.ray}" stroke-width="4" stroke-linecap="round"/><polygon points="55,84 42.6,78.8 51.8,71" fill="${C.ray}"/><path d="M70 82L90 50" stroke="${C.ray}" stroke-width="4" stroke-linecap="round"/><polygon points="96,40 94.4,53.3 84.4,46.7" fill="${C.ray}"/>${hl(h,'lamp',25,28,30)}${hl(h,'ball',60,96,22)}${hl(h,'eye',100,26,22)}`),
+   shadowScene:h=>svg(`<rect x="0" y="88" width="120" height="32" fill="#E4ECEF"/>${lampSmall}<path d="M30 40L46 62M32 40L100 92" stroke="${C.ray}" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round"/><circle cx="52" cy="70" r="14" fill="${C.ball}"/><ellipse cx="88" cy="100" rx="20" ry="6" fill="${C.dark}" opacity=".65"/>${hl(h,'shadow',88,100,20)}`)
+  }
+};
+
+/* ---------- App (reads DATA only) ---------- */
+const app=document.getElementById('app');
+const canSpeak='speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+let st={v:'home'}, lastKey='';
+const T=()=>DATA.subjects[st.si].topics[st.ti];
+const pic=n=>{const [k,a]=(n||'ask').split(':');const f=DATA.pictures[k];return f?f(a):''};
+const star=on=>`<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2 15,9 22,9.5 16.5,14 18.5,21.5 12,17.5 5.5,21.5 7.5,14 2,9.5 9,9" fill="${on?'#F2B705':'#fff'}" stroke="#E3A92B" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+const tick=`<svg class="tick" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#2E9E5B"/><path d="M9 16.5l5 5 9-10" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const btn=(label,act,cls='')=>`<button class="btn ${cls}" onclick="${act}">${label}</button>`;
+const listenBtn=act=>canSpeak?btn('Listen',act,'alt'):'';
+
+function speak(t){if(!canSpeak)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.85;speechSynthesis.speak(u)}
+function stopSpeak(){if(canSpeak)speechSynthesis.cancel()}
+const listenQ=()=>speak(T().questions[st.qi].q);
+const listenLook=()=>speak(T().look.map(c=>c.t).join(' '));
+
+function openSubject(i){st={v:'topics',si:i};render()}
+function openTopic(i){st={v:'look',si:st.si,ti:i};render()}
+function goHome(){stopSpeak();st={v:'home'};render()}
+function goTopics(){stopSpeak();st={v:'topics',si:st.si};render()}
+function startQuiz(){stopSpeak();st={v:'quiz',si:st.si,ti:st.ti,qi:0,tries:0,wrong:[],pos:0,tot:0,done:false,log:T().questions.map(()=>0)};render()}
+function viewQ(q){if(q.type!=='order')return q;return Object.assign({},q,{ch:q.show.map(k=>q.items[k]),a:q.show.indexOf(st.pos),_idx:q.show})}
+function pick(i){const q=viewQ(T().questions[st.qi]);if(st.done||st.wrong.includes(i))return;
+  if(i===q.a){if(q.type==='order'&&st.pos+1<q.items.length){st.pos++;st.tries=0;st.wrong=[]}else{if(q.type==='order')st.pos++;st.done=true;st.log[st.qi]=st.tot}}else{st.tries++;st.tot++;st.wrong.push(i)}render()}
+function next(){stopSpeak();if(st.qi+1>=T().questions.length){st.v='finish'}else{st.qi++;st.tries=0;st.wrong=[];st.pos=0;st.tot=0;st.done=false}render()}
+function takeBreak(){stopSpeak();st.v='break';render()}
+function backToQuiz(){st.v='quiz';render()}
+
+const views={
+ home(){return `<div class="top"><div></div></div><h1>${DATA.title}</h1><p class="sub">${DATA.subtitle}</p>
+  <div class="grid">${DATA.subjects.map((s,i)=>`<button class="card" onclick="openSubject(${i})"><div class="pic">${pic(s.pic)}</div><div class="label">${s.name}</div></button>`).join('')}</div>`},
+ topics(){const s=DATA.subjects[st.si];
+  return `<div class="top"><div>${btn('Back','goHome()','alt')}</div></div><h1>${s.name}</h1><p class="sub">Pick a topic.</p>
+  <div class="grid">${s.topics.map((t,i)=>`<button class="card" onclick="openTopic(${i})"><div class="pic">${pic(t.pic)}</div><div class="label">${t.name}</div></button>`).join('')}</div>`},
+ look(){const t=T();
+  return `<div class="top"><div>${btn('Back','goTopics()','alt')}</div><div class="row">${listenBtn('listenLook()')}</div></div>
+  <h1>${t.name}</h1><p class="sub">Look first.</p>
+  <div class="grid">${t.look.map(c=>`<div class="card still"><div class="pic">${pic(c.p)}</div><div class="line">${c.t}</div></div>`).join('')}</div>
+  <div class="actions">${btn('Start the quiz','startQuiz()','big')}</div>`},
+ quiz(){const t=T(),q=viewQ(t.questions[st.qi]),n=t.questions.length;
+  const filled=st.done?st.qi+1:st.qi;
+  const picMode=q.ch.some(c=>c.p);
+  const left=q.ch.length-st.wrong.length;
+  const goldOn=!st.done&&(st.tries>=2||(st.tries>=1&&left===1));
+  const choices=q.ch.map((c,i)=>{
+    const faded=st.wrong.includes(i);
+    const pl=q._idx&&q._idx[i]<st.pos;const cls=[faded?'faded':'',(st.done&&i===q.a)||pl?'right':'',goldOn&&i===q.a?'gold':''].join(' ');
+    return `<button class="choice ${cls}" onclick="pick(${i})" ${faded||st.done||pl?'disabled':''}>${c.p?`<div class="cp">${pic(c.p)}</div>`:''}<span>${pl?(q._idx[i]+1)+'. ':''}${c.t}</span>${(st.done&&i===q.a)||pl?tick:''}</button>`}).join('');
+  let fb=(q.type==='order'&&st.pos>0&&!st.done&&st.tries===0)?`<div class="fb ok">${tick}<span>Yes! Tap the next step.</span></div>`:'<div class="fb"></div>';
+  if(st.done)fb=`<div class="fb ok">${tick}<span>${q.fact}</span></div>`;
+  else if(st.tries>0)fb=`<div class="fb"><p><b>Not this one. Let us try again.</b></p><p class="hint">Hint: ${q.hint}</p></div>`;
+  return `<div class="top"><div>${btn('Home','goHome()','alt')}</div><div class="row">${listenBtn('listenQ()')}${btn('Break','takeBreak()','soft')}</div></div>
+  <div class="progress"><div class="stars" aria-hidden="true">${t.questions.map((_,i)=>star(i<filled)).join('')}</div><div class="count">Question ${st.qi+1} of ${n}</div></div>
+  <div class="q">${q.q}</div>
+  <div class="stage">${pic(q.pic)}</div>
+  <div class="choices ${picMode?'pics':''}" style="${picMode?`grid-template-columns:repeat(${Math.min(q.ch.length,3)},1fr)`:''}">${choices}</div>
+  <div aria-live="polite">${fb}</div>
+  <div class="nextrow">${btn('Next','next()',st.done?'big':'big hidden').replace('<button','<button '+(st.done?'':'disabled tabindex="-1"'))}</div>`},
+ finish(){const t=T(),n=t.questions.length;
+  const helped=st.log.map((x,i)=>x>0?`<li>Question ${i+1}: ${t.questions[i].q} (${x} ${x===1?'try':'tries'} before the right answer${x>=2?', gold border shown':''})</li>`:'').join('');
+  return `<div class="top"><div>${btn('Home','goHome()','alt')}</div></div>
+  <div class="progress"><div class="stars" aria-hidden="true">${t.questions.map(()=>star(true)).join('')}</div></div>
+  <h1>Well done, Umer!</h1><p class="sub">You finished ${t.name}. You worked hard.</p>
+  <div class="stage">${pic(t.pic)}</div>
+  <div class="actions">${btn('Play again','startQuiz()')}${btn('Back to subjects','goHome()','alt')}</div>
+  <details><summary>For grown-ups</summary>${helped?`<p>Questions that needed a hint:</p><ul>${helped}</ul>`:'<p>No hints were needed.</p>'}</details>`},
+ break(){return `<div class="top"><div></div></div><div class="breakwrap"><h1>Break time</h1><p class="sub">Take as long as you like.</p><div class="breath" aria-hidden="true"></div>${btn('Back to my question','backToQuiz()','big')}</div>`}
+};
+
+function render(){
+  const key=st.v+'|'+st.si+'|'+st.ti+'|'+(st.qi||0);
+  app.innerHTML=views[st.v]();
+  if(key!==lastKey){window.scrollTo(0,0);lastKey=key}
+}
+render();
+</script>
+</body>
+</html>
